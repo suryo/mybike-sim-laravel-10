@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -37,9 +39,10 @@
         }
 
         .container {
-            max-width: 1400px;
+            width: 100%;
+            max-width: 1920px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1.5rem;
         }
 
         header {
@@ -61,8 +64,9 @@
 
         .main-layout {
             display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 2rem;
+            grid-template-columns: 1fr 420px;
+            gap: 1.5rem;
+            height: calc(100vh - 120px);
         }
 
         .simulation-area {
@@ -127,25 +131,28 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            max-height: 100%;
         }
 
         .bike-list {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            max-height: 850px;
+            flex: 1;
             overflow-y: auto;
             padding-right: 0.5rem;
+            min-height: 0; /* Allow grid scaling */
         }
 
         .bike-card {
-            background: var(--card-bg);
-            padding: 1.25rem;
-            border-radius: var(--radius);
+            background: rgba(30, 41, 59, 0.4);
+            padding: 1rem;
+            border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
-            transition: transform 0.2s;
+            transition: all 0.2s;
         }
+        .bike-card:hover { border-color: var(--primary); background: rgba(30, 41, 59, 0.6); }
 
         .delete-btn {
             position: absolute;
@@ -296,6 +303,59 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
+        /* Progress Bar Styles */
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.3s ease-out;
+            position: relative;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: white;
+            line-height: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            z-index: 1;
+        }
+
+        .finish-badge {
+            display: none;
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+
+        .bike-card.finished {
+            border-color: var(--success);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+        }
+
+        .bike-card.finished .finish-badge {
+            display: inline-block;
+        }
+
         /* Tooltip Style */
         .tooltip-container {
             position: relative;
@@ -394,6 +454,36 @@
             pointer-events: auto;
         }
 
+        .meal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(14, 165, 233, 0.9); /* Blue-ish */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+            z-index: 15;
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            border: 2px solid var(--accent);
+        }
+
+        .meal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .meal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
         .bonk-title {
             color: white;
             font-weight: 800;
@@ -420,35 +510,35 @@
 
         .btn-refuel:hover { transform: scale(1.05); background: #d97706; }
 
-        /* Playback Controls */
+        /* Playback Controls - Sleeker Bar */
         .playback-header {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
+            align-items: center;
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
-            background: rgba(30, 41, 59, 0.4);
-            padding: 0.75rem;
-            border-radius: var(--radius);
-            border: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
+            background: #1e293b;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
 
         .playback-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.6rem;
-            padding: 0.6rem 1.5rem;
-            border-radius: 10px;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
             border: none;
             cursor: pointer;
-            font-weight: 700;
-            font-size: 0.85rem;
+            font-weight: 600;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 34px;
         }
 
         .btn-play { background: var(--success); }
@@ -467,6 +557,147 @@
         .playback-btn.active {
             outline: 2px solid white;
             outline-offset: 2px;
+        }
+
+        /* Playback Speed Controls */
+        .speed-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin: 0 10px;
+            padding: 3px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 300px;
+        }
+
+        .speed-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .speed-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .speed-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .conflict-alert {
+            background: rgba(220, 38, 38, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            border-left: 3px solid #ef4444;
+        }
+
+        .timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            box-shadow: inset 0 0 10px rgba(34, 197, 94, 0.1);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Phase 6: Log & Cadence Lock Styles */
+        .log-section {
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 8px;
+            padding: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .log-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .log-list {
+            max-height: 80px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+        .log-list::-webkit-scrollbar { width: 4px; }
+        .log-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .log-item {
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            justify-content: space-between;
+        }
+        .log-item:last-child { border-bottom: none; }
+        .log-time { color: var(--text-secondary); opacity: 0.7; }
+        .log-val { color: var(--primary); font-weight: bold; }
+
+        .cadence-clickable {
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .cadence-clickable:hover {
+            background: rgba(56, 189, 248, 0.15) !important;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+        .lock-indicator {
+            font-size: 0.6rem;
+            background: var(--primary);
+            color: #0f172a;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 800;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-title::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
         }
     </style>
 </head>
@@ -489,25 +720,96 @@
         <div class="main-layout">
             <div class="simulation-area">
                 <div class="playback-header">
-                    <div class="tooltip-container" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 20px;">
-                        <label style="font-size: 0.75rem; white-space: nowrap;">Global Refuel:</label>
-                        <input type="number" id="globalRefuelDist" value="1.0" step="0.1" min="0.1" style="width: 50px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 2px 5px; border-radius: 4px; font-size: 0.75rem;">
-                        <span style="font-size: 0.75rem;">km</span>
-                        <span class="tooltip-text">Interval for riders with "Auto-Refuel" enabled</span>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 1rem; margin-right: 0.5rem;">
+                        <div class="tooltip-container" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase;">Refuel</label>
+                            <input type="number" id="globalRefuelDist" value="1.0" step="0.1" min="0.1" style="width: 45px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem;">
+                            <span style="font-size: 0.65rem; opacity: 0.5;">km</span>
+                        </div>
+                        <div class="tooltip-container" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase;">Meal</label>
+                            <input type="number" id="mealInterval" value="10" step="1" min="1" style="width: 45px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem;">
+                            <span style="font-size: 0.65rem; opacity: 0.5;">min</span>
+                        </div>
                     </div>
+
+                    <div class="timer-display" id="globalTimer" style="min-width: 80px; font-size: 0.85rem; padding: 3px 8px;">00:00:00</div>
+
+                    <div style="display: flex; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; align-items: center; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem;">
+                        <span>Track: <input type="number" id="trackGoalInput" step="1" value="10" style="width: 50px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 2px; font-size: 0.7rem;"> km</span>
+                        <button onclick="openMapModal()" class="playback-btn" style="background: var(--accent); padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; gap: 4px; font-size: 0.65rem; height: 22px; width: auto;" title="Plan on Map">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            MAP
+                        </button>
+                        <span>Ascent: <input type="number" id="ascentGoalInput" step="1" value="200" style="width: 50px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 2px; font-size: 0.7rem;"> m</span>
+                    </div>
+
                     <div style="flex-grow: 1;"></div>
-                    <button id="playBtn" class="playback-btn btn-play active" title="Start Simulation">
-                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        Play
-                    </button>
-                    <button id="pauseBtn" class="playback-btn btn-pause" title="Pause Simulation">
-                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        Stop
-                    </button>
-                    <button id="resetPlayBtn" class="playback-btn btn-reset" title="Reset Simulation">
-                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                        Reset
-                    </button>
+                    
+                    <div class="speed-controls" id="speedControls">
+                        <button class="speed-btn" data-speed="0.5">0.5x</button>
+                        <button class="speed-btn active" data-speed="1">1.0x</button>
+                        <button class="speed-btn" data-speed="2">2.0x</button>
+                        <button class="speed-btn" data-speed="4">4.0x</button>
+                        <button class="speed-btn" data-speed="10">10x</button>
+                        <button class="speed-btn" data-speed="20">20x</button>
+                        <button class="speed-btn" data-speed="40">40x</button>
+                        <button class="speed-btn" data-speed="50">50x</button>
+                        <button class="speed-btn" data-speed="60">60x</button>
+                        <button class="speed-btn" data-speed="80">80x</button>
+                        <button class="speed-btn" data-speed="100">100x</button>
+                        <button class="speed-btn" data-speed="200">200x</button>
+                    </div>
+
+                    <div style="display: flex; gap: 5px;">
+                        <button id="playBtn" class="playback-btn btn-play active" title="Play">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                        <button id="pauseBtn" class="playback-btn btn-pause" title="Pause" style="background: #f59e0b;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <button id="stopBtn" class="playback-btn" title="Stop" style="background: #64748b;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M6 6h12v12H6z"/></svg>
+                        </button>
+                        <button id="resetPlayBtn" class="playback-btn btn-reset" title="Reset">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Integrated Map Section (Always Visible) -->
+                <div id="map-section" style="display: grid; height: 320px; background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; gap: 0.75rem; grid-template-columns: 1fr 280px; backdrop-filter: blur(4px); box-shadow: inset 0 0 40px rgba(0,0,0,0.2);">
+                    <div id="map-container" style="position: relative; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+                        <div id="map" style="height: 100%; width: 100%;"></div>
+                        <div id="map-instructions" style="position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); padding: 8px 12px; border-radius: 8px; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1); width: auto; pointer-events: none; backdrop-filter: blur(8px); display: flex; gap: 15px; align-items: center; color: var(--text-secondary);">
+                            <span style="font-weight: 800; color: var(--accent); letter-spacing: 0.05em;">TRACK PLANNER</span>
+                            <span>• Click map to set <b>START</b> & <b>CPs</b></span>
+                            <span>• Last point is <b>GOAL</b></span>
+                        </div>
+                    </div>
+                    
+                    <div class="route-panel" style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 0.75rem; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(4px);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                            <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin: 0;">Waypoints</h4>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <span id="map-total-dist" style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800;">0.00 km</span>
+                                <span style="font-size: 0.6rem; color: var(--text-secondary); opacity: 0.7;"><span id="map-total-ascent">0</span> m Ascent</span>
+                            </div>
+                        </div>
+                        
+                        <div id="waypoints-container" style="display: flex; flex-direction: column; gap: 0.4rem; flex-grow: 1; overflow-y: auto; margin-bottom: 0.75rem; scrollbar-width: thin; max-height: 140px;">
+                            <!-- Points populated here -->
+                        </div>
+                        
+                        <div id="elevation-profile-container" style="height: 80px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
+                            <canvas id="elevationChart"></canvas>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.4rem;">
+                            <button onclick="saveRoute()" class="btn" style="flex: 2; font-size: 0.7rem; padding: 8px; font-weight: 800; background: var(--accent);">APPLY TO RACE</button>
+                            <button onclick="clearRoute()" class="btn btn-outline" style="flex: 1; font-size: 0.65rem; padding: 8px; border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">CLEAR</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="canvas-container">
@@ -579,8 +881,8 @@
             </div>
 
             <div class="bike-sidebar">
-                <h2 style="font-size: 1.25rem;">Racedeck</h2>
-                <div class="bike-list">
+                <h2 class="sidebar-title">Racedeck</h2>
+                <div class="bike-list" id="bikeList">
                     @forelse($bicycles as $bike)
                     <div class="bike-card" id="bike-{{ $bike->id }}">
                         <!-- Bonk Alert Overlay -->
@@ -593,7 +895,17 @@
                             </button>
                         </div>
 
+                        <!-- Meal Break Overlay -->
+                        <div id="meal-overlay-{{ $bike->id }}" class="meal-overlay">
+                            <div class="meal-title">MEAL BREAK</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: white; font-family: 'JetBrains Mono', monospace;" id="meal-timer-{{ $bike->id }}">00:00</div>
+                            <p id="meal-status-{{ $bike->id }}" style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Refueling...</p>
+                        </div>
+
                         <div style="position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="showSummary({{ $bike->id }})" class="edit-btn" style="background: none; border: none; color: var(--success); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Show Summary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                            </button>
                             <button onclick="openEditModal({{ json_encode($bike) }})" class="edit-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Edit Rider">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </button>
@@ -607,17 +919,46 @@
                         <div class="bike-header">
                             <div class="bike-color" style="background-color: {{ $bike->color }}"></div>
                             <span class="bike-name">{{ $bike->name }}</span>
+                            <div id="finish-badge-{{ $bike->id }}" class="finish-badge">Finished</div>
                             <span style="font-size: 0.7rem; opacity: 0.5;">(B:{{ $bike->bicycle_weight }}kg + R:{{ $bike->rider_weight }}kg / {{ $bike->efficiency * 100 }}%)</span>
                         </div>
 
+                        <!-- Track Progress Bar -->
+                        <div class="progress-container">
+                            <div id="progress-text-{{ $bike->id }}" class="progress-text">0% Complete</div>
+                            <div id="progress-fill-{{ $bike->id }}" class="progress-fill"></div>
+                        </div>
+
+                        <div id="conflict-alert-{{ $bike->id }}" class="conflict-alert" style="display:none;">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                            Locked Power vs Cadence Conflict
+                        </div>
+
                         <div class="control-group tooltip-container" style="margin-bottom: 1rem;">
-                            <label>Rider Power</label>
+                            <label style="display: flex; justify-content: space-between;">
+                                Rider Power
+                                <span id="power-lock-{{ $bike->id }}" class="lock-indicator" style="display:none; position: static;">LOCK</span>
+                            </label>
                             <input type="range" class="bike-power-input" data-bike-id="{{ $bike->id }}" min="0" max="1000" value="200">
-                            <div class="value-display" style="font-size: 0.9rem;"><span id="power-display-{{ $bike->id }}">200</span> Watts</div>
-                            <span class="tooltip-text" style="bottom: 110%;">Target wattage for this rider. High power depletes stamina!</span>
+                            <div class="value-display cadence-clickable" style="font-size: 0.9rem; margin-top: 5px; border-radius: 4px; padding: 2px 10px;" onclick="window.openPowerModal({{ $bike->id }})">
+                                <span id="power-display-{{ $bike->id }}">200</span> Watts
+                            </div>
+                            <span class="tooltip-text" style="bottom: 110%;">Target wattage for this rider. High power depletes stamina! Click to LOCK.</span>
                         </div>
                         
                         <div class="gear-controls">
+                            <div class="control-group">
+                                <label>Efficiency (%)</label>
+                                <input type="number" name="efficiency" value="24" step="1" class="form-control" placeholder="Avg 24%">
+                            </div>
+                            <div class="control-group">
+                                <label>Start Dist (km)</label>
+                                <input type="number" name="initial_distance" value="0" step="0.1" class="form-control">
+                            </div>
+                            <div class="control-group">
+                                <label>Start EG (m)</label>
+                                <input type="number" name="initial_elevation" value="0" step="1" class="form-control">
+                            </div>
                             <div class="control-group">
                                 <label>Chainring</label>
                                 <select class="front-gear-select" data-bike-id="{{ $bike->id }}">
@@ -688,20 +1029,43 @@
                                 <span class="stat-label">Velocity</span>
                                 <div class="stat-value"><span id="speed-{{ $bike->id }}">0.0</span> <span style="font-size: 0.6em;">km/h</span></div>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Cadence</span>
+                            <div class="stat-item cadence-clickable" onclick="window.openCadenceModal({{ $bike->id }})">
+                                <span class="stat-label">Cadence <span id="cadence-lock-{{ $bike->id }}" class="lock-indicator" style="display:none;">LOCK</span></span>
                                 <span class="stat-value"><span id="cadence-{{ $bike->id }}">0</span> <small>RPM</small></span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-label">Ratio</span>
-                                <span class="stat-value" id="ratio-{{ $bike->id }}">1.00</span>
+                                <span class="stat-label">Terrain</span>
+                                <div class="stat-value" id="slope-display-{{ $bike->id }}">0.0%</div>
                             </div>
-                            <div class="stat-item" style="grid-column: span 2;">
-                                <span class="stat-label">Combined Progress</span>
-                                <div class="stat-value" style="font-size: 0.9rem;">
-                                    <span id="dist-m-{{ $bike->id }}">0</span> m | 
-                                    <span id="dist-km-{{ $bike->id }}">0.00</span> km
-                                </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Elevation Gain</span>
+                                <span class="stat-value"><span id="elev-{{ $bike->id }}">0</span> <small>m</small></span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg Power</span>
+                                <div class="stat-value"><span id="avgp-{{ $bike->id }}">0</span> <small style="font-size: 0.6em;">W</small></div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Norm Power (NP)</span>
+                                <div class="stat-value" style="color: var(--success);"><span id="np-{{ $bike->id }}">0</span> <small style="font-size: 0.6em;">W</small></div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">TSS</span>
+                                <div class="stat-value" style="color: #f59e0b;"><span id="tss-{{ $bike->id }}">0</span> <small style="font-size: 0.6em;">pts</small></div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Distance</span>
+                                <div class="stat-value"><span id="dist-km-{{ $bike->id }}">0.00</span> <small>km</small></div>
+                            </div>
+                        </div>
+
+                        <div class="log-section">
+                            <div class="log-header">
+                                <span>Refuel Activity Log</span>
+                                <span>T | Dist | Spd</span>
+                            </div>
+                            <div id="log-list-{{ $bike->id }}" class="log-list">
+                                <div style="opacity: 0.3; font-style: italic; text-align: center; margin-top: 10px;">No logs yet</div>
                             </div>
                         </div>
                     </div>
@@ -740,6 +1104,294 @@
             return false;
         };
 
+        // ==========================================
+        // PHASE 27: MAP ROUTE PLANNER LOGIC
+        // ==========================================
+        let routeMap = null;
+        let routeMarkers = [];
+        let routePolyline = null;
+        let routeDistance = 0;
+        let routeCheckpointPercentages = []; // NEW: Store CP positions as 0-1 decimals
+        let elevationChart = null;
+        let routeProfile = []; // Array of {dist, elev, slope}
+        let totalElevationGain = 0;
+
+
+        function initMap() {
+            if (!routeMap) {
+                // Initialize map - centered on Surabaya (Example Start: -7.3068, 112.7930)
+                routeMap = L.map('map').setView([-7.3068, 112.7930], 11);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(routeMap);
+
+                routeMap.on('click', function(e) {
+                    addWaypoint(e.latlng);
+                });
+            }
+            setTimeout(() => routeMap.invalidateSize(), 200);
+        }
+
+        function openMapModal() {
+            const section = document.getElementById('map-section');
+            const isHidden = section.style.display === 'none' || section.style.display === '';
+            
+            section.style.display = isHidden ? 'grid' : 'none';
+            
+            if (isHidden) {
+                initMap();
+            }
+        }
+
+        function closeMapModal() {
+            document.getElementById('map-section').style.display = 'none';
+        }
+
+        function addWaypoint(latlng) {
+            const marker = L.marker(latlng, { draggable: true }).addTo(routeMap);
+            routeMarkers.push(marker);
+            
+            marker.on('dragend', updateRoute);
+            updateRoute();
+        }
+
+        function clearRoute() {
+            routeMarkers.forEach(m => m.remove());
+            routeMarkers = [];
+            if (routePolyline) routePolyline.remove();
+            routePolyline = null;
+            routeDistance = 0;
+            totalElevationGain = 0; // Reset elevation gain
+            routeProfile = []; // Reset route profile
+            updateRouteUI();
+            updateElevationChart(); // Clear chart
+        }
+
+        async function updateRoute() {
+            if (routeMarkers.length < 2) {
+                if (routePolyline) routePolyline.remove();
+                routePolyline = null;
+                routeDistance = 0;
+                totalElevationGain = 0; // Reset elevation gain
+                routeProfile = []; // Reset route profile
+                updateRouteUI();
+                updateElevationChart(); // Clear chart
+                return;
+            }
+
+            // Prepare coordinates for OSRM (lon,lat)
+            const coords = routeMarkers.map(m => {
+                const ll = m.getLatLng();
+                return `${ll.lng},${ll.lat}`;
+            }).join(';');
+
+            try {
+                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
+                const data = await response.json();
+
+                if (data.code === 'Ok') {
+                    const route = data.routes[0];
+                    routeDistance = route.distance / 1000; // km
+
+                    if (routePolyline) routePolyline.remove();
+                    routePolyline = L.geoJSON(route.geometry, {
+                        style: { color: '#38bdf8', weight: 5, opacity: 0.8 }
+                    }).addTo(routeMap);
+
+                    updateRouteUI();
+                    
+                    // NEW: Fetch Elevation Data
+                    await fetchElevationProfile(route.geometry.coordinates);
+                }
+            } catch (err) {
+                console.error("Routing Error:", err);
+            }
+        }
+
+        async function fetchElevationProfile(coordinates) {
+            // Sample coordinates to avoid huge API requests (approx every 1km or max 100 points)
+            const sampleCount = Math.min(coordinates.length, 100);
+            const sampled = [];
+            for (let i = 0; i < sampleCount; i++) {
+                const idx = Math.floor((i / (sampleCount - 1)) * (coordinates.length - 1));
+                sampled.push({
+                    latitude: coordinates[idx][1],
+                    longitude: coordinates[idx][0]
+                });
+            }
+
+            try {
+                const response = await fetch('https://api.open-elevation.com/api/v1/lookup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ locations: sampled })
+                });
+                const data = await response.json();
+
+                if (data.results) {
+                    processElevationData(data.results);
+                }
+            } catch (err) {
+                console.error("Elevation API Error:", err);
+            }
+        }
+
+        function processElevationData(results) {
+            routeProfile = [];
+            totalElevationGain = 0;
+            let currentDist = 0;
+
+            results.forEach((pt, i) => {
+                if (i > 0) {
+                    const prev = results[i-1];
+                    const d = L.latLng(prev.latitude, prev.longitude).distanceTo(L.latLng(pt.latitude, pt.longitude));
+                    currentDist += d;
+                    
+                    const elevDiff = pt.elevation - prev.elevation;
+                    if (elevDiff > 0) totalElevationGain += elevDiff;
+                    
+                    const slope = (elevDiff / d) * 100;
+                    routeProfile.push({
+                        dist: currentDist,
+                        elev: pt.elevation,
+                        baseElev: results[0].elevation, // Keep start elevation as reference
+                        relElev: pt.elevation - results[0].elevation,
+                        slope: slope
+                    });
+                } else {
+                    routeProfile.push({ dist: 0, elev: pt.elevation, baseElev: pt.elevation, relElev: 0, slope: 0 });
+                }
+            });
+
+            updateElevationChart();
+            document.getElementById('ascentGoalInput').value = Math.round(totalElevationGain);
+        }
+
+        function updateElevationChart() {
+            const ctx = document.getElementById('elevationChart').getContext('2d');
+            const labels = routeProfile.map(p => (p.dist / 1000).toFixed(1) + ' km');
+            const data = routeProfile.map(p => p.elev);
+
+            if (elevationChart) {
+                elevationChart.destroy();
+            }
+
+            elevationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Elevation (m)',
+                        data: data,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRouteUI() {
+            document.getElementById('map-total-dist').innerText = routeDistance.toFixed(2);
+            document.getElementById('map-total-ascent').innerText = Math.round(totalElevationGain); // Update ascent display
+            const container = document.getElementById('waypoints-container');
+            container.innerHTML = '';
+
+            routeMarkers.forEach((m, i) => {
+                const label = i === 0 ? 'START' : (i === routeMarkers.length - 1 ? 'FINISH' : `CP ${i}`);
+                const color = i === 0 ? 'var(--success)' : (i === routeMarkers.length - 1 ? 'var(--danger)' : 'var(--accent)');
+                
+                const div = document.createElement('div');
+                div.style = 'background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 2px solid ' + color + '; margin-bottom: 2px;';
+                
+                let reorderHtml = `
+                    <div style="display: flex; flex-direction: column; gap: 2px; margin-right: 8px;">
+                        <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled style="opacity:0.2; cursor:default;"' : 'style="cursor:pointer;"'} title="Move Up" style="background:none; border:none; color:white; font-size: 0.6rem; padding: 0;">▲</button>
+                        <button onclick="moveWaypoint(${i}, 1)" ${i === routeMarkers.length - 1 ? 'disabled style="opacity:0.2; cursor:default;"' : 'style="cursor:pointer;"'} title="Move Down" style="background:none; border:none; color:white; font-size: 0.6rem; padding: 0;">▼</button>
+                    </div>
+                `;
+
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        ${reorderHtml}
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.6rem; font-weight: 800; color: ${color}; letter-spacing: 0.05em;">${label}</span>
+                            <span style="font-size: 0.55rem; opacity: 0.5; font-family: 'JetBrains Mono';">${m.getLatLng().lat.toFixed(4)}, ${m.getLatLng().lng.toFixed(4)}</span>
+                        </div>
+                    </div>
+                    <button onclick="removeWaypoint(${i})" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; cursor: pointer; font-size: 0.7rem; border-radius: 4px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeWaypoint(index) {
+            routeMarkers[index].remove();
+            routeMarkers.splice(index, 1);
+            updateRoute();
+        }
+
+        function moveWaypoint(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= routeMarkers.length) return;
+            
+            // Swap in array
+            const temp = routeMarkers[index];
+            routeMarkers[index] = routeMarkers[newIndex];
+            routeMarkers[newIndex] = temp;
+            
+            updateRoute();
+        }
+
+        function saveRoute() {
+            if (routeDistance > 0) {
+                document.getElementById('trackGoalInput').value = routeDistance.toFixed(2);
+                document.getElementById('ascentGoalInput').value = Math.round(totalElevationGain); // Update ascent goal input
+                
+                // Store percentages for all waypoints (including start and finish)
+                // OSRM returns distances in meters, but we'll use straight-line for visual if needed, 
+                // but actually OSRM distances are better. 
+                // For simplicity, we'll use the ratio of cumulative road distance.
+                // However, fetching leg distances is complex. 
+                // Let's just store the relative index for now or assume linear distribution for visual.
+                // Actually, let's just use the current waypoints indices.
+                window.activeCheckpoints = routeMarkers.map((m, i) => i / (routeMarkers.length - 1));
+                
+                // Trigger change event to update simulation
+                document.getElementById('trackGoalInput').dispatchEvent(new Event('input'));
+                document.getElementById('ascentGoalInput').dispatchEvent(new Event('input')); // Trigger for ascent goal
+                
+                // NEW: Enable Route Elevation Sync
+                window.routeElevationProfile = routeProfile;
+                window.useRouteElevation = routeProfile.length > 0;
+
+                // Add a notification
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerText = `Route Saved: ${routeDistance.toFixed(2)} km`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+            // Optional: Hide map after saving, or keep it visible
+            // document.getElementById('map-section').style.display = 'none';
+        }
+
+
         // WRAP EVERYTHING IN ONLOAD
         window.onload = function() {
             const bikesData = @json($bicycles);
@@ -764,6 +1416,9 @@
             }
             if (debugCanvas) debugCanvas.innerText = "Ready";
 
+            // Initialize Map on Load
+            if (typeof initMap === 'function') initMap();
+
             const slopeInput = document.getElementById('slopeInput');
             const slopeValue = document.getElementById('slopeValue');
             const windInput = document.getElementById('windInput');
@@ -775,46 +1430,64 @@
             let currentWind = 0; 
             let frameCount = 0;
             let animationFrame;
-            let isPlaying = true;
+            let isPlaying = false; // NEW: Simulation starts paused
+            let timeScale = 1.0;
+            let elapsedSeconds = 0;
 
             const RHO = 1.225; 
             const CRR = 0.005; 
             const G = 9.81;    
             const CDA = 0.32;  
 
-            const clouds = Array.from({length: 6}, () => ({
-                x: Math.random() * 2000,
-                y: 50 + Math.random() * 80,
-                size: 30 + Math.random() * 50,
-                speed: 0.1 + Math.random() * 0.2
-            }));
+            function formatSimulationTime(seconds) {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = Math.floor(seconds % 60);
+                return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+            }
+
 
             const bikeState = bikesData.map(bike => {
                 const frontGears = Array.isArray(bike.front_gears) ? bike.front_gears : [50, 34];
                 const rearGears = Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28];
-                
-                return {
-                    ...bike,
-                    currentFrontGear: frontGears[0] || 50,
-                    currentRearGear: rearGears[0] || 11,
-                    power: 200,
-                    position: 0,
-                    speed: 0,
-                    distance: 0,
-                    cadence: 0,
-                    hr: 70,
-                    max_hr: bike.max_hr || 190,
-                    ftp: bike.ftp || 250,
-                    staminaW: 100,
-                    calories: 2000, 
-                    maxCalories: 2000,
-                    fatigue: 0,
-                    totalJoules: 0,
-                    lastRefuelDistance: 0,
-                    isBonking: false,
-                    isDrafting: false
-                };
-            });
+            return {
+                ...bike,
+                front_gears: Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34],
+                rear_gears: Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28],
+                speed: 0,
+                power: 150,
+                cadence: 80,
+                wheel_diameter: 2096,
+                wheel_circumference: 2.096,
+                currentFrontGear: 52,
+                currentRearGear: 15,
+                calories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
+                maxCalories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
+                staminaW: 100,
+                fatigue: 0,
+                totalJoules: 0,
+                totalKm: 0,
+                lastLogTime: 0,
+                lastMealTime: 0, // NEW: Track last time they ate
+                lockedCadence: null,
+                lockedPower: null,
+                hasConflict: false,
+                isFinished: false,
+                startLogged: false, // NEW: Prevent duplicate start logs
+                isEating: false,    // NEW: Meal break state
+                mealEndTime: 0,    // NEW: Timestamp when meal ends
+                elevationGain: parseFloat(bike.initial_elevation || 0),
+                distance: parseFloat(bike.initial_distance || 0) * 1000, 
+                currentSlope: 0, // NEW: Current terrain slope
+                logs: [],
+                history: [], // Metric snapshots for export
+                lastHistorySample: 0,
+                npAcc: 0, // NP accumulation
+                avgPowerAcc: 0,
+                sampleCount: 0,
+                hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 }
+            };
+        });
 
         function calculateSpeed(power, weight, efficiency, slopePercent, windKmh, draftFactor = 1.0) {
             const effectivePower = power * efficiency;
@@ -868,217 +1541,323 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const maxDist = (bikeState.length > 0) ? Math.max(...bikeState.map(b => b.distance), 0.001) : 0.001;
-            const slopeAngle = Math.atan(currentSlope / 100);
+            
+            // Helper for dynamic slope
+            const getRouteSlope = (distMeters) => {
+                if (!window.useRouteElevation || !window.routeElevationProfile.length) return currentSlope;
+                const profile = window.routeElevationProfile;
+                for (let i = 1; i < profile.length; i++) {
+                    if (distMeters <= profile[i].dist) return profile[i].slope;
+                }
+                return profile[profile.length - 1].slope;
+            };
+
+            // NEW: Helper for visual elevation offset
+            const getRouteRelElev = (distMeters) => {
+                if (!window.useRouteElevation || !window.routeElevationProfile.length) return 0;
+                const profile = window.routeElevationProfile;
+                for (let i = 1; i < profile.length; i++) {
+                    if (distMeters <= profile[i].dist) {
+                        // Linear interpolation for smooth visual movement
+                        const prev = profile[i-1];
+                        const curr = profile[i];
+                        const ratio = (distMeters - prev.dist) / (curr.dist - prev.dist);
+                        return prev.relElev + (curr.relElev - prev.relElev) * ratio;
+                    }
+                }
+                return profile[profile.length - 1].relElev;
+            };
             
             ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-slopeAngle * 0.4); 
-            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+            // Removed slope tilt for absolute track perspective
 
-            // Sky Elements
-            ctx.fillStyle = 'rgba(255,255,255,0.05)';
-            clouds.forEach(c => {
-                const drawX = (c.x - maxDist * 5 * c.speed) % (canvas.width + 400) - 200;
-                ctx.beginPath();
-                ctx.arc(drawX, c.y, c.size, 0, Math.PI * 2);
-                ctx.arc(drawX + 40, c.y, c.size*0.7, 0, Math.PI * 2);
-                ctx.fill();
-            });
 
             // Drafting Check
             // Sort bikes by distance to find who is ahead of whom
             const sortedBikes = [...bikeState].sort((a, b) => b.distance - a.distance);
-            
+            const trackGoalKm = parseFloat(document.getElementById('trackGoalInput').value) || 10;
+            const trackGoalMeters = trackGoalKm * 1000;
+            const canvasPadding = 50;
+            const trackWidth = canvas.width - (canvasPadding * 2);
+
+            // Draw Progress Guides
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.setLineDash([5, 10]);
+            [0.25, 0.5, 0.75].forEach(p => {
+                const x = canvasPadding + p * trackWidth;
+                ctx.beginPath();
+                ctx.moveTo(x, 40);
+                ctx.lineTo(x, canvas.height - 40);
+                ctx.stroke();
+            });
+
+            // Draw MAP CHECKPOINTS
+            if (window.activeCheckpoints && window.activeCheckpoints.length > 2) {
+                ctx.save();
+                ctx.strokeStyle = '#f43f5e'; // Rose color for checkpoints
+                ctx.lineWidth = 2;
+                window.activeCheckpoints.forEach((p, i) => {
+                    if (i === 0 || i === window.activeCheckpoints.length - 1) return; // Skip Start/End
+                    const x = canvasPadding + p * trackWidth;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 40);
+                    ctx.lineTo(x, canvas.height - 40);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.font = '8px "JetBrains Mono"';
+                    ctx.fillText('CP'+i, x - 10, 35);
+                });
+                ctx.restore();
+            }
+            ctx.restore();
+
+            if (isPlaying) {
+                elapsedSeconds += (1/60) * timeScale;
+            }
+
             bikeState.forEach((bike, index) => {
-                // Find someone directly ahead (within certain distance and same/nearby lanes)
-                // For simplified visual, we check anyone with distance > current + within 5m
+                // Terrain and Physics Info (Calculated every frame for smooth visuals)
+                const riderSlope = getRouteSlope(bike.distance);
+                const slopeAngleRider = Math.atan(riderSlope / 100);
+                const relElev = getRouteRelElev(bike.distance);
+                const elevYOffset = relElev * 0.2; 
+                const adjustedY = (180 + (index * 85)) - elevYOffset;
+                const laneY = 180 + (index * 85);
+
                 const ahead = sortedBikes.find(b => b.id !== bike.id && b.distance > bike.distance && b.distance - bike.distance < 5);
                 bike.isDrafting = !!ahead;
-                const draftFactor = bike.isDrafting ? 0.7 : 1.0; // 30% reduction in drag
-
-                const laneY = 180 + (index * 85);
-                
-                // Draw road
-                ctx.fillStyle = bike.isDrafting ? 'rgba(56, 189, 248, 0.15)' : 'rgba(30, 41, 59, 0.4)';
-                ctx.fillRect(-2000, laneY - 10, 5000, 40);
-                
-                // Road markings
-                ctx.strokeStyle = bike.isDrafting ? 'rgba(56, 189, 248, 0.3)' : 'rgba(255,255,255,0.08)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([25, 35]);
-                ctx.lineDashOffset = (maxDist * 30) % 60;
-                ctx.beginPath();
-                ctx.moveTo(-2000, laneY + 20);
-                ctx.lineTo(5000, laneY + 20);
-                ctx.stroke();
-                ctx.setLineDash([]);
+                const draftFactor = bike.isDrafting ? 0.7 : 1.0; 
 
                 // Bioenergetics Model
                 let effectiveRiderPower = bike.power;
-                
-                // Fatigue Impact: Power Ceiling
-                // Max power drops as fatigue increases. At 100% fatigue, max power is 60% of original.
                 const fatigueMultiplier = 1 - (bike.fatigue / 100) * 0.4;
                 effectiveRiderPower = Math.min(effectiveRiderPower, 1000 * fatigueMultiplier);
+                if (bike.isBonking) effectiveRiderPower *= 0.35; 
 
-                if (bike.isBonking) effectiveRiderPower *= 0.35; // 65% power drop when bonking
-
-                // Calculate Physics
                 let speed = 0;
-                if (isPlaying) {
-                    const totalWeight = bike.bicycle_weight + bike.rider_weight;
-                    speed = calculateSpeed(effectiveRiderPower, totalWeight, bike.efficiency, currentSlope, currentWind, draftFactor);
-                    bike.speed = speed;
-                    bike.distance += speed * (1/60); 
+                let hasConflict = false;
+                const delta = (1/60) * timeScale;
 
-                    // Calorie Expenditure: 1W = 1 J/s. 1 kcal = 4184 J. 
-                    // Considering Human Efficiency (~24%), kcal/s = Power / 4184 / 0.24
-                    const kcalPerSec = (bike.power / 4184 / 0.24);
-                    bike.calories = Math.max(0, bike.calories - kcalPerSec);
-
-                    // Stamina (W' model)
-                    // If power > FTP, stamina depletes. If power < FTP, it recharges.
-                    const ftp = bike.ftp;
-                    if (bike.power > ftp) {
-                        // Deplete stamina tank based on intensity over FTP
-                        const intensity = (bike.power - ftp) / 1000; 
-                        bike.staminaW = Math.max(0, bike.staminaW - intensity);
+                if (isPlaying && !bike.isFinished && !bike.isEating) {
+                    if (bike.lockedCadence && bike.lockedPower !== null) {
+                        bike.power = bike.lockedPower;
+                        const totalWeight = bike.bicycle_weight + bike.rider_weight;
+                        speed = calculateSpeed(effectiveRiderPower, totalWeight, bike.efficiency, riderSlope, currentWind, draftFactor);
+                        
+                        const ratio = bike.currentFrontGear / bike.currentRearGear;
+                        const circ = (bike.wheel_diameter * Math.PI) / 1000;
+                        const targetSpeed = (bike.lockedCadence * ratio * circ) / 60;
+                        const mass = totalWeight + 75;
+                        const F_g = mass * G * Math.sin(slopeAngleRider);
+                        const F_r = CRR * mass * G * Math.cos(slopeAngleRider);
+                        const relV = targetSpeed - (currentWind / 3.6);
+                        const F_d = 0.5 * RHO * CDA * draftFactor * relV * Math.abs(relV);
+                        const P_req = ((F_g + F_r + F_d) * targetSpeed) / bike.efficiency;
+                        if (Math.abs(P_req - bike.lockedPower) > 15) hasConflict = true;
+                    } else if (bike.lockedCadence) {
+                        const totalWeight = bike.bicycle_weight + bike.rider_weight;
+                        const ratio = bike.currentFrontGear / bike.currentRearGear;
+                        const circ = (bike.wheel_diameter * Math.PI) / 1000;
+                        speed = (bike.lockedCadence * ratio * circ) / 60;
+                        const P_mech = ( (totalWeight+75)*G*Math.sin(slopeAngleRider) + CRR*(totalWeight+75)*G*Math.cos(slopeAngleRider) + 0.5*RHO*CDA*draftFactor*Math.pow(speed - (currentWind/3.6), 2) ) * speed;
+                        bike.power = Math.max(0, Math.min(1000, P_mech / bike.efficiency));
                     } else {
-                        // Recharge stamina tank - FATIGUE slows down recovery by up to 50%
-                        const recoveryMultiplier = 1 - (bike.fatigue / 100) * 0.5;
-                        const recharge = ((ftp - bike.power) / 2000) * recoveryMultiplier;
-                        bike.staminaW = Math.min(100, bike.staminaW + recharge);
+                        const totalWeight = bike.bicycle_weight + bike.rider_weight;
+                        speed = calculateSpeed(effectiveRiderPower, totalWeight, bike.efficiency, riderSlope, currentWind, draftFactor);
                     }
 
-                    // FATIGUE ACCUMULATION LOGIC
-                    // 1. Work Accumulation (Joules = Watts * seconds)
-                    const frameJoules = bike.power * (1/60);
-                    bike.totalJoules += frameJoules;
-                    const workFatigue = (frameJoules / 100000) * 0.5; // Every 100kJ spent adds 0.5%
-                    
-                    // 2. Intensity Stress (Low Stamina/High HR)
-                    const intensityStress = (100 - bike.staminaW) > 50 ? 0.01 : 0;
-                    
-                    // 3. Neuro-muscular Penalty (Grinding: low cadence, high power)
-                    let grindingPenalty = 0;
-                    if (bike.cadence < 60 && bike.power > ftp) {
-                        grindingPenalty = ( (60 - bike.cadence) / 60 ) * (bike.power / ftp) * 0.02;
+                    bike.distance += speed * delta;
+                    if (riderSlope > 0) {
+                        bike.elevationGain += speed * delta * (riderSlope / 100);
                     }
-
-                    // 4. Environmental Stress (Steep Slope/Wind)
-                    const envStress = (Math.abs(currentSlope) > 8 ? 0.005 : 0) + (currentWind < -20 ? 0.005 : 0);
-
-                    bike.fatigue = Math.min(100, bike.fatigue + workFatigue + intensityStress + grindingPenalty + envStress);
                     
-                    if (bike.calories < 100 && !bike.isBonking) {
+                    // Stats Update
+                    const kcalPerSec = (bike.power / 4184 / 0.24);
+                    bike.calories = Math.max(0, bike.calories - kcalPerSec * delta);
+                    
+                    if (bike.calories < 100 && !bike.isBonking && !bike.isEating) {
                         bike.isBonking = true;
-                    } else if (bike.calories >= 200 && bike.isBonking) {
-                        bike.isBonking = false;
+                        const timeStr = formatSimulationTime(elapsedSeconds);
+                        bike.logs.unshift({ time: timeStr, msg: "⚠️ Low Fuel! (Bonking)" });
                     }
 
-                    // Auto-Refuel logic (based on global interval)
-                    const globalInterval = (globalRefuelDist ? parseFloat(globalRefuelDist.value) : 1) * 1000;
-                    const autoRefuelCheck = document.getElementById(`auto-refuel-${bike.id}`);
-                    if (autoRefuelCheck && autoRefuelCheck.checked) {
-                        if (bike.distance - bike.lastRefuelDistance >= globalInterval) {
+                    const ftp = bike.ftp;
+                    if (bike.power > ftp) bike.staminaW = Math.max(0, bike.staminaW - ((bike.power - ftp) / 1000) * delta);
+                    else bike.staminaW = Math.min(100, bike.staminaW + ((ftp - bike.power) / 2000) * delta * (1 - (bike.fatigue / 100) * 0.5));
+                    
+                    bike.fatigue = Math.min(100, bike.fatigue + (bike.power * delta / 100000) * 0.5 + (bike.staminaW < 50 ? 0.01 : 0) * timeScale);
+                    
+                    // Analytics Accumulation
+                    const hrBase = 70;
+                    const maxHr = bike.max_hr || 190;
+                    const targetHr = hrBase + (bike.power / (bike.ftp * 1.5)) * (maxHr - hrBase);
+                    if (!bike.hr) bike.hr = hrBase;
+                    bike.hr += (targetHr - bike.hr) * 0.2 * delta; // Smooth HR adjustment
+
+                    bike.avgPowerAcc += bike.power * delta;
+                    bike.npAcc += Math.pow(bike.power, 4) * delta;
+                    bike.sampleCount += delta;
+
+                    // HR Zone tracking
+                    if (bike.hr >= maxHr * 0.9) bike.hrZonesTime.Z5 += delta;
+                    else if (bike.hr >= maxHr * 0.8) bike.hrZonesTime.Z4 += delta;
+                    else if (bike.hr >= maxHr * 0.7) bike.hrZonesTime.Z3 += delta;
+                    else if (bike.hr >= maxHr * 0.6) bike.hrZonesTime.Z2 += delta;
+                    else bike.hrZonesTime.Z1 += delta;
+
+                    // History Sampling (Every 5 simulation seconds)
+                    if (elapsedSeconds - bike.lastHistorySample >= 5) {
+                        bike.history.push({
+                            t: Math.round(elapsedSeconds),
+                            p: Math.round(bike.power),
+                            hr: Math.round(bike.hr),
+                            d: (bike.distance / 1000).toFixed(2),
+                            s: (bike.speed * 3.6).toFixed(1)
+                        });
+                        bike.lastHistorySample = elapsedSeconds;
+                    }
+                    
+                    // Auto-Refuel Logic
+                    const autoRefuelCheckbox = document.getElementById(`auto-refuel-${bike.id}`);
+                    const refuelInterval = parseFloat(document.getElementById('globalRefuelDist').value) || 1.0;
+                    if (autoRefuelCheckbox && autoRefuelCheckbox.checked) {
+                        // Check if we passed a refuel distance threshold
+                        const lastKm = Math.floor((bike.distance - speed * delta) / (refuelInterval * 1000));
+                        const currentKm = Math.floor(bike.distance / (refuelInterval * 1000));
+                        if (currentKm > lastKm) {
                             refuelRider(bike.id);
-                            bike.lastRefuelDistance = bike.distance;
                         }
                     }
 
-                    // Heart Rate simulation
-                    // Base HR + intensity + strain + FATIGUE DRIFT
-                    const powerPerKg = bike.power / totalWeight;
-                    const fatiguingHr = (100 - bike.staminaW) * 0.15;
-                    const fatigueDrift = bike.fatigue * 0.2; // Fatigue adds up to 20 BPM drift
-                    const targetHr = 60 + (powerPerKg * 35) + fatiguingHr + fatigueDrift + (bike.isBonking ? 10 : 0);
-                    bike.hr += (targetHr - bike.hr) * 0.005;
-                    if (bike.hr > bike.max_hr) bike.hr = bike.max_hr;
-                } else {
-                    speed = 0;
-                    bike.speed = 0;
+                    // Meal Logic
+                    if (bike.calories <= 0 && !bike.isEating && !bike.isFinished) {
+                        bike.isEating = true;
+                        bike.mealEndTime = elapsedSeconds + ( (parseFloat(document.getElementById('mealInterval').value) || 10) * 60 );
+                        const timeStr = formatSimulationTime(elapsedSeconds);
+                        const distStr = (bike.distance / 1000).toFixed(2);
+                        bike.logs.unshift({ time: timeStr, msg: `🛑 Meal Break at ${distStr}km` });
+                        
+                        const mOverlay = document.getElementById(`meal-overlay-${bike.id}`);
+                        if (mOverlay) mOverlay.classList.add('active');
+                    }
                 }
-                
+
+                if (bike.isEating && elapsedSeconds >= bike.mealEndTime) {
+                    bike.isEating = false;
+                    bike.calories = 1000; // Refill to 1000 after a meal break
+                    const mOverlay = document.getElementById(`meal-overlay-${bike.id}`);
+                    if (mOverlay) mOverlay.classList.remove('active');
+                    
+                    const timeStr = formatSimulationTime(elapsedSeconds);
+                    bike.logs.unshift({ time: timeStr, msg: "🍖 Refuel Complete" });
+                }
+
+                bike.speed = speed;
+                bike.currentSlope = riderSlope;
                 const ratio = bike.currentFrontGear / bike.currentRearGear;
                 const circ = (bike.wheel_diameter * Math.PI) / 1000;
-                // Cadence (RPM)
-                bike.cadence = (bike.speed / (ratio * circ)) * 60;
+                bike.cadence = bike.lockedCadence || ((bike.speed * 60) / (ratio * circ));
 
-                const screenPos = 350 + (bike.distance - maxDist) * 80;
-
-                // UI Update
+                // UI Throttle
                 if (Math.floor(Date.now() / 100) % 2 === 0) {
+                    const gtElem = document.getElementById('globalTimer');
+                    if (gtElem) gtElem.innerText = formatSimulationTime(elapsedSeconds);
+
                     const sElem = document.getElementById(`speed-${bike.id}`);
+                    if(sElem) sElem.innerText = (bike.speed * 3.6).toFixed(1);
                     const cElem = document.getElementById(`cadence-${bike.id}`);
-                    const dmElem = document.getElementById(`dist-m-${bike.id}`);
-                    const dkmElem = document.getElementById(`dist-km-${bike.id}`);
-                    const hrElem = document.getElementById(`hr-${bike.id}`);
-                    const hrZoneElem = document.getElementById(`hr-zone-${bike.id}`);
-                    const fuelElem = document.getElementById(`stamina-bar-${bike.id}`);
-                    const stamTankElem = document.getElementById(`stamina-tank-${bike.id}`);
-                    const stamNumElem = document.getElementById(`stamina-num-${bike.id}`);
-                    const calElem = document.getElementById(`cal-num-${bike.id}`);
-                    const fatigueBarElem = document.getElementById(`fatigue-bar-${bike.id}`);
-                    const fatigueNumElem = document.getElementById(`fatigue-num-${bike.id}`);
-                    const bonkElem = document.getElementById(`bonk-overlay-${bike.id}`);
+                    if(cElem) cElem.innerText = Math.round(bike.cadence);
+                    const eElem = document.getElementById(`elev-${bike.id}`);
+                    if(eElem) eElem.innerText = Math.round(bike.elevationGain);
+                    const dElem = document.getElementById(`dist-km-${bike.id}`);
+                    if(dElem) dElem.innerText = (bike.distance / 1000).toFixed(2);
+                    const hElem = document.getElementById(`hr-${bike.id}`);
+                    if(hElem) hElem.innerText = Math.round(bike.hr);
                     
-                    if(sElem) sElem.innerText = (speed * 3.6).toFixed(1);
-                    if(cElem) {
-                        cElem.innerText = Math.round(bike.cadence);
-                        cElem.style.color = bike.cadence > 110 ? 'var(--danger)' : (bike.cadence < 60 ? '#f59e0b' : '#38bdf8');
-                        if (bike.cadence > 110) cElem.title = "Cadence too high! Shift up.";
-                        else if (bike.cadence < 60) cElem.title = "Cadence too low! Shift down.";
+                    const apElem = document.getElementById(`avgp-${bike.id}`);
+                    if(apElem) apElem.innerText = Math.round(bike.avgPowerAcc / bike.sampleCount) || 0;
+                    
+                    const npElem = document.getElementById(`np-${bike.id}`);
+                    const currentNp = Math.pow(bike.npAcc / bike.sampleCount, 0.25) || 0;
+                    if(npElem) npElem.innerText = Math.round(currentNp);
+                    
+                    const tssElem = document.getElementById(`tss-${bike.id}`);
+                    if(tssElem) {
+                        const ftp = bike.ftp || 250;
+                        const ifFactor = (currentNp / ftp);
+                        const tss = Math.round((elapsedSeconds * currentNp * ifFactor) / (ftp * 3600) * 100);
+                        tssElem.innerText = tss;
                     }
 
-                    if(hrElem) {
-                        hrElem.innerText = Math.round(bike.hr);
-                        const hrP = (bike.hr / bike.max_hr) * 100;
-                        let zone = "Z1";
-                        let zoneColor = "#94a3b8"; 
-                        if (hrP >= 90) { zone = "Z5"; zoneColor = "#ef4444"; }
-                        else if (hrP >= 80) { zone = "Z4"; zoneColor = "#f97316"; }
-                        else if (hrP >= 70) { zone = "Z3"; zoneColor = "#f59e0b"; }
-                        else if (hrP >= 60) { zone = "Z2"; zoneColor = "#22c55e"; }
+                    const hzElem = document.getElementById(`hr-zone-${bike.id}`);
+                    if(hzElem) {
+                        const maxHr = bike.max_hr || 190;
+                        if (bike.hr >= maxHr * 0.9) hzElem.innerText = 'Z5';
+                        else if (bike.hr >= maxHr * 0.8) hzElem.innerText = 'Z4';
+                        else if (bike.hr >= maxHr * 0.7) hzElem.innerText = 'Z3';
+                        else if (bike.hr >= maxHr * 0.6) hzElem.innerText = 'Z2';
+                        else hzElem.innerText = 'Z1';
+                    }
+                    
+                    const tGoal = parseFloat(document.getElementById('trackGoalInput').value) || 10;
+                    const progressRatio = (bike.distance / 1000) / tGoal;
+                    const totalProgress = Math.min(100, Math.floor(progressRatio * 100));
+                    const pFill = document.getElementById(`progress-fill-${bike.id}`);
+                    if (pFill) pFill.style.width = `${totalProgress}%`;
+                    
+                    if (progressRatio >= 1.0 && !bike.isFinished) {
+                        bike.isFinished = true;
+                        const timeStr = formatSimulationTime(elapsedSeconds);
+                        const distStr = (bike.distance / 1000).toFixed(2);
+                        bike.logs.unshift({ time: timeStr, msg: `🏁 Race Finished at ${distStr}km` });
+                        const alert = document.getElementById(`finish-badge-${bike.id}`);
+                        if(alert) alert.style.display = 'inline-block';
                         
-                        hrElem.style.color = zoneColor;
-                        if(hrZoneElem) {
-                            hrZoneElem.innerText = zone;
-                            hrZoneElem.style.color = zoneColor;
+                        // NEW: Show Summary
+                        if (typeof showSummary === 'function') {
+                            setTimeout(() => showSummary(bike.id), 2000);
                         }
                     }
 
-                    if(calElem) calElem.innerText = Math.round(bike.calories);
-                    
-                    if(bonkElem) {
-                        if(bike.isBonking) bonkElem.classList.add('active');
-                        else bonkElem.classList.remove('active');
+                    // Update Meal Timer if eating
+                    if (bike.isEating) {
+                        const mTimer = document.getElementById(`meal-timer-${bike.id}`);
+                        if (mTimer) {
+                            const remaining = Math.max(0, bike.mealEndTime - elapsedSeconds);
+                            const mins = Math.floor(remaining / 60);
+                            const secs = Math.floor(remaining % 60);
+                            mTimer.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        }
                     }
 
-                    if(fuelElem) {
-                        const perc = (bike.calories / bike.maxCalories) * 100;
-                        fuelElem.style.width = `${perc}%`;
-                        fuelElem.style.background = perc < 15 ? 'var(--danger)' : (perc < 40 ? '#f59e0b' : 'var(--success)');
+                    // Render Logs
+                    const logList = document.getElementById(`log-list-${bike.id}`);
+                    if (logList) {
+                        logList.innerHTML = bike.logs.map(log => `
+                            <div class="log-item">
+                                <span class="log-time">${log.time}</span>
+                                <span class="log-msg">${log.msg}</span>
+                            </div>
+                        `).join('');
                     }
-
-                    if(stamTankElem) {
-                        stamTankElem.style.width = `${bike.staminaW}%`;
-                        if(stamNumElem) stamNumElem.innerText = Math.round(bike.staminaW);
-                    }
-
-                    if(fatigueBarElem) {
-                        fatigueBarElem.style.width = `${bike.fatigue}%`;
-                        if(fatigueNumElem) fatigueNumElem.innerText = Math.round(bike.fatigue);
-                        // Add glow if fatigue high
-                        if (bike.fatigue > 80) fatigueBarElem.style.boxShadow = '0 0 10px var(--fatigue)';
-                        else fatigueBarElem.style.boxShadow = 'none';
-                    }
-                    
-                    if(dmElem) dmElem.innerText = Math.floor(bike.distance);
-                    if(dkmElem) dkmElem.innerText = (bike.distance / 1000).toFixed(2);
                 }
 
-                drawBike(screenPos, laneY, bike.color, bike.cadence, bike.name, bike.isDrafting);
+                // Visual Drawing
+                const screenX = canvasPadding + (Math.min(bike.distance, trackGoalMeters) / trackGoalMeters) * trackWidth;
+                drawBike(ctx, screenX, adjustedY, bike.color, bike.name, bike.isFinished, bike.isDrafting, riderSlope, bike.cadence);
             });
+
+            // Removed Global Totals update logic as these inputs are now configurable Targets
+
+            // Draw Static Infrastructure Labels
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = 'bold 12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('START', 50, 160);
+            ctx.fillText('GOAL', canvas.width - 50, 160);
+
             ctx.restore();
 
             try {
@@ -1094,17 +1873,24 @@
             }
         }
 
-        function drawBike(x, y, color, cadence, name, isDrafting) {
+        function drawBike(ctx, x, y, color, name, isFinished, isDrafting, slope = 0, cadence = 80) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // Tilt the bike based on slope
+            const tilt = -Math.atan(slope / 100);
+            ctx.rotate(tilt);
+
             const legAngle = (Date.now() / 1000) * (cadence / 60) * Math.PI * 2;
             const scale = 0.85;
-            
-            // Drafting visual (sparkle/slipstream trailing)
+
+            // Drafting visual (slipstream trailing)
             if (isDrafting) {
                 ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
                 ctx.lineWidth = 1;
                 for(let i=0; i<3; i++) {
-                    const trailX = x - 20 - Math.random() * 30;
-                    const trailY = y - 10 - Math.random() * 20;
+                    const trailX = -20 - (Math.random() * 30);
+                    const trailY = -10 - (Math.random() * 20);
                     ctx.beginPath();
                     ctx.moveTo(trailX, trailY);
                     ctx.lineTo(trailX - 10, trailY);
@@ -1116,44 +1902,51 @@
             ctx.strokeStyle = color;
             ctx.lineWidth = 3 * scale;
 
+            // Frame
             ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + 50*scale, y);
-            ctx.lineTo(x + 25*scale, y - 45*scale);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(50 * scale, 0);
+            ctx.lineTo(25 * scale, -45 * scale);
             ctx.closePath();
             ctx.stroke();
 
+            // Wheels
             ctx.beginPath();
-            ctx.arc(x, y, 18*scale, 0, Math.PI * 2);
+            ctx.arc(0, 0, 18 * scale, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(x + 50*scale, y, 18*scale, 0, Math.PI * 2);
+            ctx.arc(50 * scale, 0, 18 * scale, 0, Math.PI * 2);
             ctx.stroke();
 
+            // Head
             ctx.fillStyle = "#f8fafc";
             ctx.beginPath();
-            ctx.arc(x + 35*scale, y - 60*scale, 7*scale, 0, Math.PI * 2); 
+            ctx.arc(35 * scale, -60 * scale, 7 * scale, 0, Math.PI * 2);
             ctx.fill();
 
+            // Body
             ctx.strokeStyle = "#f8fafc";
             ctx.beginPath();
-            ctx.moveTo(x + 25*scale, y - 40*scale);
-            ctx.lineTo(x + 35*scale, y - 60*scale);
+            ctx.moveTo(25 * scale, -40 * scale);
+            ctx.lineTo(35 * scale, -60 * scale);
             ctx.stroke();
 
+            // Pedals/Legs
             ctx.strokeStyle = color;
             ctx.beginPath();
-            ctx.moveTo(x + 25*scale, y - 25*scale); 
-            const footX = x + 25*scale + Math.cos(legAngle) * 12*scale;
-            const footY = y - 25*scale + Math.sin(legAngle) * 12*scale;
+            ctx.moveTo(25 * scale, -25 * scale);
+            const footX = (25 * scale) + Math.cos(legAngle) * 12 * scale;
+            const footY = (-25 * scale) + Math.sin(legAngle) * 12 * scale;
             ctx.lineTo(footX, footY);
             ctx.stroke();
 
+            // Name
             ctx.fillStyle = "rgba(255,255,255,0.7)";
             ctx.font = "bold 11px Inter";
             ctx.textAlign = "center";
-            const displayName = (name || "Rider").toString();
-            ctx.fillText(displayName.substring(0, 15), x + 25*scale, y + 45*scale);
+            ctx.fillText(name.substring(0, 15), 25 * scale, 45 * scale);
+
+            ctx.restore();
         }
 
         document.addEventListener('input', (e) => {
@@ -1198,8 +1991,52 @@
         function resetSimulation() {
             bikeState.forEach(b => {
                 b.distance = 0;
+                b.elevationGain = 0;
+                b.isFinished = false;
+                
+                // Force UI update
+                const dkm = document.getElementById(`dist-km-${b.id}`);
+                const elv = document.getElementById(`elev-${b.id}`);
+                const pFill = document.getElementById(`progress-fill-${b.id}`);
+                const pText = document.getElementById(`progress-text-${b.id}`);
+                const card = document.getElementById(`bike-card-${b.id}`);
+                const fBadge = document.getElementById(`finish-badge-${b.id}`);
+
+                if (dkm) dkm.innerText = "0.00";
+                if (elv) elv.innerText = "0";
+                if (pFill) pFill.style.width = "0%";
+                if (pText) pText.innerText = "0% Complete";
+                if (card) card.classList.remove('finished');
+                if (fBadge) fBadge.style.display = 'none';
+                
+                b.startLogged = false; // Reset log state
+                const list = document.getElementById(`log-list-${b.id}`);
+                if (list) list.innerHTML = ''; // Clear logs on reset
+                b.logs = [];
             });
+            elapsedSeconds = 0;
+            const timerElem = document.getElementById('globalTimer');
+            if (timerElem) timerElem.innerText = "00:00:00";
+            
+            const gDist = document.getElementById('globalDistInput');
+            const gElev = document.getElementById('globalElevInput');
+            if (gDist) gDist.value = "0.00";
+            if (gElev) gElev.value = "0";
         }
+
+        window.applyGlobalDist = (val) => {
+            const meters = parseFloat(val) * 1000;
+            if (!isNaN(meters)) {
+                bikeState.forEach(b => b.distance = meters);
+            }
+        };
+
+        window.applyGlobalElev = (val) => {
+            const meters = parseFloat(val);
+            if (!isNaN(meters)) {
+                bikeState.forEach(b => b.elevationGain = meters);
+            }
+        };
 
         window.openEditModal = (bike) => {
             const modal = document.getElementById('editModal');
@@ -1213,8 +2050,15 @@
             document.getElementById('edit-max_hr').value = bike.max_hr || 190;
             document.getElementById('edit-ftp').value = bike.ftp || 250;
             document.getElementById('edit-efficiency').value = bike.efficiency;
-            document.getElementById('edit-front_gears').value = bike.front_gears.join(',');
-            document.getElementById('edit-rear_gears').value = bike.rear_gears.join(',');
+            
+            const fg = Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34];
+            const rg = Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28];
+            document.getElementById('edit-front_gears').value = fg.join(',');
+            document.getElementById('edit-rear_gears').value = rg.join(',');
+            
+            document.getElementById('edit-dist').value = (bike.distance / 1000).toFixed(2);
+            document.getElementById('edit-elev').value = Math.round(bike.elevationGain);
+            document.getElementById('edit-fuel').value = bike.maxCalories || 2500;
             
             modal.style.display = "block";
         };
@@ -1233,31 +2077,224 @@
         // Playback Events
         const playBtn = document.getElementById('playBtn');
         const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
         const resetPlayBtn = document.getElementById('resetPlayBtn');
 
+        // Initial Button State Sync
+        playBtn.classList.remove('active');
+        pauseBtn.classList.add('active');
+
         playBtn.onclick = () => {
+            if (!isPlaying && elapsedSeconds === 0) {
+                 // First start logic
+                 bikeState.forEach(b => {
+                     if (!b.startLogged) {
+                         const timeStr = formatSimulationTime(0);
+                         b.logs.unshift({ time: timeStr, msg: "🚀 Race Started!" });
+                         b.startLogged = true;
+                         const list = document.getElementById(`log-list-${b.id}`);
+                         if(list) {
+                             const item = document.createElement('div');
+                             item.className = 'log-item';
+                             item.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-val" style="color:var(--accent); font-weight:bold;">🚀 Race Started!</span>`;
+                             list.prepend(item);
+                         }
+                     }
+                 });
+            }
             isPlaying = true;
             playBtn.classList.add('active');
             pauseBtn.classList.remove('active');
+            if (stopBtn) stopBtn.classList.remove('active');
         };
 
         pauseBtn.onclick = () => {
             isPlaying = false;
             pauseBtn.classList.add('active');
             playBtn.classList.remove('active');
+            if (stopBtn) stopBtn.classList.remove('active');
         };
 
-        resetPlayBtn.onclick = () => {
-            isPlaying = false;
-            bikeState.forEach(b => {
-                b.distance = 0;
-                b.calories = b.maxCalories;
-                b.hr = 70;
-                b.isBonking = false;
-            });
-            playBtn.classList.remove('active');
-            pauseBtn.classList.add('active');
+        if (stopBtn) {
+            stopBtn.onclick = () => {
+                isPlaying = false;
+                timeScale = 1.0;
+                // Reset speed UI
+                speedBtns.forEach(b => b.classList.remove('active'));
+                const s1 = document.querySelector('.speed-btn[data-speed="1"]');
+                if (s1) s1.classList.add('active');
+                
+                stopBtn.classList.add('active');
+                playBtn.classList.remove('active');
+                pauseBtn.classList.remove('active');
+            };
+        }
+
+        const speedBtns = document.querySelectorAll('.speed-btn');
+        speedBtns.forEach(btn => {
+            btn.onclick = () => {
+                timeScale = parseFloat(btn.getAttribute('data-speed'));
+                speedBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Visual feedback
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerText = `Simulation speed: ${timeScale}x`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            };
+        });
+
+        // Phase 6: Interactive Mechanics
+        window.openCadenceModal = (bikeId) => {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike) return;
+            
+            const modal = document.getElementById('cadenceModal');
+            document.getElementById('cadence-bike-id').value = bikeId;
+            document.getElementById('target-cadence-input').value = bike.lockedCadence || 90;
+            modal.style.display = "block";
         };
+
+        window.closeCadenceModal = () => {
+            document.getElementById('cadenceModal').style.display = "none";
+        };
+
+        window.saveCadenceLock = () => {
+            const bikeId = document.getElementById('cadence-bike-id').value;
+            const rpm = parseInt(document.getElementById('target-cadence-input').value);
+            const bike = bikeState.find(b => b.id == bikeId);
+            
+            if (bike && !isNaN(rpm) && rpm > 0) {
+                // Save current power before locking if we haven't already
+                if (bike.lockedCadence === null) {
+                    bike.preLockPower = bike.power;
+                }
+                
+                bike.lockedCadence = rpm;
+                const indicator = document.getElementById(`cadence-lock-${bikeId}`);
+                if (indicator) indicator.style.display = "inline-block";
+                window.closeCadenceModal();
+                
+                // Visual feedback
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerText = `ERGO MODE: Cadence locked at ${rpm} RPM for ${bike.name}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            }
+        };
+
+        window.openPowerModal = (bikeId) => {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike) return;
+            
+            const modal = document.getElementById('powerModal');
+            document.getElementById('power-bike-id').value = bikeId;
+            document.getElementById('target-power-input').value = Math.round(bike.lockedPower || bike.power);
+            modal.style.display = "block";
+        };
+
+        window.closePowerModal = () => {
+            document.getElementById('powerModal').style.display = "none";
+        };
+
+        window.savePowerLock = () => {
+            const bikeId = document.getElementById('power-bike-id').value;
+            const watts = parseInt(document.getElementById('target-power-input').value);
+            const bike = bikeState.find(b => b.id == bikeId);
+            
+            if (bike && !isNaN(watts) && watts >= 0) {
+                bike.lockedPower = watts;
+                bike.power = watts;
+                
+                const indicator = document.getElementById(`power-lock-${bikeId}`);
+                if (indicator) indicator.style.display = "inline-block";
+                
+                // Update UI elements
+                const pInput = document.querySelector(`.bike-power-input[data-bike-id="${bikeId}"]`);
+                if (pInput) pInput.value = watts;
+                const pDisplay = document.getElementById(`power-display-${bikeId}`);
+                if (pDisplay) pDisplay.innerText = watts;
+                
+                window.closePowerModal();
+                
+                // Visual feedback
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerText = `Power locked at ${watts}W for ${bike.name}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            }
+        };
+
+        window.releasePowerLock = () => {
+            const bikeId = document.getElementById('power-bike-id').value;
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (bike) {
+                bike.lockedPower = null;
+                const indicator = document.getElementById(`power-lock-${bikeId}`);
+                if (indicator) indicator.style.display = "none";
+                window.closePowerModal();
+            }
+        };
+
+        window.releaseCadenceLock = () => {
+            const bikeId = document.getElementById('cadence-bike-id').value;
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (bike) {
+                if (bike.preLockPower !== undefined) {
+                    bike.power = bike.preLockPower;
+                    const pInput = document.querySelector(`.bike-power-input[data-bike-id="${bikeId}"]`);
+                    if (pInput) pInput.value = bike.power;
+                    const pDisplay = document.getElementById(`power-display-${bikeId}`);
+                    if (pDisplay) pDisplay.innerText = Math.round(bike.power);
+                }
+                bike.lockedCadence = null;
+                const indicator = document.getElementById(`cadence-lock-${bikeId}`);
+                if (indicator) indicator.style.display = "none";
+                window.closeCadenceModal();
+            }
+        };
+
+            resetPlayBtn.onclick = () => {
+                isPlaying = false;
+                elapsedSeconds = 0; // NEW: Reset the clock
+                const timerElem = document.getElementById('globalTimer');
+                if (timerElem) timerElem.innerText = "00:00:00"; // Force UI update
+                
+                bikeState.forEach(b => {
+                    b.distance = 0;
+                    b.calories = b.maxCalories;
+                    b.hr = 70;
+                    b.npAcc = 0;
+                    b.avgPowerAcc = 0;
+                    b.sampleCount = 0;
+                    b.history = [];
+                    b.hrZonesTime = { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 };
+
+                    b.isBonking = false;
+                    b.isFinished = false;
+                    b.startLogged = false;
+                    b.logs = [];
+                    const list = document.getElementById(`log-list-${b.id}`);
+                    if (list) list.innerHTML = '';
+                    
+                    // Reset UI
+                    const pFill = document.getElementById(`progress-fill-${b.id}`);
+                    if (pFill) pFill.style.width = "0%";
+                    
+                    const apElem = document.getElementById(`avgp-${b.id}`);
+                    if(apElem) apElem.innerText = "0";
+                    const npElem = document.getElementById(`np-${b.id}`);
+                    if(npElem) npElem.innerText = "0";
+                    const tssElem = document.getElementById(`tss-${b.id}`);
+                    if(tssElem) tssElem.innerText = "0";
+                });
+                playBtn.classList.remove('active');
+                pauseBtn.classList.add('active');
+            };
 
         window.refuelRider = (bikeId) => {
             const bike = bikeState.find(b => b.id == bikeId);
@@ -1265,7 +2302,17 @@
                 bike.calories = Math.min(bike.maxCalories, bike.calories + 500);
                 if (bike.calories > 200) bike.isBonking = false;
                 
-                // Visual feedback (toast)
+                // Logging
+                const timeStr = formatSimulationTime(elapsedSeconds);
+                const distStr = (bike.distance / 1000).toFixed(2);
+                const logEntry = {
+                    time: timeStr,
+                    msg: `⚡ Refuel (+500 kcal) at ${distStr}km`
+                };
+                bike.logs.unshift(logEntry);
+                if (bike.logs.length > 20) bike.logs.pop();
+                
+                // UI feedback (toast)
                 const toast = document.createElement('div');
                 toast.className = 'toast';
                 toast.innerText = `+500 kcal for ${bike.name}!`;
@@ -1274,9 +2321,129 @@
             }
         };
 
+        window.showSummary = (bikeId) => {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike) return;
+
+            document.getElementById('summary-rider-name').innerText = bike.name;
+            document.getElementById('summary-rider-name').style.color = bike.color;
+            document.getElementById('sum-time').innerText = formatSimulationTime(elapsedSeconds);
+            document.getElementById('sum-dist').innerText = (bike.distance / 1000).toFixed(2);
+            
+            const avgSpd = ( (bike.distance / 1000) / (elapsedSeconds / 3600) ) || 0;
+            document.getElementById('sum-avg-speed').innerText = avgSpd.toFixed(1);
+
+            const avgPower = Math.round(bike.avgPowerAcc / bike.sampleCount) || 0;
+            const np = Math.round(Math.pow(bike.npAcc / bike.sampleCount, 0.25)) || 0;
+            const ftp = bike.ftp || 250;
+            const ifFactor = (np / ftp);
+            const tss = Math.round((elapsedSeconds * np * ifFactor) / (ftp * 3600) * 100);
+
+            document.getElementById('sum-avg-power').innerText = avgPower;
+            document.getElementById('sum-np').innerText = np;
+            document.getElementById('sum-tss').innerText = tss;
+            document.getElementById('sum-if').innerText = ifFactor.toFixed(2);
+
+            const hzContainer = document.getElementById('sum-hr-zones');
+            hzContainer.innerHTML = '';
+            const zones = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'];
+            const colors = ['#94a3b8', '#10b981', '#f59e0b', '#ef4444', '#7f1d1d'];
+            const totalHrTime = Object.values(bike.hrZonesTime).reduce((a,b) => a+b, 0) || 1;
+            
+            zones.forEach((z, i) => {
+                const time = bike.hrZonesTime[z];
+                const pct = Math.round((time / totalHrTime) * 100);
+                const row = document.createElement('div');
+                row.style = "display: flex; align-items: center; gap: 10px; font-size: 0.75rem;";
+                row.innerHTML = `
+                    <span style="width: 25px; font-weight: bold;">${z}</span>
+                    <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden;">
+                        <div style="width: ${pct}%; height: 100%; background: ${colors[i]};"></div>
+                    </div>
+                    <span style="width: 70px; text-align: right; opacity: 0.7;">${formatSimulationTime(time)}</span>
+                `;
+                hzContainer.appendChild(row);
+            });
+
+            document.getElementById('download-csv-btn').onclick = () => downloadCSV(bike.id);
+            document.getElementById('summaryModal').style.display = 'block';
+        };
+
+        window.closeSummaryModal = () => {
+            document.getElementById('summaryModal').style.display = 'none';
+        };
+
+        window.downloadCSV = (bikeId) => {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike || !bike.history.length) return;
+
+            let csv = "Time (s),Power (W),HR (BPM),Distance (km),Speed (km/h)\n";
+            bike.history.forEach(h => {
+                csv += `${h.t},${h.p},${h.hr},${h.d},${h.s}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `race_data_${bike.name.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
             updateSimulation();
         }; // End window.onload
     </script>
+    <!-- Cadence Modal -->
+    <div id="cadenceModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; border-top: 4px solid var(--primary);">
+            <div class="modal-header">
+                <h2>Set Cadence Lock</h2>
+                <span class="close" onclick="window.closeCadenceModal()">&times;</span>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 1.5rem; line-height: 1.4;">
+                    Locking cadence overrides rider power. The bike will move at exactly the speed required to maintain this RPM in the current gear.
+                </p>
+                <input type="hidden" id="cadence-bike-id">
+                <div class="control-group">
+                    <label style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;">Target RPM</label>
+                    <input type="number" id="target-cadence-input" class="form-control" placeholder="e.g. 90" min="0" max="250" style="font-size: 1.2rem; font-family: 'JetBrains Mono'; text-align: center; letter-spacing: 0.1em;">
+                </div>
+            </div>
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-outline" style="border-color: #ef4444; color: #ef4444;" onclick="window.releaseCadenceLock()">Release Lock</button>
+                <button type="button" class="btn" style="background: var(--primary); box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);" onclick="window.saveCadenceLock()">Set Lock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Power Modal -->
+    <div id="powerModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; border-top: 4px solid var(--accent);">
+            <div class="modal-header">
+                <h2>Set Power Lock</h2>
+                <span class="close" onclick="window.closePowerModal()">&times;</span>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 1.5rem; line-height: 1.4;">
+                    Locking power will ignore the slider input. This ensures the rider maintains a constant effort regardless of UI interactions.
+                </p>
+                <input type="hidden" id="power-bike-id">
+                <div class="control-group">
+                    <label style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;">Target Watts</label>
+                    <input type="number" id="target-power-input" class="form-control" placeholder="e.g. 250" min="0" max="1500" style="font-size: 1.2rem; font-family: 'JetBrains Mono'; text-align: center; letter-spacing: 0.1em;">
+                </div>
+            </div>
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-outline" style="border-color: #ef4444; color: #ef4444;" onclick="window.releasePowerLock()">Release Lock</button>
+                <button type="button" class="btn" style="background: var(--accent); box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);" onclick="window.savePowerLock()">Set Lock</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -1331,12 +2498,87 @@
                         <span class="tooltip-text">Cassette cog sizes, comma separated</span>
                     </div>
                 </div>
-                <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="control-group">
+                        <label>Current Distance (km)</label>
+                        <input type="number" name="initial_distance" id="edit-dist" step="0.1" class="form-control">
+                    </div>
+                    <div class="control-group">
+                        <label>Current Elevation (m)</label>
+                        <input type="number" name="initial_elevation" id="edit-elev" step="1" class="form-control">
+                    </div>
+                    <div class="control-group">
+                        <label>Initial Fuel (kcal)</label>
+                        <input type="number" name="initial_fuel" id="edit-fuel" step="1" class="form-control">
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn">Update Rider</button>
                     <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
+    <!-- Map Modal Removed - Integrated Inline -->
+    
+    <!-- Session Summary Modal -->
+    <div id="summaryModal" class="modal" style="z-index: 200;">
+        <div class="modal-content" style="max-width: 800px; border-top: 6px solid var(--success); background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        🏁 <span id="summary-rider-name">Rider Name</span> - Race Summary
+                    </h2>
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Session completed successfully</p>
+                </div>
+                <span class="close" onclick="closeSummaryModal()">&times;</span>
+            </div>
+            
+            <div class="summary-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+                <div class="summary-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Total Time</div>
+                    <div id="sum-time" style="font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono'; color: white;">00:00:00</div>
+                </div>
+                <div class="summary-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Avg Speed</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono'; color: white;"><span id="sum-avg-speed">0.0</span> <small style="font-size: 0.5em; opacity: 0.5;">km/h</small></div>
+                </div>
+                <div class="summary-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Total Distance</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono'; color: white;"><span id="sum-dist">0.00</span> <small style="font-size: 0.5em; opacity: 0.5;">km</small></div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 8px;">⚡ Performance Analytics</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div><div style="font-size: 0.7rem; opacity: 0.5;">Avg Power</div><div style="font-size: 1.2rem; font-weight: 700;"><span id="sum-avg-power">0</span>W</div></div>
+                        <div><div style="font-size: 0.7rem; opacity: 0.5;">NP (Norm Power)</div><div style="font-size: 1.2rem; font-weight: 700; color: var(--success);"><span id="sum-np">0</span>W</div></div>
+                        <div><div style="font-size: 0.7rem; opacity: 0.5;">TSS (Stress Score)</div><div style="font-size: 1.2rem; font-weight: 700; color: #f59e0b;"><span id="sum-tss">0</span> pts</div></div>
+                        <div><div style="font-size: 0.7rem; opacity: 0.5;">Intensity Factor</div><div style="font-size: 1.2rem; font-weight: 700;"><span id="sum-if">0.00</span></div></div>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--fatigue); display: flex; align-items: center; gap: 8px;">❤️ Heart Rate Zones</h3>
+                    <div id="sum-hr-zones" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="download-csv-btn" class="btn btn-outline" style="border-color: var(--accent); color: var(--accent); display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    Download CSV
+                </button>
+                <button class="btn" style="background: var(--success);" onclick="closeSummaryModal()">Close Summary</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

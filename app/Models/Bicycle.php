@@ -20,6 +20,9 @@ class Bicycle extends Model
         'rear_gears',
         'wheel_diameter',
         'efficiency',
+        'initial_distance',
+        'initial_elevation',
+        'initial_fuel',
     ];
 
     protected $casts = [

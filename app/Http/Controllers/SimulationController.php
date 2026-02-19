@@ -25,6 +25,9 @@ class SimulationController extends Controller
             'efficiency' => 'required|numeric|min:0.5|max:1',
             'front_gears' => 'required|string',
             'rear_gears' => 'required|string',
+            'initial_distance' => 'nullable|numeric|min:0',
+            'initial_elevation' => 'nullable|integer|min:0',
+            'initial_fuel' => 'nullable|integer|min:0',
         ]);
 
         // Convert comma-separated string to array and then to JSON
@@ -34,6 +37,9 @@ class SimulationController extends Controller
         $validated['efficiency'] = $request->efficiency;
         $validated['bicycle_weight'] = $request->bicycle_weight;
         $validated['rider_weight'] = $request->rider_weight;
+        $validated['initial_distance'] = $request->initial_distance ?? 0;
+        $validated['initial_elevation'] = $request->initial_elevation ?? 0;
+        $validated['initial_fuel'] = $request->initial_fuel ?? 2500;
 
         Bicycle::create($validated);
 
@@ -52,6 +58,9 @@ class SimulationController extends Controller
             'efficiency' => 'required|numeric|min:0.5|max:1',
             'front_gears' => 'required|string',
             'rear_gears' => 'required|string',
+            'initial_distance' => 'nullable|numeric|min:0',
+            'initial_elevation' => 'nullable|integer|min:0',
+            'initial_fuel' => 'nullable|integer|min:0',
         ]);
 
         $validated['front_gears'] = array_map('intval', explode(',', $request->front_gears));
@@ -59,6 +68,9 @@ class SimulationController extends Controller
         $validated['efficiency'] = $request->efficiency;
         $validated['bicycle_weight'] = $request->bicycle_weight;
         $validated['rider_weight'] = $request->rider_weight;
+        $validated['initial_distance'] = $request->initial_distance ?? 0;
+        $validated['initial_elevation'] = $request->initial_elevation ?? 0;
+        $validated['initial_fuel'] = $request->initial_fuel ?? 2500;
 
         $bicycle->update($validated);
 
