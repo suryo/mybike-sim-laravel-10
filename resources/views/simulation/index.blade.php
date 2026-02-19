@@ -1596,7 +1596,7 @@
             if (window.activeCheckpoints && window.activeCheckpoints.length > 2) {
                 ctx.save();
                 ctx.strokeStyle = '#f43f5e'; // Rose color for checkpoints
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 window.activeCheckpoints.forEach((p, i) => {
                     if (i === 0 || i === window.activeCheckpoints.length - 1) return; // Skip Start/End
                     const x = canvasPadding + p * trackWidth;
@@ -1609,6 +1609,51 @@
                     ctx.font = '8px "JetBrains Mono"';
                     ctx.fillText('CP'+i, x - 10, 35);
                 });
+                ctx.restore();
+            }
+
+            // Draw TERRAIN PROFILE (Background)
+            if (window.routeElevationProfile && window.routeElevationProfile.length > 0) {
+                const profile = window.routeElevationProfile;
+                const scaleY = 0.2; 
+                ctx.save();
+                
+                // Draw 3 subtle terrain lines for depth (one for each potential lane area)
+                [0, 85, 170].forEach((laneOffset, idx) => {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(56, 189, 248, ${0.1 - (idx * 0.02)})`; 
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([2, 4]);
+
+                    profile.forEach((pt, i) => {
+                        const x = canvasPadding + (Math.min(pt.dist, trackGoalMeters) / trackGoalMeters) * trackWidth;
+                        const y = (180 + laneOffset) - (pt.relElev * scaleY);
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+                    ctx.stroke();
+                });
+
+                // Main thick profile at the bottom for global reference
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.lineWidth = 3;
+                profile.forEach((pt, i) => {
+                    const x = canvasPadding + (Math.min(pt.dist, trackGoalMeters) / trackGoalMeters) * trackWidth;
+                    const y = (canvas.height - 40) - (pt.relElev * scaleY * 0.5); // Scaled down decorative version
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                
+                // Fill ground
+                ctx.lineTo(canvasPadding + trackWidth, canvas.height);
+                ctx.lineTo(canvasPadding, canvas.height);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
+                ctx.fill();
+
                 ctx.restore();
             }
             ctx.restore();
@@ -1809,15 +1854,26 @@
                     
                     if (progressRatio >= 1.0 && !bike.isFinished) {
                         bike.isFinished = true;
+                        bike.finishTime = elapsedSeconds; // Store individual finish time
                         const timeStr = formatSimulationTime(elapsedSeconds);
                         const distStr = (bike.distance / 1000).toFixed(2);
                         bike.logs.unshift({ time: timeStr, msg: `🏁 Race Finished at ${distStr}km` });
                         const alert = document.getElementById(`finish-badge-${bike.id}`);
                         if(alert) alert.style.display = 'inline-block';
                         
-                        // NEW: Show Summary
-                        if (typeof showSummary === 'function') {
-                            setTimeout(() => showSummary(bike.id), 2000);
+                        // Check if all riders are finished
+                        const allFinished = bikeState.every(b => b.isFinished);
+                        if (allFinished) {
+                            isPlaying = false;
+                            const playBtn = document.getElementById('playBtn');
+                            const pauseBtn = document.getElementById('pauseBtn');
+                            if (playBtn) playBtn.classList.remove('active');
+                            if (pauseBtn) pauseBtn.classList.add('active');
+                            
+                            // NEW: Show Global Summary
+                            if (typeof showGlobalSummary === 'function') {
+                                setTimeout(() => showGlobalSummary(), 2000);
+                            }
                         }
                     }
 
@@ -2276,6 +2332,7 @@
 
                     b.isBonking = false;
                     b.isFinished = false;
+                    b.finishTime = null; // Reset finish time
                     b.startLogged = false;
                     b.logs = [];
                     const list = document.getElementById(`log-list-${b.id}`);
@@ -2322,51 +2379,44 @@
         };
 
         window.showSummary = (bikeId) => {
-            const bike = bikeState.find(b => b.id == bikeId);
-            if (!bike) return;
+            // This is now called per-finish but we wait for all to stop simulation
+            // We can show a toast or something, but the global summary replaces the final modal
+        };
 
-            document.getElementById('summary-rider-name').innerText = bike.name;
-            document.getElementById('summary-rider-name').style.color = bike.color;
-            document.getElementById('sum-time').innerText = formatSimulationTime(elapsedSeconds);
-            document.getElementById('sum-dist').innerText = (bike.distance / 1000).toFixed(2);
-            
-            const avgSpd = ( (bike.distance / 1000) / (elapsedSeconds / 3600) ) || 0;
-            document.getElementById('sum-avg-speed').innerText = avgSpd.toFixed(1);
+        window.showGlobalSummary = () => {
+            const modal = document.getElementById('summaryModal');
+            if (!modal) return;
 
-            const avgPower = Math.round(bike.avgPowerAcc / bike.sampleCount) || 0;
-            const np = Math.round(Math.pow(bike.npAcc / bike.sampleCount, 0.25)) || 0;
-            const ftp = bike.ftp || 250;
-            const ifFactor = (np / ftp);
-            const tss = Math.round((elapsedSeconds * np * ifFactor) / (ftp * 3600) * 100);
+            const tableBody = document.getElementById('global-summary-body');
+            if (tableBody) {
+                tableBody.innerHTML = bikeState.map(bike => {
+                    const raceTime = bike.finishTime || elapsedSeconds;
+                    const avgSpd = ( (bike.distance / 1000) / (raceTime / 3600) ) || 0;
+                    const currentNp = Math.pow(bike.npAcc / bike.sampleCount, 0.25) || 0;
+                    const ftp = bike.ftp || 250;
+                    const ifFactor = (currentNp / ftp);
+                    const tss = Math.round((raceTime * currentNp * ifFactor) / (ftp * 3600) * 100);
 
-            document.getElementById('sum-avg-power').innerText = avgPower;
-            document.getElementById('sum-np').innerText = np;
-            document.getElementById('sum-tss').innerText = tss;
-            document.getElementById('sum-if').innerText = ifFactor.toFixed(2);
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                            <td style="padding: 12px 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${bike.color};"></div>
+                                    <span style="font-weight: 600; color: white;">${bike.name}</span>
+                                </div>
+                            </td>
+                            <td style="padding: 12px 8px; font-family: 'JetBrains Mono'; color: rgba(255,255,255,0.8);">${formatSimulationTime(raceTime)}</td>
+                            <td style="padding: 12px 8px; color: rgba(255,255,255,0.8);">${(bike.distance / 1000).toFixed(2)} km</td>
+                            <td style="padding: 12px 8px; font-weight: bold;">${avgSpd.toFixed(1)} <small style="opacity:0.5; font-weight:normal;">km/h</small></td>
+                            <td style="padding: 12px 8px; color: rgba(255,255,255,0.8);">${Math.round(bike.avgPowerAcc / bike.sampleCount) || 0}W</td>
+                            <td style="padding: 12px 8px; color: var(--success); font-weight: 700;">${Math.round(currentNp)}W</td>
+                            <td style="padding: 12px 8px; color: #f59e0b; font-weight: 700;">${tss}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
 
-            const hzContainer = document.getElementById('sum-hr-zones');
-            hzContainer.innerHTML = '';
-            const zones = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5'];
-            const colors = ['#94a3b8', '#10b981', '#f59e0b', '#ef4444', '#7f1d1d'];
-            const totalHrTime = Object.values(bike.hrZonesTime).reduce((a,b) => a+b, 0) || 1;
-            
-            zones.forEach((z, i) => {
-                const time = bike.hrZonesTime[z];
-                const pct = Math.round((time / totalHrTime) * 100);
-                const row = document.createElement('div');
-                row.style = "display: flex; align-items: center; gap: 10px; font-size: 0.75rem;";
-                row.innerHTML = `
-                    <span style="width: 25px; font-weight: bold;">${z}</span>
-                    <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden;">
-                        <div style="width: ${pct}%; height: 100%; background: ${colors[i]};"></div>
-                    </div>
-                    <span style="width: 70px; text-align: right; opacity: 0.7;">${formatSimulationTime(time)}</span>
-                `;
-                hzContainer.appendChild(row);
-            });
-
-            document.getElementById('download-csv-btn').onclick = () => downloadCSV(bike.id);
-            document.getElementById('summaryModal').style.display = 'block';
+            modal.style.display = "block";
         };
 
         window.closeSummaryModal = () => {
@@ -2528,50 +2578,34 @@
             <div class="modal-header">
                 <div>
                     <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                        🏁 <span id="summary-rider-name">Rider Name</span> - Race Summary
+                        🏁 Race Results - Global Summary
                     </h2>
-                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Session completed successfully</p>
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">All riders have completed the course</p>
                 </div>
                 <span class="close" onclick="closeSummaryModal()">&times;</span>
             </div>
             
-            <div class="summary-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-                <div class="summary-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Total Time</div>
-                    <div id="sum-time" style="font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono'; color: white;">00:00:00</div>
-                </div>
-                <div class="summary-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Avg Speed</div>
-                    <div style="font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono'; color: white;"><span id="sum-avg-speed">0.0</span> <small style="font-size: 0.5em; opacity: 0.5;">km/h</small></div>
-                </div>
-                <div class="summary-card" style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Total Distance</div>
-                    <div style="font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono'; color: white;"><span id="sum-dist">0.00</span> <small style="font-size: 0.5em; opacity: 0.5;">km</small></div>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-                <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 8px;">⚡ Performance Analytics</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div><div style="font-size: 0.7rem; opacity: 0.5;">Avg Power</div><div style="font-size: 1.2rem; font-weight: 700;"><span id="sum-avg-power">0</span>W</div></div>
-                        <div><div style="font-size: 0.7rem; opacity: 0.5;">NP (Norm Power)</div><div style="font-size: 1.2rem; font-weight: 700; color: var(--success);"><span id="sum-np">0</span>W</div></div>
-                        <div><div style="font-size: 0.7rem; opacity: 0.5;">TSS (Stress Score)</div><div style="font-size: 1.2rem; font-weight: 700; color: #f59e0b;"><span id="sum-tss">0</span> pts</div></div>
-                        <div><div style="font-size: 0.7rem; opacity: 0.5;">Intensity Factor</div><div style="font-size: 1.2rem; font-weight: 700;"><span id="sum-if">0.00</span></div></div>
-                    </div>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                    <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--fatigue); display: flex; align-items: center; gap: 8px;">❤️ Heart Rate Zones</h3>
-                    <div id="sum-hr-zones" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                </div>
+            <div style="margin-top: 1.5rem; overflow-x: auto; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                    <thead>
+                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 2px solid rgba(255,255,255,0.05);">
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">Rider</th>
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">Time</th>
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">Dist</th>
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">Avg Spd</th>
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">Avg Power</th>
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; color: var(--success);">NP</th>
+                            <th style="padding: 15px 8px; color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; color: #f59e0b;">TSS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="global-summary-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
             </div>
 
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                <button id="download-csv-btn" class="btn btn-outline" style="border-color: var(--accent); color: var(--accent); display: flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                    Download CSV
-                </button>
-                <button class="btn" style="background: var(--success);" onclick="closeSummaryModal()">Close Summary</button>
+                <button class="btn" style="background: var(--success); box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);" onclick="closeSummaryModal()">Close Results</button>
             </div>
         </div>
     </div>
