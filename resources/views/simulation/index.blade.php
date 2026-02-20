@@ -693,6 +693,94 @@
             align-items: center;
             gap: 10px;
         }
+        /* Segment Planner Styles */
+        .segment-panel {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+        }
+        .segment-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .segment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .segment-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .segment-delete {
+            color: var(--danger);
+            cursor: pointer;
+            padding: 2px;
+            opacity: 0.6;
+        }
+        .segment-delete:hover { opacity: 1; }
+        .segment-zone-color {
+            width: 8px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-radius: 8px 0 0 8px;
+        }
+
+        /* Session History Modal */
+        .session-list {
+            display: grid;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .session-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 2px;
+        }
+        .session-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(56, 189, 248, 0.3);
+            transform: translateX(4px);
+        }
+        .session-info h4 { margin: 0; font-size: 0.95rem; font-weight: 700; color: white; }
+        .session-info p { margin: 4px 0 8px; font-size: 0.75rem; opacity: 0.5; font-weight: 500; }
+        .session-stats { display: flex; gap: 1rem; font-size: 0.75rem; font-family: 'JetBrains Mono'; color: var(--text-secondary); }
+        .session-stats span { background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 4px; }
+        .session-actions { display: flex; gap: 0.5rem; }
+        .btn-sm-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; }
+        .btn-sm-danger:hover { background: rgba(239, 68, 68, 0.3); }
+
+        .btn-add-segment {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        .btn-add-segment:hover { background: rgba(255,255,255,0.1); }
         .sidebar-title::after {
             content: "";
             flex-grow: 1;
@@ -713,6 +801,10 @@
         <header>
             <h1>MyBike SIM Pro <small style="font-size: 0.5em; opacity: 0.5; vertical-align: middle;">v2.1</small></h1>
             <div style="display: flex; gap: 1rem; align-items: center;">
+                <button onclick="openHistoryModal()" class="playback-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; padding: 6px 14px; height: auto; width: auto; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    SAVED RESULTS
+                </button>
                 <div class="status-badge" style="background: var(--success); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">LIVE RACING</div>
             </div>
         </header>
@@ -777,6 +869,12 @@
                     </div>
                 </div>
 
+                <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                     <button onclick="openHistoryModal()" class="playback-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.65rem; padding: 4px 10px; height: auto; width: auto; font-weight: bold; color: var(--accent);">
+                        📋 VIEW HISTORY
+                    </button>
+                </div>
+
                 <!-- Integrated Map Section (Always Visible) -->
                 <div id="map-section" style="display: grid; height: 320px; background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; gap: 0.75rem; grid-template-columns: 1fr 280px; backdrop-filter: blur(4px); box-shadow: inset 0 0 40px rgba(0,0,0,0.2);">
                     <div id="map-container" style="position: relative; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
@@ -814,6 +912,33 @@
 
                 <div class="canvas-container">
                     <canvas id="simCanvas"></canvas>
+                </div>
+
+                <!-- NEW: Route Segment Planner Panel -->
+                <div class="segment-panel" id="segment-planner" style="display: none; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" fill="var(--accent)" viewBox="0 0 24 24"><path d="M21 11.5e-1c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-10 1c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-6 2c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm14 16h-2v-4h-2v4H5v-2h12v-2H5V5h12v2h2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h-2v2z"/></svg>
+                            Route Segment Strategy
+                        </h3>
+                        <span style="font-size: 0.7rem; opacity: 0.6;">Apply specific power/gears to parts of the race</span>
+                    </div>
+                    
+                    <div id="segments-container">
+                        <!-- Segments populated by JS -->
+                    </div>
+                    
+                    <button class="btn-add-segment" onclick="addSegment()">
+                        + Add Segment Divider
+                    </button>
+                    
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                         <label class="tooltip-container" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.7rem; opacity: 0.8;">
+                            <input type="checkbox" id="useSegmentsToggle" checked onchange="toggleSegmentsUsage()" style="accent-color: var(--accent);">
+                            Enable Segment Strategies
+                        </label>
+                        <button onclick="resetSegments()" style="background: none; border: none; color: var(--danger); font-size: 0.7rem; cursor: pointer; opacity: 0.6;">Reset All</button>
+                    </div>
                 </div>
 
                 <div class="global-controls">
@@ -960,7 +1085,13 @@
                                 <input type="number" name="initial_elevation" value="0" step="1" class="form-control">
                             </div>
                             <div class="control-group">
-                                <label>Chainring</label>
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    Chainring
+                                    <label style="font-size: 0.65rem; display: flex; align-items: center; gap: 3px; cursor: pointer; opacity: 0.8;">
+                                        <input type="checkbox" id="lock-front-{{ $bike->id }}" class="gear-lock-front" data-bike-id="{{ $bike->id }}" checked>
+                                        Lock
+                                    </label>
+                                </label>
                                 <select class="front-gear-select" data-bike-id="{{ $bike->id }}">
                                     @foreach($bike->front_gears as $gear)
                                         <option value="{{ $gear }}">{{ $gear }}T</option>
@@ -968,7 +1099,13 @@
                                 </select>
                             </div>
                             <div class="control-group">
-                                <label>Cassette</label>
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    Cassette
+                                    <label style="font-size: 0.65rem; display: flex; align-items: center; gap: 3px; cursor: pointer; opacity: 0.8;">
+                                        <input type="checkbox" id="lock-rear-{{ $bike->id }}" class="gear-lock-rear" data-bike-id="{{ $bike->id }}" checked>
+                                        Lock
+                                    </label>
+                                </label>
                                 <select class="rear-gear-select" data-bike-id="{{ $bike->id }}">
                                     @foreach($bike->rear_gears as $gear)
                                         <option value="{{ $gear }}">{{ $gear }}T</option>
@@ -1031,7 +1168,10 @@
                             </div>
                             <div class="stat-item cadence-clickable" onclick="window.openCadenceModal({{ $bike->id }})">
                                 <span class="stat-label">Cadence <span id="cadence-lock-{{ $bike->id }}" class="lock-indicator" style="display:none;">LOCK</span></span>
-                                <span class="stat-value"><span id="cadence-{{ $bike->id }}">0</span> <small>RPM</small></span>
+                                <div class="stat-value">
+                                    <span id="cadence-{{ $bike->id }}">0</span> <small>RPM</small>
+                                    <div id="eff-indicator-{{ $bike->id }}" style="font-size: 0.65rem; color: var(--success); font-weight: 800; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Eff: 100%</div>
+                                </div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Terrain</span>
@@ -1358,27 +1498,171 @@
             updateRoute();
         }
 
+        // ==========================================
+        // PHASE 28: ROUTE SEGMENTS & PLANNING
+        // ==========================================
+        window.routeSegments = [];
+        window.useSegments = true;
+
+        function toggleSegmentsUsage() {
+            window.useSegments = document.getElementById('useSegmentsToggle').checked;
+        }
+
+        function resetSegments() {
+            if (confirm('Are you sure you want to reset all segment strategies?')) {
+                window.routeSegments = [];
+                // Create initial full segment
+                addSegment(0, 100);
+            }
+        }
+
+        function addSegment(start = null, end = null) {
+            const id = Date.now() + Math.random();
+            
+            // If no start/end provided, try to split existing last segment or start with 0-100
+            if (start === null) {
+                if (window.routeSegments.length === 0) {
+                    start = 0;
+                    end = 100;
+                } else {
+                    const last = window.routeSegments[window.routeSegments.length - 1];
+                    const mid = Math.round((last.start_pct + last.end_pct) / 2);
+                    const oldEnd = last.end_pct;
+                    last.end_pct = mid;
+                    start = mid;
+                    end = oldEnd;
+                }
+            }
+
+            window.routeSegments.push({
+                id: id,
+                name: `Segment ${window.routeSegments.length + 1}`,
+                start_pct: start,
+                end_pct: end,
+                objective: 'speed', // 'speed' | 'stamina' | 'custom'
+                front_gear: null,
+                rear_gear: null,
+                power_target_w: null
+            });
+
+            // Sort by start_pct
+            window.routeSegments.sort((a,b) => a.start_pct - b.start_pct);
+            renderSegments();
+        }
+
+        function deleteSegment(id) {
+            if (window.routeSegments.length <= 1) return;
+            const idx = window.routeSegments.findIndex(s => s.id === id);
+            if (idx === -1) return;
+            
+            const deleted = window.routeSegments[idx];
+            // Give its portion to the previous or next segment
+            if (idx > 0) {
+                window.routeSegments[idx-1].end_pct = deleted.end_pct;
+            } else {
+                window.routeSegments[idx+1].start_pct = deleted.start_pct;
+            }
+            
+            window.routeSegments.splice(idx, 1);
+            renderSegments();
+        }
+
+        function updateSegment(id, field, value) {
+            const seg = window.routeSegments.find(s => s.id === id);
+            if (!seg) return;
+            
+            if (field === 'start_pct' || field === 'end_pct' || field === 'power_target_w') {
+                seg[field] = parseFloat(value);
+            } else {
+                seg[field] = value === 'null' ? null : value;
+            }
+        }
+
+        function renderSegments() {
+            const container = document.getElementById('segments-container');
+            if (!container) return;
+
+            const colors = ['#38bdf8', '#fbbf24', '#f87171', '#4ade80', '#c084fc', '#fb923c'];
+
+            container.innerHTML = window.routeSegments.map((seg, i) => `
+                <div class="segment-card">
+                    <div class="segment-zone-color" style="background: ${colors[i % colors.length]}"></div>
+                    <div class="segment-header">
+                        <input type="text" value="${seg.name}" onchange="updateSegment(${seg.id}, 'name', this.value)" 
+                               style="background:none; border:none; color:white; font-size:0.8rem; font-weight:bold; width: 60%;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 0.7rem; opacity: 0.6;">${seg.start_pct}% - ${seg.end_pct}%</span>
+                            <span class="segment-delete" onclick="deleteSegment(${seg.id})">&times;</span>
+                        </div>
+                    </div>
+                    <div class="segment-controls">
+                        <div>
+                            <label style="font-size: 0.6rem; opacity: 0.5; display:block; margin-bottom:2px;">Strategy</label>
+                            <select onchange="updateSegment(${seg.id}, 'objective', this.value)">
+                                <option value="speed" ${seg.objective === 'speed' ? 'selected' : ''}>🚀 Speed</option>
+                                <option value="stamina" ${seg.objective === 'stamina' ? 'selected' : ''}>🫀 Stamina</option>
+                                <option value="custom" ${seg.objective === 'custom' ? 'selected' : ''}>⚙️ Custom</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.6rem; opacity: 0.5; display:block; margin-bottom:2px;">Front Gear</label>
+                            <select onchange="updateSegment(${seg.id}, 'front_gear', this.value)">
+                                <option value="null">Auto</option>
+                                <option value="50" ${seg.front_gear == 50 ? 'selected' : ''}>50T</option>
+                                <option value="34" ${seg.front_gear == 34 ? 'selected' : ''}>34T</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.6rem; opacity: 0.5; display:block; margin-bottom:2px;">Pwr Override</label>
+                            <input type="number" value="${seg.power_target_w || ''}" placeholder="Slider" 
+                                   onchange="updateSegment(${seg.id}, 'power_target_w', this.value)"
+                                   style="width:100%; height:28px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:4px; color:white; font-size:0.7rem; padding: 0 4px;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px;">
+                         <input type="range" min="0" max="100" value="${seg.end_pct}" 
+                                oninput="handleSegmentEndChange(${seg.id}, this.value)"
+                                style="width: 100%; height: 4px; accent-color: ${colors[i % colors.length]}">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleSegmentEndChange(id, value) {
+            const idx = window.routeSegments.findIndex(s => s.id === id);
+            if (idx === -1 || idx === window.routeSegments.length - 1) return;
+            
+            const newVal = parseFloat(value);
+            const seg = window.routeSegments[idx];
+            const next = window.routeSegments[idx+1];
+            
+            // Boundary checks
+            if (newVal > seg.start_pct + 1 && newVal < next.end_pct - 1) {
+                seg.end_pct = newVal;
+                next.start_pct = newVal;
+                renderSegments();
+            }
+        }
+
+
         function saveRoute() {
             if (routeDistance > 0) {
                 document.getElementById('trackGoalInput').value = routeDistance.toFixed(2);
-                document.getElementById('ascentGoalInput').value = Math.round(totalElevationGain); // Update ascent goal input
+                document.getElementById('ascentGoalInput').value = Math.round(totalElevationGain);
                 
-                // Store percentages for all waypoints (including start and finish)
-                // OSRM returns distances in meters, but we'll use straight-line for visual if needed, 
-                // but actually OSRM distances are better. 
-                // For simplicity, we'll use the ratio of cumulative road distance.
-                // However, fetching leg distances is complex. 
-                // Let's just store the relative index for now or assume linear distribution for visual.
-                // Actually, let's just use the current waypoints indices.
                 window.activeCheckpoints = routeMarkers.map((m, i) => i / (routeMarkers.length - 1));
                 
-                // Trigger change event to update simulation
                 document.getElementById('trackGoalInput').dispatchEvent(new Event('input'));
-                document.getElementById('ascentGoalInput').dispatchEvent(new Event('input')); // Trigger for ascent goal
+                document.getElementById('ascentGoalInput').dispatchEvent(new Event('input'));
                 
-                // NEW: Enable Route Elevation Sync
                 window.routeElevationProfile = routeProfile;
                 window.useRouteElevation = routeProfile.length > 0;
+
+                // SHOW SEGMENT PLANNER
+                document.getElementById('segment-planner').style.display = 'block';
+                if (window.routeSegments.length === 0) {
+                    addSegment(0, 100);
+                }
 
                 // Add a notification
                 const toast = document.createElement('div');
@@ -1387,8 +1671,6 @@
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3000);
             }
-            // Optional: Hide map after saving, or keep it visible
-            // document.getElementById('map-section').style.display = 'none';
         }
 
 
@@ -1457,10 +1739,10 @@
                 speed: 0,
                 power: 150,
                 cadence: 80,
-                wheel_diameter: 2096,
+                currentFrontGear: parseInt(document.querySelector(`.front-gear-select[data-bike-id="${bike.id}"]`)?.value) || 52,
+                currentRearGear: parseInt(document.querySelector(`.rear-gear-select[data-bike-id="${bike.id}"]`)?.value) || 15,
+                wheel_diameter: 700, 
                 wheel_circumference: 2.096,
-                currentFrontGear: 52,
-                currentRearGear: 15,
                 calories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
                 maxCalories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
                 staminaW: 100,
@@ -1476,46 +1758,57 @@
                 startLogged: false, // NEW: Prevent duplicate start logs
                 isEating: false,    // NEW: Meal break state
                 mealEndTime: 0,    // NEW: Timestamp when meal ends
+                finishTime: null,  // NEW: Individual finish time
+                frontGearLocked: true, // NEW: Auto-shifting toggle
+                rearGearLocked: true,  // NEW: Auto-shifting toggle
                 elevationGain: parseFloat(bike.initial_elevation || 0),
                 distance: parseFloat(bike.initial_distance || 0) * 1000, 
                 currentSlope: 0, // NEW: Current terrain slope
                 logs: [],
                 history: [], // Metric snapshots for export
                 lastHistorySample: 0,
-                npAcc: 0, // NP accumulation
+                hr: 70, // Initialize to avoid NaN
+                npAcc: 0, 
                 avgPowerAcc: 0,
-                sampleCount: 0,
-                hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 }
+                sampleCount: 0.001, // Avoid division by zero
+                hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 },
+                segmentResults: {} // NEW: Track metrics per segment ID
             };
         });
 
-        function calculateSpeed(power, weight, efficiency, slopePercent, windKmh, draftFactor = 1.0) {
-            const effectivePower = power * efficiency;
+        function getCadenceEfficiency(cadence) {
+            // Gaussian bell curve centered at 90 RPM
+            // Sigma of 35 allows for a reasonably wide range but drops off 
+            // significantly under 50 or over 130.
+            const optimal = 90;
+            const sigma = 35;
+            const factor = Math.exp(-Math.pow(cadence - optimal, 2) / (2 * Math.pow(sigma, 2)));
+            return Math.max(0.15, factor); // Minimum efficiency floor
+        }
+
+        function calculateSpeed(power, weight, slopePercent, windKmh, draftFactor = 1.0) {
+            // Pure physics: given mechanical power (watts at wheel), find terminal velocity.
+            // Cadence efficiency is applied upstream by the caller, not here.
+            const mechanicalEfficiency = 0.98; // 2% drivetrain loss
+            const effectivePower = power * mechanicalEfficiency;
             if (effectivePower <= 0) return 0;
-            
+
             const slopeAngle = Math.atan(slopePercent / 100);
-            const m = weight + 75; 
+            const m = weight; // kg, bike + rider
             const windMs = windKmh / 3.6;
 
-            // F_gravity = m * g * sin(theta)
-            // F_roll = Crr * m * g * cos(theta)
-            // F_drag = 0.5 * rho * (v - v_wind)^2 * CdA * draftFactor
-            
-            const C_gravity = m * G * Math.sin(slopeAngle);
-            const C_roll = CRR * m * G * Math.cos(slopeAngle);
+            const C_gravity  = m * G * Math.sin(slopeAngle);
+            const C_roll     = CRR * m * G * Math.cos(slopeAngle);
             const C_drag_base = 0.5 * RHO * CDA * draftFactor;
 
-            let low = 0;
-            let high = 60; 
-            for(let i=0; i<30; i++) {
-                let mid = (low + high) / 2;
-                // Power = (F_gravity + F_roll + F_drag) * v
-                // Note: v is relative to ground, v_air = v - v_wind
-                let relativeAirSpeed = mid - windMs;
-                let dragForce = C_drag_base * relativeAirSpeed * Math.abs(relativeAirSpeed); 
-                let p = (C_gravity + C_roll + dragForce) * mid;
-                
-                if (p < effectivePower) low = mid;
+            // Binary search for terminal velocity where P_available == P_required
+            let low = 0, high = 60;
+            for (let i = 0; i < 35; i++) {
+                const mid = (low + high) / 2;
+                const relativeAirSpeed = mid - windMs;
+                const dragForce = C_drag_base * relativeAirSpeed * Math.abs(relativeAirSpeed);
+                const p_req = (C_gravity + C_roll + dragForce) * mid;
+                if (p_req < effectivePower) low = mid;
                 else high = mid;
             }
             return low;
@@ -1615,39 +1908,45 @@
             // Draw TERRAIN PROFILE (Background)
             if (window.routeElevationProfile && window.routeElevationProfile.length > 0) {
                 const profile = window.routeElevationProfile;
-                const scaleY = 0.2; 
+
+                // Dynamic scaleY: make the tallest point fill 65% of canvas height (with padding)
+                const maxRelElev = Math.max(...profile.map(p => p.relElev), 1);
+                const usableHeight = canvas.height * 0.65; // 65% of canvas for elevation range
+                const scaleY = usableHeight / maxRelElev;
+                // Base Y: where the flat section sits (bottom quarter of canvas)
+                const baseY  = canvas.height - 60;
+
                 ctx.save();
-                
-                // Draw 3 subtle terrain lines for depth (one for each potential lane area)
+
+                // Lane guide lines (one per potential rider lane)
                 [0, 85, 170].forEach((laneOffset, idx) => {
                     ctx.beginPath();
-                    ctx.strokeStyle = `rgba(56, 189, 248, ${0.1 - (idx * 0.02)})`; 
+                    ctx.strokeStyle = `rgba(56, 189, 248, ${0.1 - (idx * 0.02)})`;
                     ctx.lineWidth = 1;
                     ctx.setLineDash([2, 4]);
-
                     profile.forEach((pt, i) => {
                         const x = canvasPadding + (Math.min(pt.dist, trackGoalMeters) / trackGoalMeters) * trackWidth;
-                        const y = (180 + laneOffset) - (pt.relElev * scaleY);
+                        const y = (baseY - laneOffset * 0.5) - (pt.relElev * scaleY);
                         if (i === 0) ctx.moveTo(x, y);
                         else ctx.lineTo(x, y);
                     });
                     ctx.stroke();
                 });
 
-                // Main thick profile at the bottom for global reference
+                // Main thick filled profile line
                 ctx.setLineDash([]);
                 ctx.beginPath();
                 ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
                 ctx.lineWidth = 3;
                 profile.forEach((pt, i) => {
                     const x = canvasPadding + (Math.min(pt.dist, trackGoalMeters) / trackGoalMeters) * trackWidth;
-                    const y = (canvas.height - 40) - (pt.relElev * scaleY * 0.5); // Scaled down decorative version
+                    const y = baseY - (pt.relElev * scaleY);
                     if (i === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 });
                 ctx.stroke();
-                
-                // Fill ground
+
+                // Fill ground below the profile
                 ctx.lineTo(canvasPadding + trackWidth, canvas.height);
                 ctx.lineTo(canvasPadding, canvas.height);
                 ctx.closePath();
@@ -1655,6 +1954,37 @@
                 ctx.fill();
 
                 ctx.restore();
+
+                // NEW: DRAW SEGMENT DIVIDERS
+                if (window.useSegments && window.routeSegments.length > 0) {
+                    window.routeSegments.forEach((seg, i) => {
+                        const startX = canvasPadding + (seg.start_pct / 100) * trackWidth;
+                        const endX = canvasPadding + (seg.end_pct / 100) * trackWidth;
+                        
+                        // Draw segment label
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                        ctx.font = 'bold 8px Inter';
+                        ctx.fillText(seg.name, startX + 5, baseY + 15);
+                        
+                        // Draw vertical divider
+                        ctx.beginPath();
+                        ctx.strokeStyle = i === 0 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)';
+                        ctx.setLineDash([5, 5]);
+                        ctx.moveTo(startX, 0);
+                        ctx.lineTo(startX, canvas.height);
+                        ctx.stroke();
+                        ctx.restore();
+                    });
+                }
+
+                // Store scaleY & baseY on window so the bike-rendering loop uses the SAME scale
+                window._terrainScaleY = scaleY;
+                window._terrainBaseY  = baseY;
+            } else {
+                // No elevation profile — use flat defaults
+                window._terrainScaleY = 0;
+                window._terrainBaseY  = canvas.height - 60;
             }
             ctx.restore();
 
@@ -1667,59 +1997,117 @@
                 const riderSlope = getRouteSlope(bike.distance);
                 const slopeAngleRider = Math.atan(riderSlope / 100);
                 const relElev = getRouteRelElev(bike.distance);
-                const elevYOffset = relElev * 0.2; 
-                const adjustedY = (180 + (index * 85)) - elevYOffset;
-                const laneY = 180 + (index * 85);
+
+                // Terrain-relative Y position for the bike sprite
+                // Uses the same scaleY that the terrain profile was drawn with → always aligned
+                const terrScaleY = window._terrainScaleY || 0;
+                const terrBaseY  = window._terrainBaseY  || (canvas.height - 60);
+                const bikeLaneOffset = index * 20;  // small vertical separation between riders
+                const rawBikeY    = terrBaseY - bikeLaneOffset - (relElev * terrScaleY) - 18; // 18px above ground line
+                const bikeTopPad  = 40;  // keep bike at least 40px from canvas top/bottom
+                const adjustedY   = Math.max(bikeTopPad, Math.min(canvas.height - bikeTopPad, rawBikeY));
+                const laneY       = terrBaseY - bikeLaneOffset - 18; // flat reference line
 
                 const ahead = sortedBikes.find(b => b.id !== bike.id && b.distance > bike.distance && b.distance - bike.distance < 5);
                 bike.isDrafting = !!ahead;
                 const draftFactor = bike.isDrafting ? 0.7 : 1.0; 
 
                 // Bioenergetics Model
-                let effectiveRiderPower = bike.power;
+                // Read target watts from the slider EACH FRAME so we never read stale bike.power
+                const powerSlider = document.querySelector(`.bike-power-input[data-bike-id="${bike.id}"]`);
+                const sliderTargetWatts = powerSlider ? parseFloat(powerSlider.value) : (bike.power || 200);
+                
+                let effectiveRiderPower = sliderTargetWatts;
+
+                // NEW: APPLY SEGMENT OVERRIDES
+                let currentSegment = null;
+                if (window.useSegments && window.routeSegments.length > 0) {
+                    const distPct = (bike.distance / trackGoalMeters) * 100;
+                    currentSegment = window.routeSegments.find(s => distPct >= s.start_pct && distPct < s.end_pct) 
+                                   || window.routeSegments[window.routeSegments.length - 1];
+                    
+                    if (currentSegment) {
+                        // Power Override
+                        if (currentSegment.power_target_w) {
+                            effectiveRiderPower = currentSegment.power_target_w;
+                        }
+
+                        // Objective Modifier
+                        if (currentSegment.objective === 'stamina') {
+                            // Efficiency mode: Cap power at FTP to avoid dipping too much into W'
+                            effectiveRiderPower = Math.min(effectiveRiderPower, bike.ftp || 200);
+                        } else if (currentSegment.objective === 'speed') {
+                            // Speed mode: No cap, use full requested power
+                        }
+
+                        // Gear Override (Locking)
+                        if (currentSegment.front_gear) {
+                            bike.currentFrontGear = parseInt(currentSegment.front_gear);
+                        }
+                    }
+                }
+
+                const windKmh = 0; // No wind UI yet; extend here later
                 const fatigueMultiplier = 1 - (bike.fatigue / 100) * 0.4;
-                effectiveRiderPower = Math.min(effectiveRiderPower, 1000 * fatigueMultiplier);
-                if (bike.isBonking) effectiveRiderPower *= 0.35; 
+                effectiveRiderPower *= fatigueMultiplier;
+                if (bike.isBonking) effectiveRiderPower *= 0.35;
 
                 let speed = 0;
                 let hasConflict = false;
                 const delta = (1/60) * timeScale;
 
                 if (isPlaying && !bike.isFinished && !bike.isEating) {
+                    const ratio = bike.currentFrontGear / bike.currentRearGear;
+                    const circ = bike.wheel_circumference || 2.096;
+                    const totalWeight = bike.bicycle_weight + bike.rider_weight;
+
                     if (bike.lockedCadence && bike.lockedPower !== null) {
+                        // Both cadence and power locked — honour the locked power/cadence target
                         bike.power = bike.lockedPower;
-                        const totalWeight = bike.bicycle_weight + bike.rider_weight;
-                        speed = calculateSpeed(effectiveRiderPower, totalWeight, bike.efficiency, riderSlope, currentWind, draftFactor);
-                        
-                        const ratio = bike.currentFrontGear / bike.currentRearGear;
-                        const circ = (bike.wheel_diameter * Math.PI) / 1000;
+                        const cadEff = getCadenceEfficiency(bike.lockedCadence);
+                        speed = calculateSpeed(bike.lockedPower * cadEff * fatigueMultiplier, totalWeight, riderSlope, windKmh, draftFactor);
+
                         const targetSpeed = (bike.lockedCadence * ratio * circ) / 60;
-                        const mass = totalWeight + 75;
-                        const F_g = mass * G * Math.sin(slopeAngleRider);
-                        const F_r = CRR * mass * G * Math.cos(slopeAngleRider);
-                        const relV = targetSpeed - (currentWind / 3.6);
+                        const F_g = totalWeight * G * Math.sin(slopeAngleRider);
+                        const F_r = CRR * totalWeight * G * Math.cos(slopeAngleRider);
+                        const relV = targetSpeed - (windKmh / 3.6);
                         const F_d = 0.5 * RHO * CDA * draftFactor * relV * Math.abs(relV);
-                        const P_req = ((F_g + F_r + F_d) * targetSpeed) / bike.efficiency;
+                        const P_req = ((F_g + F_r + F_d) * targetSpeed) / cadEff;
                         if (Math.abs(P_req - bike.lockedPower) > 15) hasConflict = true;
+
                     } else if (bike.lockedCadence) {
-                        const totalWeight = bike.bicycle_weight + bike.rider_weight;
-                        const ratio = bike.currentFrontGear / bike.currentRearGear;
-                        const circ = (bike.wheel_diameter * Math.PI) / 1000;
+                        // Only cadence locked — speed is set by cadence, power derived from physics
                         speed = (bike.lockedCadence * ratio * circ) / 60;
-                        const P_mech = ( (totalWeight+75)*G*Math.sin(slopeAngleRider) + CRR*(totalWeight+75)*G*Math.cos(slopeAngleRider) + 0.5*RHO*CDA*draftFactor*Math.pow(speed - (currentWind/3.6), 2) ) * speed;
-                        bike.power = Math.max(0, Math.min(1000, P_mech / bike.efficiency));
+                        const P_mech = (totalWeight * G * Math.sin(slopeAngleRider)
+                            + CRR * totalWeight * G * Math.cos(slopeAngleRider)
+                            + 0.5 * RHO * CDA * draftFactor * Math.pow(speed - (windKmh / 3.6), 2)) * speed;
+                        bike.power = Math.max(0, Math.min(1500, P_mech));
+
                     } else {
-                        const totalWeight = bike.bicycle_weight + bike.rider_weight;
-                        speed = calculateSpeed(effectiveRiderPower, totalWeight, bike.efficiency, riderSlope, currentWind, draftFactor);
+                        // NORMAL MODE: Speed from pure physics (no cadence penalty on speed)
+                        // Cadence efficiency only affects calorie burn — rider still produces same watts
+                        const ftpTarget = bike.ftp || 200;
+                        const climbPacingFactor = Math.min(1, Math.max(0, riderSlope / 8));
+                        const pacedPower = Math.max(50,
+                            effectiveRiderPower - (effectiveRiderPower - ftpTarget) * climbPacingFactor * 0.6
+                        );
+                        bike.power = pacedPower;
+                        speed = calculateSpeed(pacedPower, totalWeight, riderSlope, windKmh, draftFactor);
                     }
 
                     bike.distance += speed * delta;
+                    bike.speed = speed;         // ← commit speed to state
+                    bike.currentSlope = riderSlope;
                     if (riderSlope > 0) {
                         bike.elevationGain += speed * delta * (riderSlope / 100);
                     }
-                    
+
                     // Stats Update
-                    const kcalPerSec = (bike.power / 4184 / 0.24);
+                    // Cadence efficiency here affects calorie burn only (not speed)
+                    const metabolicEff = (bike.efficiency && bike.efficiency <= 1.0) ? bike.efficiency : 0.24;
+                    const cadEffForCalories = getCadenceEfficiency(bike.cadence > 0 ? bike.cadence : 80);
+                    // Bad cadence = more calories burned per second
+                    const kcalPerSec = bike.power / (4184 * metabolicEff * cadEffForCalories);
                     bike.calories = Math.max(0, bike.calories - kcalPerSec * delta);
                     
                     if (bike.calories < 100 && !bike.isBonking && !bike.isEating) {
@@ -1787,6 +2175,19 @@
                         const mOverlay = document.getElementById(`meal-overlay-${bike.id}`);
                         if (mOverlay) mOverlay.classList.add('active');
                     }
+
+                    // NEW: Accumulate Per-Segment Results
+                    if (currentSegment) {
+                        if (!bike.segmentResults[currentSegment.id]) {
+                            bike.segmentResults[currentSegment.id] = { time: 0, dist: 0, pwr_acc: 0, kcal_acc: 0, sample_count: 0 };
+                        }
+                        const s = bike.segmentResults[currentSegment.id];
+                        s.time += delta;
+                        s.dist += speed * delta;
+                        s.pwr_acc += bike.power * delta;
+                        s.kcal_acc += kcalPerSec * delta;
+                        s.sample_count += delta;
+                    }
                 }
 
                 if (bike.isEating && elapsedSeconds >= bike.mealEndTime) {
@@ -1799,11 +2200,56 @@
                     bike.logs.unshift({ time: timeStr, msg: "🍖 Refuel Complete" });
                 }
 
-                bike.speed = speed;
-                bike.currentSlope = riderSlope;
+                // ── STEP 1: Auto-Shifting (runs BEFORE speed so we use the best gear THIS frame)
+                if (!bike.frontGearLocked || !bike.rearGearLocked) {
+                    const shiftCirc = bike.wheel_circumference || 2.096;
+                    const frontOptions = bike.frontGearLocked ? [bike.currentFrontGear] : bike.front_gears;
+                    const rearOptions  = bike.rearGearLocked  ? [bike.currentRearGear]  : bike.rear_gears;
+                    const shiftWeight  = bike.bicycle_weight + bike.rider_weight;
+
+                    // On flat: speed dominates; on climb (≥10%): cadence efficiency dominates
+                    const climbFactor   = Math.min(1, Math.max(0, riderSlope / 10));
+                    const speedWeight   = 1 - (climbFactor * 0.8);
+                    const staminaWeight = climbFactor * 0.8;
+
+                    let bestFront = bike.currentFrontGear;
+                    let bestRear  = bike.currentRearGear;
+                    let bestScore = -Infinity;
+
+                    // Calculate the pure-physics speed at current power (gear-independent)
+                    const pureSpeed = calculateSpeed(effectiveRiderPower, shiftWeight, riderSlope, windKmh, draftFactor);
+
+                    frontOptions.forEach(f => {
+                        rearOptions.forEach(r => {
+                            const gR = f / r;
+                            // Cadence each gear would produce at pureSpeed
+                            const cad = pureSpeed > 0 ? (pureSpeed * 60) / (gR * shiftCirc) : 0;
+                            const cadEff = getCadenceEfficiency(cad);
+                            // Speed score normalised 0–1 at 20 m/s cap
+                            const speedScore = Math.min(1, pureSpeed / 20);
+                            const score = (speedWeight * speedScore) + (staminaWeight * cadEff);
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestFront = f;
+                                bestRear  = r;
+                            }
+                        });
+                    });
+
+                    if (bestFront !== bike.currentFrontGear || bestRear !== bike.currentRearGear) {
+                        bike.currentFrontGear = bestFront;
+                        bike.currentRearGear  = bestRear;
+                        const fSelect = document.querySelector(`.front-gear-select[data-bike-id="${bike.id}"]`);
+                        const rSelect = document.querySelector(`.rear-gear-select[data-bike-id="${bike.id}"]`);
+                        if (fSelect) fSelect.value = bestFront;
+                        if (rSelect) rSelect.value = bestRear;
+                    }
+                }
+
+                // ── STEP 2: Gear ratio & cadence from CURRENT (possibly just-updated) gears
                 const ratio = bike.currentFrontGear / bike.currentRearGear;
-                const circ = (bike.wheel_diameter * Math.PI) / 1000;
-                bike.cadence = bike.lockedCadence || ((bike.speed * 60) / (ratio * circ));
+                const circ  = bike.wheel_circumference || 2.096;
+                bike.cadence = bike.lockedCadence || (speed > 0 ? (speed * 60) / (ratio * circ) : 0);
 
                 // UI Throttle
                 if (Math.floor(Date.now() / 100) % 2 === 0) {
@@ -1814,6 +2260,50 @@
                     if(sElem) sElem.innerText = (bike.speed * 3.6).toFixed(1);
                     const cElem = document.getElementById(`cadence-${bike.id}`);
                     if(cElem) cElem.innerText = Math.round(bike.cadence);
+
+                    // --- Slope / Terrain display ---
+                    const slopeElem = document.getElementById(`slope-display-${bike.id}`);
+                    if (slopeElem) {
+                        const slopePct = riderSlope;
+                        const sign     = slopePct > 0 ? '▲' : (slopePct < 0 ? '▼' : '—');
+                        slopeElem.innerText = `${sign} ${Math.abs(slopePct).toFixed(1)}%`;
+                        slopeElem.style.color = slopePct > 5 ? 'var(--danger)'
+                                              : slopePct > 2 ? '#f59e0b'
+                                              : slopePct < -2 ? 'var(--success)'
+                                              : 'inherit';
+                    }
+                    
+                    const effElem = document.getElementById(`eff-indicator-${bike.id}`);
+                    if(effElem) {
+                        const effPercent = Math.round(getCadenceEfficiency(bike.cadence) * 100);
+                        effElem.innerText = `Eff: ${effPercent}%`;
+                        if (effPercent > 85) effElem.style.color = 'var(--success)';
+                        else if (effPercent > 60) effElem.style.color = '#f59e0b';
+                        else effElem.style.color = 'var(--danger)';
+                    }
+
+                    // --- Nutrition (Fuel / Calories) ---
+                    const calNumElem = document.getElementById(`cal-num-${bike.id}`);
+                    if (calNumElem) calNumElem.innerText = Math.max(0, Math.round(bike.calories));
+                    const nutritionBar = document.getElementById(`stamina-bar-${bike.id}`);
+                    if (nutritionBar) {
+                        const calPct = Math.max(0, (bike.calories / (bike.maxCalories || 2000)) * 100);
+                        nutritionBar.style.width = `${calPct}%`;
+                        nutritionBar.style.background = calPct < 20 ? 'var(--danger)' : calPct < 50 ? '#f59e0b' : 'var(--success)';
+                    }
+
+                    // --- Stamina (W') ---
+                    const staminaNumElem = document.getElementById(`stamina-num-${bike.id}`);
+                    if (staminaNumElem) staminaNumElem.innerText = Math.round(bike.staminaW);
+                    const staminaWBar = document.getElementById(`stamina-w-bar-${bike.id}`);
+                    if (staminaWBar) staminaWBar.style.width = `${Math.max(0, bike.staminaW)}%`;
+
+                    // --- Fatigue ---
+                    const fatigueNumElem = document.getElementById(`fatigue-num-${bike.id}`);
+                    if (fatigueNumElem) fatigueNumElem.innerText = Math.round(bike.fatigue);
+                    const fatigueBar = document.getElementById(`fatigue-bar-${bike.id}`);
+                    if (fatigueBar) fatigueBar.style.width = `${Math.min(100, bike.fatigue)}%`;
+
                     const eElem = document.getElementById(`elev-${bike.id}`);
                     if(eElem) eElem.innerText = Math.round(bike.elevationGain);
                     const dElem = document.getElementById(`dist-km-${bike.id}`);
@@ -2130,6 +2620,22 @@
             }
         };
 
+        // NEW: Gear Lock Listeners
+        document.querySelectorAll('.gear-lock-front').forEach(cb => {
+            cb.onchange = (e) => {
+                const bid = e.target.getAttribute('data-bike-id');
+                const b = bikeState.find(x => x.id == bid);
+                if (b) b.frontGearLocked = e.target.checked;
+            };
+        });
+        document.querySelectorAll('.gear-lock-rear').forEach(cb => {
+            cb.onchange = (e) => {
+                const bid = e.target.getAttribute('data-bike-id');
+                const b = bikeState.find(x => x.id == bid);
+                if (b) b.rearGearLocked = e.target.checked;
+            };
+        });
+
         // Playback Events
         const playBtn = document.getElementById('playBtn');
         const pauseBtn = document.getElementById('pauseBtn');
@@ -2416,8 +2922,317 @@
                 }).join('');
             }
 
+            // NEW: Add "Save Results" button to summary
+            const footer = modal.querySelector('div[style*="justify-content: flex-end"]');
+            if (footer && !document.getElementById('save-results-btn')) {
+                const saveBtn = document.createElement('button');
+                saveBtn.id = 'save-results-btn';
+                saveBtn.className = 'btn';
+                saveBtn.style.background = 'var(--accent)';
+                saveBtn.style.boxShadow = '0 4px 14px rgba(56, 189, 248, 0.4)';
+                saveBtn.innerText = '💾 Save Results';
+                saveBtn.onclick = () => {
+                    closeSummaryModal();
+                    openSaveModal();
+                };
+                footer.prepend(saveBtn);
+
+                // Add "View History" button too
+                const histBtn = document.createElement('button');
+                histBtn.className = 'btn';
+                histBtn.style.background = 'rgba(255,255,255,0.05)';
+                histBtn.style.border = '1px solid rgba(255,255,255,0.1)';
+                histBtn.style.marginRight = 'auto';
+                histBtn.innerText = '🕒 View Past Results';
+                histBtn.onclick = () => {
+                    closeSummaryModal();
+                    openHistoryModal();
+                };
+                footer.prepend(histBtn);
+            }
+
             modal.style.display = "block";
         };
+
+        window.toggleSegmentBreakdown = () => {
+            const view = document.getElementById('segment-breakdown-view');
+            const content = document.getElementById('segment-breakdown-content');
+            
+            if (view.style.display === 'block') {
+                view.style.display = 'none';
+                return;
+            }
+            
+            if (bikeState.length === 0) return;
+
+            content.innerHTML = bikeState.map(bike => {
+                const results = Object.keys(bike.segmentResults).map(segId => {
+                    const s = bike.segmentResults[segId];
+                    const rs = window.routeSegments.find(r => r.id == segId);
+                    return {
+                        name: rs ? rs.name : 'Unknown',
+                        avgSpd: ( (s.dist / 1000) / (s.time / 3600) ) || 0,
+                        avgPwr: Math.round(s.pwr_acc / s.sample_count) || 0,
+                        time: formatSimulationTime(s.time),
+                        kcal: Math.round(s.kcal_acc)
+                    };
+                });
+                
+                return `
+                    <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${bike.color};"></div>
+                            <span style="font-weight: 700; color: white; font-size: 0.9rem;">${bike.name} Performance</span>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+                            <thead>
+                                <tr style="text-align: left; opacity: 0.5;">
+                                    <th style="padding: 8px;">Segment</th>
+                                    <th style="padding: 8px;">Time</th>
+                                    <th style="padding: 8px;">Avg Speed</th>
+                                    <th style="padding: 8px;">Avg Power</th>
+                                    <th style="padding: 8px;">Energy</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(r => `
+                                    <tr style="border-top: 1px solid rgba(255,255,255,0.03);">
+                                        <td style="padding: 8px; font-weight: 600; color: white;">${r.name}</td>
+                                        <td style="padding: 8px; font-family: 'JetBrains Mono'; color: rgba(255,255,255,0.8);">${r.time}</td>
+                                        <td style="padding: 8px; font-weight: bold; color: var(--accent);">${r.avgSpd.toFixed(1)} km/h</td>
+                                        <td style="padding: 8px; color: var(--success); font-weight: 600;">${r.avgPwr} W</td>
+                                        <td style="padding: 8px; color: #f87171;">${r.kcal} kcal</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }).join('');
+            
+            view.style.display = 'block';
+        };
+
+        // ==========================================
+        // PHASE 29: SESSION PERSISTENCE (SAVE/LOAD)
+        // ==========================================
+        
+        window.openSaveModal = () => {
+            const modal = document.getElementById('saveSessionModal');
+            const preview = document.getElementById('sessionSummaryPreview');
+            
+            const now = new Date();
+            document.getElementById('sessionNameInput').value = `Race ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+            
+            const b = bikeState[0];
+            const raceTime = b.finishTime || elapsedSeconds;
+            const distKm = (b.distance / 1000).toFixed(2);
+            const avgSpd = ( (b.distance / 1000) / (raceTime / 3600) ).toFixed(1);
+            
+            preview.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><span style="opacity: 0.6;">Rider:</span> <b>${b.name}</b></div>
+                    <div><span style="opacity: 0.6;">Time:</span> <b>${formatSimulationTime(raceTime)}</b></div>
+                    <div><span style="opacity: 0.6;">Distance:</span> <b>${distKm} km</b></div>
+                    <div><span style="opacity: 0.6;">Avg Speed:</span> <b>${avgSpd} km/h</b></div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        };
+
+        window.closeSaveModal = () => document.getElementById('saveSessionModal').style.display = 'none';
+
+        window.submitSession = async () => {
+             const btn = document.getElementById('confirmSaveBtn');
+             btn.disabled = true;
+             btn.innerText = 'Saving...';
+             
+             const b = bikeState[0];
+             const raceTime = b.finishTime || elapsedSeconds;
+             const avgPwr = Math.round(b.avgPowerAcc / b.sampleCount) || 0;
+             let avgSpd = ( (b.distance / 1000) / ( (raceTime || 1) / 3600) ) || 0;
+             if (!isFinite(avgSpd)) avgSpd = 0;
+
+             const currentNp = Math.pow(b.npAcc / (b.sampleCount || 1), 0.25) || 0;
+             const ftp = b.ftp || 250;
+             const ifFactor = (currentNp / ftp);
+             let tssValue = Math.round((raceTime * currentNp * ifFactor) / (ftp * 3600) * 100) || 0;
+             if (!isFinite(tssValue)) tssValue = 0;
+
+             const payload = {
+                 name: document.getElementById('sessionNameInput').value,
+                 bicycle_id: b.id,
+                 route_name: window.useRouteElevation ? "Custom Route" : "Flat Road",
+                 total_distance_km: parseFloat((b.distance / 1000).toFixed(2)),
+                 total_time_seconds: Math.round(raceTime),
+                 avg_speed_kmh: parseFloat(avgSpd.toFixed(2)),
+                 avg_power_w: avgPwr,
+                 total_calories_burned: Math.round(b.maxCalories - b.calories) || 0,
+                 total_elevation_m: b.elevationGain || 0,
+                 tss: tssValue,
+                 segments: window.routeSegments || [],
+                 route_elevation_profile: window.routeElevationProfile || [],
+                 segment_results: Object.keys(b.segmentResults || {}).map(segId => {
+                     const s = b.segmentResults[segId];
+                     const rs = (window.routeSegments || []).find(r => r.id == segId);
+                     let sSpd = ( (s.dist / 1000) / ( (s.time || 1) / 3600) ) || 0;
+                     if (!isFinite(sSpd)) sSpd = 0;
+                     return {
+                         segment_id: parseInt(segId),
+                         name: rs ? rs.name : 'Unknown',
+                         avg_speed_kmh: parseFloat(sSpd.toFixed(2)),
+                         avg_power_w: Math.round(s.pwr_acc / (s.sample_count || 1)) || 0,
+                         time_seconds: Math.round(s.time),
+                         calories: Math.round(s.kcal_acc),
+                         start_pct: rs ? rs.start_pct : 0,
+                         end_pct: rs ? rs.end_pct : 100
+                     };
+                 })
+             };
+
+             try {
+                 const response = await fetch('/sessions', {
+                     method: 'POST',
+                     headers: { 
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                         'Accept': 'application/json'
+                     },
+                     body: JSON.stringify(payload)
+                 });
+                 if (response.ok) {
+                     closeSaveModal();
+                     showToast(`
+                        <span style="display:flex; align-items:center; gap:8px;">✅ Session Saved!</span>
+                        <button onclick="openHistoryModal()" style="background:var(--accent); color:var(--bg-color); border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; cursor:pointer;">VIEW HISTORY</button>
+                     `, 5000);
+                 } else {
+                     const errData = await response.json();
+                     alert(`Failed to save: ${errData.message || 'Unknown error'}`);
+                 }
+             } catch (err) {
+                 console.error("Save Error:", err);
+                 alert("Failed to save session.");
+             } finally {
+                 btn.disabled = false;
+                 btn.innerText = 'Confirm Save';
+             }
+        };
+
+        window.openHistoryModal = () => {
+            document.getElementById('historyModal').style.display = 'block';
+            fetchHistory();
+        };
+
+        window.closeHistoryModal = () => document.getElementById('historyModal').style.display = 'none';
+
+        window.fetchHistory = async () => {
+            const list = document.getElementById('session-history-list');
+            const loader = document.getElementById('session-history-loading');
+            
+            list.innerHTML = '';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('{{ route("sessions.index") }}');
+                const data = await response.json();
+                loader.style.display = 'none';
+
+                if (data.sessions.length === 0) {
+                    list.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">No saved simulation sessions found.</p>';
+                } else {
+                    window._lastSessions = data.sessions; // Cache for detail view
+                    list.innerHTML = data.sessions.map(s => `
+                        <div class="session-item" id="session-row-${s.id}">
+                            <div class="session-info" onclick="openSessionDetail(${s.id})" style="cursor:pointer;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${s.bicycle_color}"></div>
+                                    <h4 style="color:white;">${s.name}</h4>
+                                </div>
+                                <p>${s.route_name || 'Generic Route'} • ${s.created_at}</p>
+                                <div class="session-stats">
+                                    <span>${s.total_distance_km}km</span>
+                                    <span>${s.formatted_time}</span>
+                                    <span style="color:var(--accent);">${s.avg_speed_kmh}km/h</span>
+                                    <span>${s.avg_power_w}W</span>
+                                </div>
+                            </div>
+                            <div class="session-actions" style="display: flex; gap: 8px;">
+                                <button class="btn btn-sm" style="padding: 4px 10px; background: rgba(56, 189, 248, 0.1); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.7rem;" onclick="openSessionDetail(${s.id})">Info</button>
+                                <button class="btn btn-sm" style="padding: 4px 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.7rem;" onclick="deleteSession(${s.id})">Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                loader.innerHTML = '<p style="color:red;">Error loading history.</p>';
+            }
+        };
+
+        window.openSessionDetail = (id) => {
+            const s = window._lastSessions.find(x => x.id == id);
+            if (!s) return;
+            
+            document.getElementById('detail-session-name').innerText = s.name;
+            document.getElementById('detail-session-date').innerText = `${s.bicycle_name} • ${s.created_at}`;
+            document.getElementById('detail-time').innerText = s.formatted_time;
+            document.getElementById('detail-dist').innerText = `${s.total_distance_km} km`;
+            document.getElementById('detail-speed').innerText = `${s.avg_speed_kmh} km/h`;
+            document.getElementById('detail-tss').innerText = s.tss;
+            
+            const body = document.getElementById('detail-segments-body');
+            if (s.segment_results && s.segment_results.length > 0) {
+                body.innerHTML = s.segment_results.map(r => `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                        <td style="padding: 12px 10px; font-weight: 600; color: white;">${r.name || 'Segment'}</td>
+                        <td style="padding: 12px 10px; font-family: 'JetBrains Mono'; color: rgba(255,255,255,0.8);">${formatSimulationTime(r.time_seconds)}</td>
+                        <td style="padding: 12px 10px; font-weight: bold; color: var(--accent);">${parseFloat(r.avg_speed_kmh).toFixed(1)} km/h</td>
+                        <td style="padding: 12px 10px; color: var(--success); font-weight: 600;">${Math.round(r.avg_power_w)} W</td>
+                        <td style="padding: 12px 10px; color: #f87171;">${Math.round(r.calories)} kcal</td>
+                    </tr>
+                `).join('');
+            } else {
+                body.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; opacity: 0.5;">No segment data for this session.</td></tr>';
+            }
+            
+            document.getElementById('sessionDetailModal').style.display = 'block';
+        };
+
+        window.closeDetailModal = () => document.getElementById('sessionDetailModal').style.display = 'none';
+
+        window.deleteSession = async (id) => {
+            if (!confirm('Are you sure you want to delete this result?')) return;
+            
+            try {
+                const response = await fetch(`/sessions/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const row = document.getElementById(`session-row-${id}`);
+                    if (row) row.remove();
+                    showToast('Session deleted.');
+                }
+            } catch (err) { console.error(err); }
+        };
+
+        function showToast(msg, duration = 3000) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.style.display = 'flex';
+            t.style.alignItems = 'center';
+            t.style.gap = '12px';
+            t.innerHTML = msg;
+            document.body.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(10px)';
+                setTimeout(() => t.remove(), 500);
+            }, duration);
+        }
 
         window.closeSummaryModal = () => {
             document.getElementById('summaryModal').style.display = 'none';
@@ -2573,7 +3388,7 @@
     <!-- Map Modal Removed - Integrated Inline -->
     
     <!-- Session Summary Modal -->
-    <div id="summaryModal" class="modal" style="z-index: 200;">
+    <div id="summaryModal" class="modal">
         <div class="modal-content" style="max-width: 800px; border-top: 6px solid var(--success); background: #0f172a;">
             <div class="modal-header">
                 <div>
@@ -2604,8 +3419,115 @@
                 </table>
             </div>
 
+            <div id="segment-breakdown-view" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.2rem;">📊</span> Per-Segment Performance
+                </h3>
+                <div id="segment-breakdown-content">
+                    <!-- Segment breakdown tables will be injected here -->
+                </div>
+            </div>
+
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-outline" style="border-color: var(--accent); color: var(--accent);" onclick="toggleSegmentBreakdown()">📋 Segment Breakdown</button>
                 <button class="btn" style="background: var(--success); box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);" onclick="closeSummaryModal()">Close Results</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAVE SESSION MODAL -->
+    <div id="saveSessionModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; border-top: 6px solid var(--accent); background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">💾 Save Simulation Result</h2>
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Store this race result to your history</p>
+                </div>
+                <span class="close" onclick="closeSaveModal()">&times;</span>
+            </div>
+            
+            <div style="margin: 1.5rem 0;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; opacity: 0.7;">Session Name</label>
+                <input type="text" id="sessionNameInput" class="form-control" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; color: white;" placeholder="e.g., Morning Climb on Route X">
+                
+                <div id="sessionSummaryPreview" style="margin-top: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; font-size: 0.8rem;">
+                    <!-- Data preview populated by JS -->
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="btn btn-outline" onclick="closeSaveModal()">Cancel</button>
+                <button class="btn" style="background: var(--accent);" id="confirmSaveBtn" onclick="submitSession()">Confirm Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SESSION HISTORY MODAL -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="max-width: 700px; border-top: 6px solid var(--accent); background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">📋 Simulation History</h2>
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Past simulation results and strategies</p>
+                </div>
+                <span class="close" onclick="closeHistoryModal()">&times;</span>
+            </div>
+            
+            <div id="session-history-loading" style="text-align: center; padding: 2rem; display: none;">
+                 <div class="spinner" style="margin: 0 auto;"></div>
+                 <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.5;">Fetching your past races...</p>
+            </div>
+
+            <div id="session-history-list" class="session-list" style="margin-top: 1.5rem;">
+                <!-- Populated by JS -->
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                <button class="btn btn-outline" onclick="closeHistoryModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SESSION DETAIL MODAL (PAST RUNS) -->
+    <div id="sessionDetailModal" class="modal" style="z-index: 2100;">
+        <div class="modal-content" style="max-width: 800px; border-top: 6px solid var(--accent); background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 id="detail-session-name" style="margin: 0; color: white;">Session Detail</h2>
+                    <p id="detail-session-date" style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;"></p>
+                </div>
+                <span class="close" onclick="closeDetailModal()">&times;</span>
+            </div>
+            
+            <div id="detail-summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="stat-item"><label style="opacity: 0.5; font-size: 0.7rem; display: block;">Time</label><span id="detail-time" style="font-weight: bold; color: white; font-size: 0.9rem;"></span></div>
+                <div class="stat-item"><label style="opacity: 0.5; font-size: 0.7rem; display: block;">Distance</label><span id="detail-dist" style="font-weight: bold; color: white; font-size: 0.9rem;"></span></div>
+                <div class="stat-item"><label style="opacity: 0.5; font-size: 0.7rem; display: block;">Avg Speed</label><span id="detail-speed" style="font-weight: bold; color: var(--accent); font-size: 0.9rem;"></span></div>
+                <div class="stat-item"><label style="opacity: 0.5; font-size: 0.7rem; display: block;">TSS</label><span id="detail-tss" style="font-weight: bold; color: #f59e0b; font-size: 0.9rem;"></span></div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.2rem;">🏁</span> Segment Breakdown
+                </h3>
+                <div id="detail-segments-container" style="overflow-x: auto; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.03); border-bottom: 2px solid rgba(255,255,255,0.05);">
+                                <th style="padding: 12px 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.65rem;">Segment</th>
+                                <th style="padding: 12px 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.65rem;">Time</th>
+                                <th style="padding: 12px 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.65rem;">Avg Speed</th>
+                                <th style="padding: 12px 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.65rem;">Avg Power</th>
+                                <th style="padding: 12px 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.65rem;">Energy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-segments-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                <button class="btn" onclick="closeDetailModal()">Close Detail</button>
             </div>
         </div>
     </div>
