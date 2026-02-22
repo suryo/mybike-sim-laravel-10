@@ -99,6 +99,73 @@
         .table-section { flex: 1; overflow-y: auto; padding: 2rem; }
         .table-section h2 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; }
 
+        /* ─── Bike selector cards ─────────────────── */
+        .selector-bar {
+            display: flex; gap: 1rem; padding: 1.25rem 1.5rem;
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            overflow-x: auto; flex-shrink: 0;
+        }
+        .selector-bar::-webkit-scrollbar { height: 4px; }
+        .selector-bar::-webkit-scrollbar-track { background: transparent; }
+        .selector-bar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .bike-card {
+            min-width: 200px; max-width: 240px;
+            background: var(--card); border-radius: 14px;
+            border: 1px solid var(--border); overflow: hidden;
+            flex-shrink: 0; position: relative;
+        }
+        .bike-card .card-header {
+            padding: 0.7rem 1rem 0.5rem;
+            border-bottom: 3px solid;
+        }
+        .bike-card .brand-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+        .bike-card .bike-name-label { font-size: 0.95rem; font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bike-card .card-body { padding: 0.75rem 1rem; font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+        .bike-card .card-body strong { color: var(--text); }
+        .bike-card .rm-btn {
+            position: absolute; top: 6px; right: 8px;
+            background: none; border: none; color: var(--muted); cursor: pointer;
+            font-size: 1.1rem; line-height: 1; padding: 2px 4px; border-radius: 4px;
+        }
+        .bike-card .rm-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+        .add-card-btn {
+            min-width: 160px; height: auto;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.4rem; padding: 1rem;
+            background: transparent; border: 2px dashed var(--border);
+            border-radius: 14px; color: var(--muted); cursor: pointer;
+            transition: all 0.2s; font-size: 0.8rem; flex-shrink: 0;
+        }
+        .add-card-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .add-card-btn svg { opacity: 0.6; }
+
+        /* ─── Insights ────────────────────────────── */
+        .insights-section {
+            padding: 1.25rem 1.5rem;
+            background: var(--bg); border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .insights-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+        .insight-cards { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .insight-card {
+            flex: 1; min-width: 200px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1rem 1.25rem;
+        }
+        .insight-card .ic-label { font-size: 0.72rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+        .insight-card .ic-sub { font-size: 0.72rem; color: var(--muted); }
+        .insight-bar { height: 5px; border-radius: 3px; margin: 0.6rem 0; overflow: hidden; display: flex; gap: 2px; }
+        .insight-bar-seg { height: 100%; border-radius: 3px; }
+        .insight-badge {
+            display: inline-block; font-size: 0.68rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 20px;
+        }
+        .badge-aero    { background: rgba(56,189,248,0.15); color: #38bdf8; }
+        .badge-comfort { background: rgba(52,211,153,0.15); color: #34d399; }
+        .badge-balance { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-upright { background: rgba(129,140,248,0.15); color: #818cf8; }
+
+
         .section-label {
             font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
             color: var(--muted); padding: 0.85rem 1rem; background: rgba(255,255,255,0.02);
@@ -170,6 +237,21 @@
             <p>Select bikes from the sidebar to visualise</p>
         </div>
 
+        <!-- Bike selector cards below canvas -->
+        <div class="selector-bar" id="selector-bar">
+            <div id="selected-cards"></div>
+            <button class="add-card-btn" onclick="openBikeModal()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Add Bike
+            </button>
+        </div>
+
+        <!-- Insights -->
+        <div class="insights-section" id="insights-section" style="display:none">
+            <div class="insights-title">⚡ Insights</div>
+            <div class="insight-cards" id="insight-cards"></div>
+        </div>
+
         <!-- Data Table -->
         <div class="table-section">
             <table id="comparison-table">
@@ -209,7 +291,6 @@ function toggleBike(id) {
         selectedBikes.splice(idx, 1);
         item.classList.remove('selected');
         swatch.style.background = '';
-        // Reassign palette colours
         selectedBikes.forEach((bid, i) => {
             document.getElementById(`swatch-${bid}`).style.background = PALETTE[i];
         });
@@ -217,11 +298,169 @@ function toggleBike(id) {
     renderAll();
 }
 
+// ── Open a quick modal/dropdown to pick a bike to add ──
+function openBikeModal() {
+    // Build a floating picker anchored to the button
+    const existing = document.getElementById('bike-picker-popup');
+    if (existing) { existing.remove(); return; }
+
+    const popup = document.createElement('div');
+    popup.id = 'bike-picker-popup';
+    popup.style.cssText = `
+        position:fixed; bottom:0; left:0; right:0; z-index:200;
+        background:var(--surface); border-top:1px solid var(--border);
+        padding:1rem 1.5rem; display:flex; flex-wrap:wrap; gap:0.5rem;
+        max-height:40vh; overflow-y:auto;
+    `;
+
+    const title = document.createElement('div');
+    title.style.cssText = 'width:100%;font-size:0.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;';
+    title.textContent = '⚡ Select a bike to add';
+    popup.appendChild(title);
+
+    bicycles.forEach(b => {
+        const btn = document.createElement('button');
+        const isSelected = selectedBikes.includes(b.id);
+        btn.style.cssText = `
+            padding:.45rem .9rem; border-radius:8px; border:1px solid ${isSelected ? PALETTE[selectedBikes.indexOf(b.id)] : 'var(--border)'};
+            background:${isSelected ? 'rgba(56,189,248,0.1)' : 'var(--card)'}; color:var(--text);
+            cursor:pointer; font-size:.8rem; font-weight:600; transition:all .15s;
+        `;
+        btn.textContent = b.name;
+        btn.onclick = () => { toggleBike(b.id); popup.remove(); };
+        popup.appendChild(btn);
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕ Close';
+    closeBtn.style.cssText = 'padding:.45rem .9rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:.8rem;font-weight:600;';
+    closeBtn.onclick = () => popup.remove();
+    popup.appendChild(closeBtn);
+
+    document.body.appendChild(popup);
+}
+
+// ── Render selected bike cards below canvas ──
+function renderSelectedCards() {
+    const container = document.getElementById('selected-cards');
+    container.innerHTML = '';
+    container.style.display = 'flex';
+    container.style.gap = '1rem';
+
+    selectedBikes.forEach((id, i) => {
+        const bike = bicycles.find(b => b.id === id);
+        const color = PALETTE[i];
+        const n = v => v != null ? parseFloat(v).toFixed(1) : '–';
+
+        const card = document.createElement('div');
+        card.className = 'bike-card';
+        card.innerHTML = `
+            <div class="card-header" style="border-color:${color}">
+                <div class="brand-label">Polygon Bikes</div>
+                <div class="bike-name-label" style="color:${color}">${bike.name}</div>
+            </div>
+            <div class="card-body">
+                <strong>${bike.category?.name ?? bike.type ?? '–'}</strong> · ${bike.frame_material ?? '–'}<br>
+                Stack <strong>${n(bike.stack)}</strong> / Reach <strong>${n(bike.reach)}</strong><br>
+                Weight <strong>${n(bike.weight_kg)} kg</strong>
+            </div>
+            <button class="rm-btn" onclick="toggleBike(${id})" title="Remove">✕</button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ── Render insights section ──
+function renderInsights() {
+    const section = document.getElementById('insights-section');
+    const container = document.getElementById('insight-cards');
+
+    if (selectedBikes.length < 1) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    container.innerHTML = '';
+
+    const data = selectedBikes.map((id, i) => ({
+        bike: bicycles.find(b => b.id === id),
+        color: PALETTE[i]
+    }));
+
+    const n = v => parseFloat(v) || 0;
+
+    data.forEach(({ bike, color }) => {
+        const ht  = n(bike.head_tube_angle);
+        const fo  = n(bike.fork_offset || 45);
+        const wR  = (n(bike.wheel_diameter) || 700) / 2;
+        const htR = ht * Math.PI / 180;
+        const trail = (wR * Math.cos(htR) - fo) / Math.sin(htR);
+        const reach = n(bike.reach);
+        const stack = n(bike.stack);
+        const ratio = reach ? (stack / reach).toFixed(3) : '–';
+
+        // Categorise handling
+        let handlingLabel, handlingBadge;
+        if (trail > 70)       { handlingLabel = 'Stable / Comfortable'; handlingBadge = '<span class="insight-badge badge-comfort">Comfort</span>'; }
+        else if (trail > 60)  { handlingLabel = 'Balanced Handling';     handlingBadge = '<span class="insight-badge badge-balance">Balanced</span>'; }
+        else if (trail > 50)  { handlingLabel = 'Responsive / Agile';    handlingBadge = '<span class="insight-badge badge-aero">Agile</span>'; }
+        else                  { handlingLabel = 'Race-oriented';          handlingBadge = '<span class="insight-badge badge-aero">Race</span>'; }
+
+        // Stack/reach position (low ratio = aggressive, high = relaxed)
+        let posLabel, posBadge;
+        const ratiof = parseFloat(ratio);
+        if (ratiof > 1.55)     { posLabel = 'Relaxed / Upright position';  posBadge = '<span class="insight-badge badge-upright">Relaxed</span>'; }
+        else if (ratiof > 1.48){ posLabel = 'Endurance / Balanced';        posBadge = '<span class="insight-badge badge-balance">Endurance</span>'; }
+        else                   { posLabel = 'Aggressive / Aero position';  posBadge = '<span class="insight-badge badge-aero">Aggressive</span>'; }
+
+        // Bar: reach vs stack
+        const maxVal = Math.max(reach, stack);
+        const reachPct = ((reach / maxVal) * 100).toFixed(0);
+        const stackPct = ((stack / maxVal) * 100).toFixed(0);
+
+        const card = document.createElement('div');
+        card.className = 'insight-card';
+        card.innerHTML = `
+            <div class="ic-label" style="color:${color}">${bike.name}</div>
+            <div class="insight-bar" style="margin-top:.6rem">
+                <div class="insight-bar-seg" style="width:${reachPct}%;background:${color};opacity:.7"></div>
+                <div class="insight-bar-seg" style="width:${stackPct}%;background:${color};opacity:.35"></div>
+            </div>
+            <div class="ic-sub">Stack/Reach ratio: <strong style="color:${color}">${ratio}</strong> · ${posLabel}</div>
+            <div style="margin-top:.5rem">${posBadge}</div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:.75rem 0">
+            <div class="ic-sub">Trail: <strong style="color:${color}">${trail.toFixed(1)} mm</strong> · ${handlingLabel}</div>
+            <div style="margin-top:.4rem">${handlingBadge}</div>
+        `;
+        container.appendChild(card);
+    });
+
+    // Weight diff insight (only when 2+ bikes)
+    if (data.length >= 2) {
+        const weights = data.map(d => n(d.bike.weight_kg));
+        const lightest = Math.min(...weights);
+        const heaviest = Math.max(...weights);
+        const diff = (heaviest - lightest).toFixed(1);
+
+        const card = document.createElement('div');
+        card.className = 'insight-card';
+        card.innerHTML = `
+            <div class="ic-label">⚖️ Weight Comparison</div>
+            <div class="insight-bar" style="margin-top:.6rem">${data.map((d,i) => {
+                const pct = ((n(d.bike.weight_kg) / heaviest) * 100).toFixed(0);
+                return `<div class="insight-bar-seg" style="width:${pct}%;background:${d.color}"></div>`;
+            }).join('')}</div>
+            ${data.map((d,i)=>`<div class="ic-sub" style="color:${d.color}">${d.bike.name}: <strong>${n(d.bike.weight_kg)} kg</strong></div>`).join('')}
+            <div style="margin-top:.5rem"><span class="insight-badge badge-balance">Δ ${diff} kg between lightest & heaviest</span></div>
+        `;
+        container.appendChild(card);
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // renderAll
 // ─────────────────────────────────────────────────────────────────────
 function renderAll() {
     updateLegend();
+    renderSelectedCards();
+    renderInsights();
     renderCanvas();
     renderTable();
 }
