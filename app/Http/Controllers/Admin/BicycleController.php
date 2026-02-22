@@ -56,13 +56,7 @@ class BicycleController extends Controller
             'drag_coefficient'   => 'nullable|numeric|min:0.1|max:2.0',
             'rolling_coefficient'=> 'nullable|numeric|min:0.001|max:0.1',
             // Simulation
-            'rider_weight'       => 'nullable|numeric',
             'bicycle_weight'     => 'nullable|numeric',
-            'max_hr'             => 'nullable|integer',
-            'ftp'                => 'nullable|numeric',
-            'max_power_output'   => 'nullable|numeric',
-            'aerobic_threshold'  => 'nullable|numeric',
-            'anaerobic_threshold'=> 'nullable|numeric',
             'initial_distance'   => 'nullable|numeric',
             'initial_elevation'  => 'nullable|numeric',
         ]);
@@ -119,13 +113,7 @@ class BicycleController extends Controller
             'efficiency'         => 'nullable|numeric|min:0.8|max:1.0',
             'drag_coefficient'   => 'nullable|numeric|min:0.1|max:2.0',
             'rolling_coefficient'=> 'nullable|numeric|min:0.001|max:0.1',
-            'rider_weight'       => 'nullable|numeric',
             'bicycle_weight'     => 'nullable|numeric',
-            'max_hr'             => 'nullable|integer',
-            'ftp'                => 'nullable|numeric',
-            'max_power_output'   => 'nullable|numeric',
-            'aerobic_threshold'  => 'nullable|numeric',
-            'anaerobic_threshold'=> 'nullable|numeric',
             'initial_distance'   => 'nullable|numeric',
             'initial_elevation'  => 'nullable|numeric',
         ]);

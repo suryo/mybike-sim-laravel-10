@@ -15,6 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('simulation')" :active="request()->routeIs('simulation')">
+                        {{ __('Simulation') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('compare')" :active="request()->routeIs('compare')">
+                        {{ __('Comparison') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -37,6 +43,18 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+
+                        <hr class="border-gray-100">
+
+                        <x-dropdown-link :href="route('admin.riders.index')">
+                            👤 {{ __('My Riders') }}
+                        </x-dropdown-link>
+
+                        <x-dropdown-link :href="route('admin.fitting.wizard')">
+                            📏 {{ __('Fitting Wizard') }}
+                        </x-dropdown-link>
+
+                        <hr class="border-gray-100">
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -70,6 +88,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('simulation')" :active="request()->routeIs('simulation')">
+                {{ __('Simulation') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('compare')" :active="request()->routeIs('compare')">
+                {{ __('Comparison') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -82,6 +106,14 @@
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.riders.index')">
+                    👤 {{ __('My Riders') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.fitting.wizard')">
+                    📏 {{ __('Fitting Wizard') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

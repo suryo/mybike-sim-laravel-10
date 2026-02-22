@@ -328,13 +328,13 @@
         <a href="{{ route('home') }}" class="logo">MyBike Pro</a>
         <div class="nav-links">
             <a href="{{ route('home') }}" class="nav-item active">Home</a>
+            <a href="{{ route('simulation') }}" class="nav-item">Simulation</a>
             <a href="{{ route('compare') }}" class="nav-item">Compare</a>
             <div class="dropdown">
-                <a href="#" class="nav-item">Catalog ▾</a>
+                <a href="#" class="nav-item">Riders ▾</a>
                 <div class="dropdown-content">
-                    <a href="#" class="dropdown-item">Categories</a>
-                    <a href="#" class="dropdown-item">Top Brands</a>
-                    <a href="#" class="dropdown-item">Search Bike</a>
+                    <a href="{{ route('admin.riders.index') }}" class="dropdown-item">My Profiles</a>
+                    <a href="{{ route('admin.fitting.wizard') }}" class="dropdown-item">Fitting Wizard</a>
                 </div>
             </div>
             <a href="#events" class="nav-item">Events</a>
@@ -376,6 +376,31 @@
                 @endforeach
             </div>
         </div>
+
+        <section style="margin-bottom: 6rem; position: relative;" id="tools">
+            <div style="position: absolute; inset: -40px; background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 70%); z-index: -1;"></div>
+            <h2 class="section-title">Professional Tools</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                <div class="side-news-card" style="display: flex; flex-direction: column; gap: 1rem; padding: 2.5rem; background: rgba(30, 41, 59, 0.4); border-radius: 32px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📏</div>
+                    <h3 style="margin: 0; font-size: 1.5rem; font-weight: 800;">Fitting Advisor</h3>
+                    <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">Optimize your riding position with our biomechanical wizard. Perfect comfort, maximum power output.</p>
+                    <a href="{{ route('admin.fitting.wizard') }}" class="btn-sim" style="text-align: center; margin-top: auto; padding: 0.8rem;">Start Fitting</a>
+                </div>
+                <div class="side-news-card" style="display: flex; flex-direction: column; gap: 1rem; padding: 2.5rem; background: rgba(30, 41, 59, 0.4); border-radius: 32px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
+                    <h3 style="margin: 0; font-size: 1.5rem; font-weight: 800;">Gear Comparison</h3>
+                    <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">Compare different bicycle setups and rider profiles. Find the optimal combinations for any terrain.</p>
+                    <a href="{{ route('compare') }}" class="btn-sim" style="text-align: center; margin-top: auto; padding: 0.8rem;">Compare Tools</a>
+                </div>
+                <div class="side-news-card" style="display: flex; flex-direction: column; gap: 1rem; padding: 2.5rem; background: rgba(30, 41, 59, 0.4); border-radius: 32px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🚴</div>
+                    <h3 style="margin: 0; font-size: 1.5rem; font-weight: 800;">Physics Engine</h3>
+                    <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">Simulate real-world conditions with our custom engine. Test aerodynamics, weight, and rolling resistance.</p>
+                    <a href="{{ route('simulation') }}" class="btn-sim" style="text-align: center; margin-top: auto; padding: 0.8rem;">Launch Lab</a>
+                </div>
+            </div>
+        </section>
 
         <div class="features-grid">
             <section id="events">

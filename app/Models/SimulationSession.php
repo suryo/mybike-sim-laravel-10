@@ -12,6 +12,7 @@ class SimulationSession extends Model
     protected $fillable = [
         'name',
         'bicycle_id',
+        'rider_id',
         'route_name',
         'total_distance_km',
         'total_time_seconds',
@@ -40,6 +41,11 @@ class SimulationSession extends Model
     public function bicycle()
     {
         return $this->belongsTo(Bicycle::class);
+    }
+
+    public function rider()
+    {
+        return $this->belongsTo(Rider::class);
     }
 
     /** Format total_time_seconds as H:MM:SS string */

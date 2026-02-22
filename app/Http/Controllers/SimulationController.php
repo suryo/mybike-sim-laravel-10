@@ -12,11 +12,24 @@ class SimulationController extends Controller
     public function index()
     {
         $bicycles = Bicycle::all();
-        $sessions = SimulationSession::with('bicycle')
+        $riders = \App\Models\Rider::all();
+        
+        // Ensure at least one default rider exists for core simulation functionality
+        if ($riders->isEmpty()) {
+            \App\Models\Rider::create([
+                'name' => 'Default Rider',
+                'weight_kg' => 75,
+                'ftp' => 250,
+                'max_hr' => 190,
+            ]);
+            $riders = \App\Models\Rider::all();
+        }
+
+        $sessions = SimulationSession::with(['bicycle', 'rider'])
             ->latest()
             ->limit(50)
             ->get();
-        return view('simulation.index', compact('bicycles', 'sessions'));
+        return view('simulation.index', compact('bicycles', 'riders', 'sessions'));
     }
 
     public function store(Request $request)
@@ -41,7 +54,6 @@ class SimulationController extends Controller
         $validated['wheel_diameter']    = 700;
         $validated['efficiency']        = $request->efficiency;
         $validated['bicycle_weight']    = $request->bicycle_weight;
-        $validated['rider_weight']      = $request->rider_weight;
         $validated['initial_distance']  = $request->initial_distance  ?? 0;
         $validated['initial_elevation'] = $request->initial_elevation ?? 0;
         $validated['initial_fuel']      = $request->initial_fuel      ?? 2500;
@@ -72,7 +84,6 @@ class SimulationController extends Controller
         $validated['rear_gears']        = array_map('intval', explode(',', $request->rear_gears));
         $validated['efficiency']        = $request->efficiency;
         $validated['bicycle_weight']    = $request->bicycle_weight;
-        $validated['rider_weight']      = $request->rider_weight;
         $validated['initial_distance']  = $request->initial_distance  ?? 0;
         $validated['initial_elevation'] = $request->initial_elevation ?? 0;
         $validated['initial_fuel']      = $request->initial_fuel      ?? 2500;
@@ -98,6 +109,7 @@ class SimulationController extends Controller
             $validated = $request->validate([
                 'name'                     => 'required|string|max:255',
                 'bicycle_id'               => 'required|exists:bicycles,id',
+                'rider_id'                 => 'required|exists:riders,id',
                 'route_name'               => 'nullable|string|max:255',
                 'total_distance_km'        => 'required|numeric|min:0',
                 'total_time_seconds'       => 'required|integer|min:0',
@@ -136,7 +148,7 @@ class SimulationController extends Controller
 
     public function listSessions()
     {
-        $sessions = SimulationSession::with('bicycle')
+        $sessions = SimulationSession::with(['bicycle', 'rider'])
             ->latest()
             ->limit(50)
             ->get()
@@ -145,6 +157,7 @@ class SimulationController extends Controller
                 'name'                 => $s->name,
                 'bicycle_name'         => $s->bicycle->name ?? '—',
                 'bicycle_color'        => $s->bicycle->color ?? '#888',
+                'rider_name'           => $s->rider->name ?? '—',
                 'route_name'           => $s->route_name,
                 'total_distance_km'    => round($s->total_distance_km, 2),
                 'total_time_seconds'   => $s->total_time_seconds,

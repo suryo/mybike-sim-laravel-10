@@ -189,9 +189,29 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M5.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"></path><path d="M15 6H9.5L5.5 12h13z"></path></svg>
                 <span>Bicycles</span>
             </a>
+            <a href="{{ route('admin.riders.index') }}" class="nav-link {{ request()->is('admin/riders*') ? 'active' : '' }}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>Riders</span>
+            </a>
             <a href="#" class="nav-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path></svg>
                 <span>Categories</span>
+            </a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-label">Simulation</div>
+            <a href="{{ route('simulation') }}" class="nav-link" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <span>Live View</span>
+            </a>
+            <a href="{{ route('admin.fitting.wizard') }}" class="nav-link {{ request()->routeIs('admin.fitting.wizard') ? 'active' : '' }}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.77 3.77z"></path></svg>
+                <span>Fitting Wizard</span>
+            </a>
+            <a href="{{ route('compare') }}" class="nav-link" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M16 4l3 3-7 7-3-3 7-7zM21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7"></path></svg>
+                <span>Compare Tool</span>
             </a>
         </div>
 

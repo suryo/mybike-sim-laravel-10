@@ -1025,7 +1025,19 @@
             </div>
 
             <div class="bike-sidebar">
-                <h2 class="sidebar-title">Racedeck</h2>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                    <h2 class="sidebar-title" style="margin-bottom: 0;">Racedeck</h2>
+                    <div class="control-group">
+                        <label style="font-size: 0.7rem;">Active Rider Profile</label>
+                        <select id="globalRiderSelect" class="form-control" style="background: rgba(56, 189, 248, 0.1); border-color: var(--accent); font-weight: 700;">
+                            @foreach($riders as $rider)
+                                <option value="{{ $rider->id }}" data-rider="{{ json_encode($rider) }}">
+                                    👤 {{ $rider->name }} ({{ $rider->weight_kg }}kg / {{ $rider->ftp }}W)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
                 <div class="bike-list" id="bikeList">
                     @forelse($bicycles as $bike)
                     <div class="bike-card" id="bike-{{ $bike->id }}">
@@ -1064,7 +1076,7 @@
                             <div class="bike-color" style="background-color: {{ $bike->color }}"></div>
                             <span class="bike-name">{{ $bike->name }}</span>
                             <div id="finish-badge-{{ $bike->id }}" class="finish-badge">Finished</div>
-                            <span style="font-size: 0.7rem; opacity: 0.5;">(B:{{ $bike->bicycle_weight }}kg + R:{{ $bike->rider_weight }}kg / {{ $bike->efficiency * 100 }}%)</span>
+                            <span style="font-size: 0.7rem; opacity: 0.5;">(B:{{ $bike->bicycle_weight }}kg + Rider <span class="rider-name-display">...</span> / {{ $bike->efficiency * 100 }}%)</span>
                         </div>
 
                         <!-- Track Progress Bar -->
@@ -1913,9 +1925,39 @@
         };
 
 
-        // WRAP EVERYTHING IN ONLOAD
+        // ==========================================
+        // PHASE 30: INITIALIZATION & STATE
+        // ==========================================
         window.onload = function() {
             const bikesData = @json($bicycles);
+            const ridersData = @json($riders);
+            const globalRiderSelect = document.getElementById('globalRiderSelect');
+            
+            // Get initial rider
+            let selectedRider = JSON.parse(globalRiderSelect.options[globalRiderSelect.selectedIndex].getAttribute('data-rider'));
+
+            globalRiderSelect.onchange = (e) => {
+                const opt = e.target.options[e.target.selectedIndex];
+                selectedRider = JSON.parse(opt.getAttribute('data-rider'));
+                updateRiderDisplays();
+                showToast(`Switched to Rider: ${selectedRider.name}`);
+            };
+
+            function updateRiderDisplays() {
+                document.querySelectorAll('.rider-name-display').forEach(el => {
+                    el.innerText = `${selectedRider.name} (${selectedRider.weight_kg}kg)`;
+                });
+                
+                // Update internal states if simulation is running? 
+                // Better to just reactive it on next cycle or restart.
+                bikeState.forEach(bike => {
+                    bike.rider_id = selectedRider.id;
+                    bike.rider_weight = selectedRider.weight_kg;
+                    bike.ftp = selectedRider.ftp;
+                    bike.max_hr = selectedRider.max_hr;
+                    bike.anaerobic_threshold_w = selectedRider.anaerobic_threshold_w;
+                });
+            }
             const debugRiders = document.getElementById('debug-riders');
             const debugStatus = document.getElementById('debug-status');
             const debugRes = document.getElementById('debug-res');
@@ -2002,7 +2044,12 @@
                 rearGearLocked: true,  // NEW: Auto-shifting toggle
                 elevationGain: parseFloat(bike.initial_elevation || 0),
                 distance: parseFloat(bike.initial_distance || 0) * 1000, 
-                currentSlope: 0, // NEW: Current terrain slope
+                currentSlope: 0,
+                rider_id: selectedRider.id,
+                rider_weight: selectedRider.weight_kg,
+                ftp: selectedRider.ftp,
+                max_hr: selectedRider.max_hr,
+                anaerobic_threshold_w: selectedRider.anaerobic_threshold_w,
                 logs: [],
                 history: [], // Metric snapshots for export
                 lastHistorySample: 0,
@@ -3302,6 +3349,7 @@
              const payload = {
                  name: document.getElementById('sessionNameInput').value,
                  bicycle_id: b.id,
+                 rider_id: b.rider_id,
                  route_name: window.useRouteElevation ? "Custom Route" : "Flat Road",
                  total_distance_km: parseFloat((b.distance / 1000).toFixed(2)),
                  total_time_seconds: Math.round(raceTime),
@@ -3388,6 +3436,7 @@
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="width: 8px; height: 8px; border-radius: 50%; background: ${s.bicycle_color}"></div>
                                     <h4 style="color:white;">${s.name}</h4>
+                                    <small style="opacity:0.5; font-size: 0.7rem;">👤 ${s.rider_name || 'Generic Rider'}</small>
                                 </div>
                                 <p>${s.route_name || 'Generic Route'} • ${s.created_at}</p>
                                 <div class="session-stats">

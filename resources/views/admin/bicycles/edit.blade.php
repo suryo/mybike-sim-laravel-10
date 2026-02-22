@@ -200,35 +200,11 @@
 
     {{-- 5. Simulation --}}
     <div class="section-card">
-        <div class="section-title">⑤ Default Simulation Parameters</div>
+        <div class="section-title">⑤ Simulation Defaults</div>
         <div class="form-grid-3">
-            <div class="form-group">
-                <label>Rider Weight (kg)</label>
-                <input type="number" step="0.1" name="rider_weight" value="{{ old('rider_weight',$bicycle->rider_weight??75) }}" class="field">
-            </div>
             <div class="form-group">
                 <label>Bike Weight – Sim (kg)</label>
                 <input type="number" step="0.01" name="bicycle_weight" value="{{ old('bicycle_weight',$bicycle->bicycle_weight??$bicycle->weight_kg) }}" class="field">
-            </div>
-            <div class="form-group">
-                <label>Max Heart Rate (bpm)</label>
-                <input type="number" step="1" name="max_hr" value="{{ old('max_hr',$bicycle->max_hr??190) }}" class="field">
-            </div>
-            <div class="form-group">
-                <label>FTP (W)</label>
-                <input type="number" step="1" name="ftp" value="{{ old('ftp',$bicycle->ftp??250) }}" class="field">
-            </div>
-            <div class="form-group">
-                <label>Max Power (W)</label>
-                <input type="number" step="1" name="max_power_output" value="{{ old('max_power_output',$bicycle->max_power_output??350) }}" class="field">
-            </div>
-            <div class="form-group">
-                <label>Aerobic Threshold (W)</label>
-                <input type="number" step="1" name="aerobic_threshold" value="{{ old('aerobic_threshold',$bicycle->aerobic_threshold??180) }}" class="field">
-            </div>
-            <div class="form-group">
-                <label>Anaerobic Threshold (W)</label>
-                <input type="number" step="1" name="anaerobic_threshold" value="{{ old('anaerobic_threshold',$bicycle->anaerobic_threshold??280) }}" class="field">
             </div>
             <div class="form-group">
                 <label>Initial Distance (km)</label>

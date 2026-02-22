@@ -24,6 +24,11 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::resource('bicycles', AdminBicycleController::class);
+    
+    // Riders & Fitting
+    Route::resource('riders', \App\Http\Controllers\RiderController::class);
+    Route::get('fitting/wizard', [\App\Http\Controllers\RiderController::class, 'wizard'])->name('fitting.wizard');
+    Route::post('fitting/save', [\App\Http\Controllers\RiderController::class, 'saveFitting'])->name('fitting.save');
 });
 
 // Simulation Sessions
