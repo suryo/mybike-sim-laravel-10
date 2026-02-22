@@ -78,6 +78,14 @@
             border-bottom: 2px solid rgba(56,189,248,0.15);
         }
         .canvas-header .canvas-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #93c5fd; }
+        .view-toggle { display: flex; gap: 0.3rem; }
+        .view-btn {
+            padding: 0.3rem 0.85rem; border-radius: 6px; border: 1px solid rgba(56,189,248,0.2);
+            background: transparent; color: #93c5fd; cursor: pointer; font-size: 0.72rem;
+            font-weight: 600; letter-spacing: 0.04em; transition: all 0.15s;
+        }
+        .view-btn:hover { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.4); }
+        .view-btn.active { background: rgba(56,189,248,0.18); border-color: #38bdf8; color: #38bdf8; }
         .canvas-legend { display: flex; gap: 1rem; align-items: center; }
         .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: #93c5fd; }
         .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -227,6 +235,11 @@
         <!-- Canvas -->
         <div class="canvas-header">
             <span class="canvas-title">Geometry Overlay</span>
+            <div class="view-toggle">
+                <button class="view-btn active" id="btn-side"  onclick="setView('side')" >⬅ Side</button>
+                <button class="view-btn"        id="btn-front" onclick="setView('front')">↑ Front</button>
+                <button class="view-btn"        id="btn-top"   onclick="setView('top')"  >⊙ Top</button>
+            </div>
             <div class="canvas-legend" id="legend"></div>
         </div>
         <div class="canvas-wrap">
@@ -454,9 +467,17 @@ function renderInsights() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────
-// renderAll
-// ─────────────────────────────────────────────────────────────────────
+let currentView = 'side';
+
+function setView(v) {
+    currentView = v;
+    ['side','front','top'].forEach(n => {
+        const b = document.getElementById(`btn-${n}`);
+        if (b) b.classList.toggle('active', n === v);
+    });
+    renderCanvas();
+}
+
 function renderAll() {
     updateLegend();
     renderSelectedCards();
@@ -464,6 +485,212 @@ function renderAll() {
     renderCanvas();
     renderTable();
 }
+
+// ── Dispatches to the correct view renderer ──
+function renderCanvas() {
+    if      (currentView === 'front') renderFrontView();
+    else if (currentView === 'top')   renderTopView();
+    else                              renderSideView();
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// FRONT VIEW  –  Orthographic projection looking from the front
+//   x-axis (canvas) = lateral (Z in 3D)
+//   y-axis (canvas) = vertical  (Y in 3D)
+// ─────────────────────────────────────────────────────────────────────
+function renderFrontView() {
+    const canvas = document.getElementById('geometryCanvas');
+    const ctx    = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'#1a3a5c'); grad.addColorStop(1,'#0d2340');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+    if (selectedBikes.length === 0) return;
+
+    const data = selectedBikes.map(id => bicycles.find(b => b.id===id))
+                              .filter(b => b && b.stack && b.reach && b.wheelbase);
+    if (!data.length) return;
+
+    const WHEEL_R_MM = 350;
+    const HB_HALF   = 220; // half handlebar width in mm (approx 440mm total)
+    const FORK_HALF = 80;  // fork half-width (mm)
+
+    const maxStack = Math.max(...data.map(b => +b.stack || 600));
+    const totalH   = 2 * WHEEL_R_MM + maxStack;   // ground to HT top
+    const totalW   = (HB_HALF + 20) * 2;          // handlebar span + margin
+
+    const scaleH = (H - 40) / totalH;
+    const scaleW = (W - 40) / totalW;
+    const scale  = Math.min(scaleH, scaleW) * 0.75; // a bit smaller for clarity
+
+    const cx = W / 2;
+    const groundY = H - 20;  // contact point Y
+
+    const line = (ctx, x1, y1, x2, y2) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    };
+    const circle = (ctx, cx, cy, r) => {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+    };
+
+    data.forEach((bike, i) => {
+        const color = PALETTE[i];
+        const n = v => parseFloat(v) || 0;
+        const wheelR = WHEEL_R_MM * scale;
+        const bbDrop = n(bike.bb_drop || 70) * scale;
+        const stack  = n(bike.stack) * scale;
+        const htLen  = n(bike.head_tube_length || 140) * scale;
+        const htaRad = n(bike.head_tube_angle  || 73) * Math.PI / 180;
+
+        const axleY   = groundY - wheelR;               // wheel center Y
+        const bbY     = axleY + bbDrop;                 // BB Y (below axle)
+        const htTopY  = bbY - stack;                    // HT top Y
+        const htBotY  = htTopY + htLen * Math.sin(htaRad);
+
+        // Front wheel (centred horizontally)
+        ctx.lineWidth = 2; ctx.strokeStyle = color + '55';
+        circle(ctx, cx, axleY, wheelR);
+        ctx.lineWidth = 1; ctx.strokeStyle = color + '30';
+        circle(ctx, cx, axleY, wheelR * 0.92);
+
+        // Fork blades (two lines, slightly apart)
+        ctx.lineWidth = 2; ctx.strokeStyle = color + 'CC';
+        const forkSpread = FORK_HALF * scale;
+        [cx - forkSpread, cx + forkSpread].forEach(fx => {
+            line(ctx, fx, htBotY, cx, axleY);
+        });
+
+        // Head tube (centre)
+        ctx.lineWidth = 5; ctx.strokeStyle = color;
+        line(ctx, cx, htTopY, cx, htBotY);
+
+        // Handlebar (horizontal line at HT top)
+        const hbHalf = HB_HALF * scale;
+        ctx.lineWidth = 2; ctx.strokeStyle = color + 'AA';
+        line(ctx, cx - hbHalf, htTopY, cx + hbHalf, htTopY);
+        // bar ends
+        [cx - hbHalf, cx + hbHalf].forEach(bx => {
+            ctx.beginPath(); ctx.arc(bx, htTopY, 4*scale/WHEEL_R_MM*45, 0, Math.PI*2);
+            ctx.fillStyle = color; ctx.fill();
+        });
+
+        // Ground
+        ctx.lineWidth = 1; ctx.strokeStyle = color + '33'; ctx.setLineDash([5,5]);
+        line(ctx, cx - wheelR - 10, groundY, cx + wheelR + 10, groundY);
+        ctx.setLineDash([]);
+
+        // Labels
+        ctx.font = '600 11px Inter, sans-serif'; ctx.fillStyle = color; ctx.textAlign = 'left';
+        ctx.fillText(`HT: ${n(bike.head_tube_length).toFixed(0)}mm`, cx + wheelR + 8, (htTopY + htBotY)/2);
+        ctx.fillText(`HB: ~440mm`, cx - hbHalf, htTopY - 8);
+    });
+
+    // View label
+    ctx.font = 'bold 12px Inter'; ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.textAlign = 'right';
+    ctx.fillText('FRONT VIEW', W - 16, H - 16);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// TOP VIEW  –  Orthographic projection looking from above (plan view)
+//   x-axis (canvas) = forward / wheelbase  (X in 3D)
+//   y-axis (canvas) = lateral / Z in 3D    (centre = 0)
+// ─────────────────────────────────────────────────────────────────────
+function renderTopView() {
+    const canvas = document.getElementById('geometryCanvas');
+    const ctx    = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'#1a3a5c'); grad.addColorStop(1,'#0d2340');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+    if (selectedBikes.length === 0) return;
+
+    const data = selectedBikes.map(id => bicycles.find(b => b.id===id))
+                              .filter(b => b && b.stack && b.reach && b.wheelbase);
+    if (!data.length) return;
+
+    const WHEEL_R_MM  = 350;
+    const TIRE_W_HALF = 20;  // mm, half tire width from side
+    const HB_HALF     = 220; // half handlebar width mm
+    const FRAME_W     = 40;  // half frame tube visual width mm
+
+    const maxWB = Math.max(...data.map(b => +b.wheelbase || 1000));
+    const totalX = WHEEL_R_MM + maxWB + WHEEL_R_MM;
+    const totalZ = (HB_HALF + 20) * 2;
+
+    const scaleX = (W - 40) / totalX;
+    const scaleZ = (H - 40) / totalZ;
+    const scale  = Math.min(scaleX, scaleZ);
+
+    // Rear wheel starts at left margin + wheelR
+    const rearX  = (W - totalX * scale) / 2 + WHEEL_R_MM * scale;
+    const centerY = H / 2;
+
+    const line = (ctx, x1, y1, x2, y2) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    };
+    const ellipse = (ctx, cx, cy, rx, ry) => {
+        ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
+    };
+
+    // Centreline separator (bike middle)
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1; ctx.setLineDash([8,8]);
+    line(ctx, 20, centerY, W-20, centerY);
+    ctx.setLineDash([]);
+
+    data.forEach((bike, i) => {
+        const color = PALETTE[i];
+        const n = v => parseFloat(v) || 0;
+        const wb      = n(bike.wheelbase) * scale;
+        const csRun   = Math.sqrt(Math.max(0, (n(bike.chainstay_length||415)**2) - (n(bike.bb_drop||70)**2))) * scale;
+        const tireW   = TIRE_W_HALF * scale;
+        const frameW  = FRAME_W * scale;
+        const hbHalf  = HB_HALF * scale;
+        const forkW   = 80 * scale;
+
+        const frontX  = rearX + wb;
+
+        // Rear tyre (narrow ellipse: long in X = wheelbase dir, short in Z = lateral)
+        ctx.lineWidth = 2; ctx.strokeStyle = color + '66';
+        ellipse(ctx, rearX,  centerY, WHEEL_R_MM * scale, tireW);
+        // Front tyre
+        ellipse(ctx, frontX, centerY, WHEEL_R_MM * scale, tireW);
+
+        // Chainstay (rear axle → near BB)
+        const bbX = rearX + csRun;
+        ctx.lineWidth = 2; ctx.strokeStyle = color + 'BB';
+        // left & right chainstay tubes
+        [-frameW * 0.5, frameW * 0.5].forEach(off => {
+            line(ctx, rearX, centerY + off, bbX, centerY);
+        });
+
+        // Main frame top tube (BB → HT area, straight from top view)
+        const htX = rearX + n(bike.wheelbase) * scale - (n(bike.chainstay_length||415) - csRun/scale) * scale;
+        ctx.lineWidth = 3; ctx.strokeStyle = color;
+        line(ctx, bbX, centerY, frontX - forkW * 2, centerY); // top tube approx
+
+        // Fork (V-shape from HT bottom to front axle)
+        ctx.lineWidth = 2; ctx.strokeStyle = color + 'CC';
+        line(ctx, frontX - forkW * 2, centerY - forkW * 0.5, frontX, centerY);
+        line(ctx, frontX - forkW * 2, centerY + forkW * 0.5, frontX, centerY);
+
+        // Handlebar (wide horizontal band at front)
+        ctx.lineWidth = 3; ctx.strokeStyle = color + 'AA';
+        line(ctx, frontX - forkW * 2, centerY - hbHalf, frontX - forkW * 2, centerY + hbHalf);
+
+        // Wheelbase label
+        ctx.font = '600 10px Inter'; ctx.fillStyle = color + 'BB'; ctx.textAlign = 'center';
+        ctx.fillText(`WB: ${n(bike.wheelbase).toFixed(0)}mm`, rearX + wb/2, centerY + tireW + 14 * (i+1));
+    });
+
+    // View label
+    ctx.font = 'bold 12px Inter'; ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.textAlign = 'right';
+    ctx.fillText('TOP VIEW (Plan)', W - 16, H - 16);
+}
+
 
 function updateLegend() {
     const lg = document.getElementById('legend');
@@ -478,9 +705,9 @@ function updateLegend() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Canvas renderer  ── core geometry math
+// SIDE VIEW (default)  ── core geometry math
 // ─────────────────────────────────────────────────────────────────────
-function renderCanvas() {
+function renderSideView() {
     const canvas = document.getElementById('geometryCanvas');
     const ctx = canvas.getContext('2d');
     const W = canvas.width;

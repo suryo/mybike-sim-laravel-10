@@ -101,8 +101,8 @@
         .main {
             flex: 1;
             margin-left: 260px;
-            padding: 4rem;
-            max-width: 1600px;
+            padding: 2rem;
+            max-width: 100%;
         }
 
         .header {
