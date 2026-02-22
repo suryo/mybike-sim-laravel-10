@@ -12,8 +12,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        \App\Models\User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@mybike.pro',
+            'password' => bcrypt('password'),
+        ]);
+
         $this->call([
-            BicycleSeeder::class,
+            DefaultBicycleSeeder::class,
         ]);
     }
 }

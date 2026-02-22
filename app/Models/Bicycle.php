@@ -11,6 +11,11 @@ class Bicycle extends Model
 
     protected $fillable = [
         'name',
+        'slug',
+        'type',
+        'weight_kg',
+        'frame_material',
+        'fork_material',
         'color',
         'bicycle_weight',
         'rider_weight',
@@ -23,7 +28,31 @@ class Bicycle extends Model
         'initial_distance',
         'initial_elevation',
         'initial_fuel',
+        'initial_fuel_kcal',
+        'drag_coefficient',
+        'rolling_coefficient',
+        'crank_length_mm',
+        'max_power_output',
+        'aerobic_threshold',
+        'anaerobic_threshold',
+        'bicycle_category_id',
+        'stack',
+        'reach',
+        'seat_tube_length',
+        'top_tube_length',
+        'head_tube_angle',
+        'seat_tube_angle',
+        'chainstay_length',
+        'wheelbase',
+        'head_tube_length',
+        'bb_drop',
+        'fork_offset',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(BicycleCategory::class, 'bicycle_category_id');
+    }
 
     protected $casts = [
         'front_gears' => 'array',

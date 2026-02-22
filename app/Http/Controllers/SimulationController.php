@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bicycle;
 use App\Models\SimulationSession;
+use App\Models\PlannedRoute;
 use Illuminate\Http\Request;
 
 class SimulationController extends Controller
@@ -161,9 +162,43 @@ class SimulationController extends Controller
         return response()->json(['sessions' => $sessions]);
     }
 
-    public function deleteSession(SimulationSession $session)
+    public function deleteSession($id)
     {
-        $session->delete();
-        return response()->json(['success' => true, 'message' => 'Session deleted.']);
+        SimulationSession::destroy($id);
+        return response()->json(['success' => true]);
+    }
+
+    public function savePlannedRoute(Request $request)
+    {
+        $validated = $request->validate([
+            'name'              => 'required|string|max:255',
+            'distance_km'       => 'required|numeric',
+            'ascent_m'          => 'required|numeric',
+            'waypoints'         => 'required|array',
+            'coordinates'       => 'required|array',
+            'elevation_profile' => 'required|array',
+        ]);
+
+        $route = PlannedRoute::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'route'   => $route,
+        ]);
+    }
+
+    public function listPlannedRoutes()
+    {
+        $routes = PlannedRoute::latest()->get();
+        return response()->json([
+            'success' => true,
+            'routes'  => $routes,
+        ]);
+    }
+
+    public function deletePlannedRoute($id)
+    {
+        PlannedRoute::destroy($id);
+        return response()->json(['success' => true]);
     }
 }

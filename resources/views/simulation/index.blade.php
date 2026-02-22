@@ -799,7 +799,13 @@
 
     <div class="container">
         <header>
-            <h1>MyBike SIM Pro <small style="font-size: 0.5em; opacity: 0.5; vertical-align: middle;">v2.1</small></h1>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <a href="{{ route('home') }}" class="playback-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.75rem; padding: 6px 14px; height: auto; width: auto; font-weight: bold; color: white; display: flex; align-items: center; gap: 6px; text-decoration: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    HOME
+                </a>
+                <h1>MyBike SIM Pro <small style="font-size: 0.5em; opacity: 0.5; vertical-align: middle;">v2.1</small></h1>
+            </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button onclick="openHistoryModal()" class="playback-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.75rem; padding: 6px 14px; height: auto; width: auto; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 6px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -876,7 +882,7 @@
                 </div>
 
                 <!-- Integrated Map Section (Always Visible) -->
-                <div id="map-section" style="display: grid; height: 320px; background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; gap: 0.75rem; grid-template-columns: 1fr 280px; backdrop-filter: blur(4px); box-shadow: inset 0 0 40px rgba(0,0,0,0.2);">
+                <div id="map-section" style="display: grid; height: 640px; background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; gap: 0.75rem; grid-template-columns: 1fr 280px; backdrop-filter: blur(4px); box-shadow: inset 0 0 40px rgba(0,0,0,0.2);">
                     <div id="map-container" style="position: relative; height: 100%; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
                         <div id="map" style="height: 100%; width: 100%;"></div>
                         <div id="map-instructions" style="position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); padding: 8px 12px; border-radius: 8px; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1); width: auto; pointer-events: none; backdrop-filter: blur(8px); display: flex; gap: 15px; align-items: center; color: var(--text-secondary);">
@@ -886,26 +892,39 @@
                         </div>
                     </div>
                     
-                    <div class="route-panel" style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 0.75rem; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(4px);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                            <h4 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.1em; margin: 0;">Waypoints</h4>
+                    <div class="route-panel" style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(4px); overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+                            <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--accent); letter-spacing: 0.1em; margin: 0; font-weight: 800;">📍 WAYPOINTS</h4>
                             <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <span id="map-total-dist" style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800;">0.00 km</span>
-                                <span style="font-size: 0.6rem; color: var(--text-secondary); opacity: 0.7;"><span id="map-total-ascent">0</span> m Ascent</span>
+                                <span id="map-total-dist-display" style="color: white; font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 800;">0.00 <small style="font-size: 0.6rem; opacity: 0.5;">km</small></span>
+                                <span style="font-size: 0.65rem; color: var(--text-secondary); opacity: 0.8;"><span id="map-total-ascent">0</span> m Ascent</span>
                             </div>
                         </div>
                         
-                        <div id="waypoints-container" style="display: flex; flex-direction: column; gap: 0.4rem; flex-grow: 1; overflow-y: auto; margin-bottom: 0.75rem; scrollbar-width: thin; max-height: 140px;">
+                        <div id="waypoints-container" style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; overflow-y: auto; margin-bottom: 1rem; scrollbar-width: thin; padding-right: 4px;">
                             <!-- Points populated here -->
+                            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.3; text-align: center; padding: 1rem;">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-bottom: 8px;"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <p style="font-size: 0.7rem;">Click map to add waypoints</p>
+                            </div>
                         </div>
                         
-                        <div id="elevation-profile-container" style="height: 80px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
+                        <div style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 0.65rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.05em; font-weight: bold;">Elevation Profile</span>
+                        </div>
+                        <div id="elevation-profile-container" style="height: 150px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
                             <canvas id="elevationChart"></canvas>
                         </div>
                         
-                        <div style="display: flex; gap: 0.4rem;">
-                            <button onclick="saveRoute()" class="btn" style="flex: 2; font-size: 0.7rem; padding: 8px; font-weight: 800; background: var(--accent);">APPLY TO RACE</button>
-                            <button onclick="clearRoute()" class="btn btn-outline" style="flex: 1; font-size: 0.65rem; padding: 8px; border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">CLEAR</button>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="openSaveRouteModal()" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 10px; border-color: var(--accent); color: var(--accent); background: rgba(56, 189, 248, 0.05);">💾 SAVE</button>
+                                <button onclick="openLoadRouteModal()" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 10px; border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.05);">📂 LOAD</button>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="saveRoute()" class="btn" style="flex: 2; font-size: 0.8rem; padding: 12px; font-weight: 800; background: var(--accent); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);">APPLY TO RACE</button>
+                                <button onclick="clearRoute()" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 12px; border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">CLEAR</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1244,6 +1263,19 @@
             return false;
         };
 
+        window.showToast = (msg, type = 'success') => {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if (type === 'error') toast.style.background = 'var(--danger)';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s ease-out';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        };
+
         // ==========================================
         // PHASE 27: MAP ROUTE PLANNER LOGIC
         // ==========================================
@@ -1255,6 +1287,7 @@
         let elevationChart = null;
         let routeProfile = []; // Array of {dist, elev, slope}
         let totalElevationGain = 0;
+        let lastRouteCoordinates = []; // NEW: Store polyline coordinates for saving
 
 
         function initMap() {
@@ -1340,6 +1373,9 @@
 
                     updateRouteUI();
                     
+                    // NEW: Store geometry for saving
+                    lastRouteCoordinates = route.geometry.coordinates;
+
                     // NEW: Fetch Elevation Data
                     await fetchElevationProfile(route.geometry.coordinates);
                 }
@@ -1424,22 +1460,33 @@
                         label: 'Elevation (m)',
                         data: data,
                         borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
                         fill: true,
                         tension: 0.4,
-                        borderWidth: 2,
+                        borderWidth: 3,
                         pointRadius: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#38bdf8',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(56, 189, 248, 0.3)',
+                            borderWidth: 1
+                        }
+                    },
                     scales: {
                         x: { display: false },
                         y: {
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } }
                         }
                     }
                 }
@@ -1447,34 +1494,52 @@
         }
 
         function updateRouteUI() {
-            document.getElementById('map-total-dist').innerText = routeDistance.toFixed(2);
-            document.getElementById('map-total-ascent').innerText = Math.round(totalElevationGain); // Update ascent display
-            const container = document.getElementById('waypoints-container');
-            container.innerHTML = '';
+            const distDisplay = document.getElementById('map-total-dist-display');
+            if (distDisplay) distDisplay.innerHTML = `${routeDistance.toFixed(2)} <small style="font-size: 0.6rem; opacity: 0.5;">km</small>`;
+            
+            const ascentDisplay = document.getElementById('map-total-ascent');
+            if (ascentDisplay) ascentDisplay.innerText = Math.round(totalElevationGain);
 
+            const container = document.getElementById('waypoints-container');
+            
+            if (routeMarkers.length === 0) {
+                container.innerHTML = `
+                    <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.2; text-align: center; padding: 2rem;">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <p style="font-size: 0.75rem; font-weight: 500;">No waypoints yet</p>
+                        <p style="font-size: 0.65rem; margin-top: 4px;">Click the map to start planning your route</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
             routeMarkers.forEach((m, i) => {
                 const label = i === 0 ? 'START' : (i === routeMarkers.length - 1 ? 'FINISH' : `CP ${i}`);
-                const color = i === 0 ? 'var(--success)' : (i === routeMarkers.length - 1 ? 'var(--danger)' : 'var(--accent)');
+                const color = i === 0 ? '#22c55e' : (i === routeMarkers.length - 1 ? '#ef4444' : '#38bdf8');
+                const bgColor = i === 0 ? 'rgba(34, 197, 94, 0.05)' : (i === routeMarkers.length - 1 ? 'rgba(239, 68, 68, 0.05)' : 'rgba(56, 189, 248, 0.05)');
                 
                 const div = document.createElement('div');
-                div.style = 'background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 2px solid ' + color + '; margin-bottom: 2px;';
+                div.style = `background: ${bgColor}; padding: 10px 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.03); border-left: 3px solid ${color}; transition: all 0.2s;`;
                 
                 let reorderHtml = `
-                    <div style="display: flex; flex-direction: column; gap: 2px; margin-right: 8px;">
-                        <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled style="opacity:0.2; cursor:default;"' : 'style="cursor:pointer;"'} title="Move Up" style="background:none; border:none; color:white; font-size: 0.6rem; padding: 0;">▲</button>
-                        <button onclick="moveWaypoint(${i}, 1)" ${i === routeMarkers.length - 1 ? 'disabled style="opacity:0.2; cursor:default;"' : 'style="cursor:pointer;"'} title="Move Down" style="background:none; border:none; color:white; font-size: 0.6rem; padding: 0;">▼</button>
+                    <div style="display: flex; flex-direction: column; gap: 0px; margin-right: 12px; opacity: 0.5;">
+                        <button onclick="moveWaypoint(${i}, -1)" ${i === 0 ? 'disabled style="opacity:0.1; cursor:default;"' : 'style="cursor:pointer; padding: 2px;"'} title="Move Up" style="background:none; border:none; color:white; font-size: 0.7rem; line-height: 1;">▴</button>
+                        <button onclick="moveWaypoint(${i}, 1)" ${i === routeMarkers.length - 1 ? 'disabled style="opacity:0.1; cursor:default;"' : 'style="cursor:pointer; padding: 2px;"'} title="Move Down" style="background:none; border:none; color:white; font-size: 0.7rem; line-height: 1;">▾</button>
                     </div>
                 `;
 
                 div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 4px;">
+                    <div style="display: flex; align-items: center;">
                         ${reorderHtml}
                         <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <span style="font-size: 0.6rem; font-weight: 800; color: ${color}; letter-spacing: 0.05em;">${label}</span>
-                            <span style="font-size: 0.55rem; opacity: 0.5; font-family: 'JetBrains Mono';">${m.getLatLng().lat.toFixed(4)}, ${m.getLatLng().lng.toFixed(4)}</span>
+                            <span style="font-size: 0.6rem; font-weight: 900; color: ${color}; letter-spacing: 0.1em; text-transform: uppercase;">${label}</span>
+                            <span style="font-size: 0.6rem; opacity: 0.4; font-family: 'JetBrains Mono'; font-weight: 500;">${m.getLatLng().lat.toFixed(5)}, ${m.getLatLng().lng.toFixed(5)}</span>
                         </div>
                     </div>
-                    <button onclick="removeWaypoint(${i})" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; cursor: pointer; font-size: 0.7rem; border-radius: 4px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
+                    <button onclick="removeWaypoint(${i})" style="background: rgba(239, 68, 68, 0.08); border: none; color: #ef4444; cursor: pointer; font-size: 0.8rem; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 1px solid rgba(239, 68, 68, 0.1);" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'">
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </button>
                 `;
                 container.appendChild(div);
             });
@@ -1664,14 +1729,188 @@
                     addSegment(0, 100);
                 }
 
-                // Add a notification
-                const toast = document.createElement('div');
-                toast.className = 'toast';
-                toast.innerText = `Route Saved: ${routeDistance.toFixed(2)} km`;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
+                showToast(`Route Applied: ${routeDistance.toFixed(2)} km`);
             }
         }
+
+        // ==========================================
+        // PHASE 29: ROUTE SAVING & LOADING (SERVER)
+        // ==========================================
+        
+        window.openSaveRouteModal = () => {
+            if (routeMarkers.length < 2) {
+                showToast('❌ Please plan a route first!');
+                return;
+            }
+            document.getElementById('preview-route-dist').innerText = routeDistance.toFixed(2) + ' km';
+            document.getElementById('preview-route-ascent').innerText = Math.round(totalElevationGain) + ' m';
+            document.getElementById('saveRouteModal').style.display = 'block';
+        };
+
+        window.closeSaveRouteModal = () => {
+            document.getElementById('saveRouteModal').style.display = 'none';
+        }
+
+        window.submitSaveRoute = async () => {
+            const name = document.getElementById('plannedRouteNameInput').value;
+            if (!name) {
+                showToast('❌ Route name is required');
+                return;
+            }
+
+            const payload = {
+                name: name,
+                distance_km: typeof routeDistance === 'number' ? routeDistance : 0,
+                ascent_m: typeof totalElevationGain === 'number' ? totalElevationGain : 0,
+                waypoints: (routeMarkers || []).map(m => {
+                    const ll = m.getLatLng();
+                    return { lat: ll.lat, lng: ll.lng };
+                }),
+                coordinates: lastRouteCoordinates || [],
+                elevation_profile: routeProfile || []
+            };
+
+            console.log('Saving Route Payload:', payload);
+            try {
+                const response = await fetch('/planned-routes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const resData = await response.json();
+                    console.log('Route Saved Response:', resData);
+                    showToast('✅ Route saved successfully!');
+                    closeSaveRouteModal();
+                } else {
+                    const err = await response.json();
+                    console.error('Save Route Error Response:', err);
+                    showToast('❌ Failed to save route: ' + (err.message || 'Validation error'));
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Error saving route');
+            }
+        };
+
+        window.openLoadRouteModal = () => {
+            document.getElementById('loadRouteModal').style.display = 'block';
+            fetchSavedRoutes();
+        };
+
+        window.closeLoadRouteModal = () => {
+            document.getElementById('loadRouteModal').style.display = 'none';
+        };
+
+        async function fetchSavedRoutes() {
+            const list = document.getElementById('saved-routes-list');
+            const loading = document.getElementById('route-history-loading');
+            
+            list.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/planned-routes');
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (data.routes && data.routes.length > 0) {
+                    list.innerHTML = data.routes.map(r => `
+                        <div class="session-item" style="margin-bottom: 10px; padding: 12px;">
+                            <div class="session-info" style="flex: 1;">
+                                <div style="font-weight: bold; color: white; margin-bottom: 4px;">${r.name}</div>
+                                <div style="font-size: 0.7rem; opacity: 0.6;">
+                                    ${r.distance_km} km • ${Math.round(r.ascent_m)} m Ascent
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-sm" style="background: var(--accent); color: var(--bg-color);" onclick="loadRouteFromServer(${r.id})">Load</button>
+                                <button class="btn btn-sm" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;" onclick="deleteRouteFromServer(${r.id})">Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<p style="text-align: center; opacity: 0.4; padding: 2rem;">No saved routes found.</p>';
+                }
+            } catch (err) {
+                console.error(err);
+                loading.style.display = 'none';
+                list.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">Error fetching routes.</p>';
+            }
+        }
+
+        window.loadRouteFromServer = async (id) => {
+            try {
+                const response = await fetch('/planned-routes');
+                const data = await response.json();
+                const route = data.routes.find(r => r.id === id);
+                
+                if (!route) return;
+
+                // Clear current route
+                clearRoute();
+
+                // Restore Markers
+                route.waypoints.forEach(wp => {
+                    const marker = L.marker([wp.lat, wp.lng], { draggable: true }).addTo(routeMap);
+                    routeMarkers.push(marker);
+                    marker.on('dragend', updateRoute);
+                });
+
+                // Restore Stats & Profile
+                routeDistance = parseFloat(route.distance_km);
+                totalElevationGain = parseFloat(route.ascent_m);
+                routeProfile = route.elevation_profile;
+                lastRouteCoordinates = route.coordinates;
+
+                // Draw Polyline
+                if (routePolyline) routePolyline.remove();
+                routePolyline = L.geoJSON({
+                    type: "Feature",
+                    geometry: {
+                        type: "LineString",
+                        coordinates: route.coordinates
+                    }
+                }, {
+                    style: { color: '#38bdf8', weight: 5, opacity: 0.8 }
+                }).addTo(routeMap);
+
+                updateRouteUI();
+                updateElevationChart();
+                
+                closeLoadRouteModal();
+                showToast('✅ Route loaded: ' + route.name);
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Failed to load route');
+            }
+        };
+
+        window.deleteRouteFromServer = async (id) => {
+            if (!confirm('Are you sure you want to delete this route?')) return;
+            
+            try {
+                const response = await fetch(`/planned-routes/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                if (response.ok) {
+                    showToast('✅ Route deleted');
+                    fetchSavedRoutes();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Failed to delete route');
+            }
+        };
 
 
         // WRAP EVERYTHING IN ONLOAD
@@ -3528,6 +3767,64 @@
 
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
                 <button class="btn" onclick="closeDetailModal()">Close Detail</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAVE ROUTE MODAL -->
+    <div id="saveRouteModal" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 450px; border-top: 6px solid var(--accent); background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">💾 Save Planned Route</h2>
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Store this route for future use</p>
+                </div>
+                <span class="close" onclick="closeSaveRouteModal()">&times;</span>
+            </div>
+            
+            <div style="margin: 1.5rem 0;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; opacity: 0.7;">Route Name</label>
+                <input type="text" id="plannedRouteNameInput" class="form-control" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; color: white;" placeholder="e.g. Surabaya City Loop">
+                
+                <div id="plannedRouteSummaryPreview" style="margin-top: 1.5rem; background: rgba(56, 189, 248, 0.05); border-radius: 8px; padding: 1rem; font-size: 0.8rem; border: 1px solid rgba(56, 189, 248, 0.1);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>Distance:</span> <b id="preview-route-dist" style="color:white;">0.00 km</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Ascent:</span> <b id="preview-route-ascent" style="color:var(--accent);">0 m</b>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="btn btn-outline" onclick="closeSaveRouteModal()">Cancel</button>
+                <button class="btn" style="background: var(--accent);" onclick="submitSaveRoute()">Save Route</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOAD ROUTE MODAL -->
+    <div id="loadRouteModal" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 600px; border-top: 6px solid #a855f7; background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">📂 Load Saved Route</h2>
+                    <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 4px;">Select a previously saved route</p>
+                </div>
+                <span class="close" onclick="closeLoadRouteModal()">&times;</span>
+            </div>
+            
+            <div id="route-history-loading" style="text-align: center; padding: 2rem; display: none;">
+                 <div class="spinner" style="margin: 0 auto;"></div>
+                 <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.5;">Loading routes...</p>
+            </div>
+
+            <div id="saved-routes-list" style="margin-top: 1.5rem; max-height: 400px; overflow-y: auto;">
+                <!-- Populated by JS -->
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                <button class="btn btn-outline" onclick="closeLoadRouteModal()">Close</button>
             </div>
         </div>
     </div>
