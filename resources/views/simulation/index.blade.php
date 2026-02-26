@@ -506,6 +506,18 @@
             gap: 4px;
         }
 
+        .btn-stat-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        }
+
         .btn-refuel:hover { transform: scale(1.05); background: #d97706; }
 
         /* Playback Controls - Sleeker Bar */
@@ -858,16 +870,18 @@
                     </div>
 
                     <div style="display: flex; gap: 5px;">
-                        <button id="playBtn" class="playback-btn btn-play active" title="Play">
-                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M8 5v14l11-7z"/></svg>
+                        <button id="playBtn" class="playback-btn btn-play" title="Start Pedaling" style="background: var(--success); width: auto; padding: 0 10px; font-size: 0.7rem; font-weight: bold; gap: 5px;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:12px;"><path d="M8 5v14l11-7z"/></svg>
+                            START
                         </button>
-                        <button id="pauseBtn" class="playback-btn btn-pause" title="Pause" style="background: #f59e0b;">
-                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        <button id="stopBtn" class="playback-btn" title="Stop/Coast" style="background: #ef4444; width: auto; padding: 0 10px; font-size: 0.7rem; font-weight: bold; gap: 5px;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:12px;"><path d="M6 6h12v12H6z"/></svg>
+                            STOP
                         </button>
-                        <button id="stopBtn" class="playback-btn" title="Stop" style="background: #64748b;">
-                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M6 6h12v12H6z"/></svg>
+                        <button id="pauseBtn" class="playback-btn btn-pause" title="Freeze Simulation" style="background: #f59e0b;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" style="width:12px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                         </button>
-                        <button id="resetPlayBtn" class="playback-btn btn-reset" title="Reset">
+                        <button id="resetPlayBtn" class="playback-btn btn-reset" title="Reset All" onclick="resetSimulation()">
                             <svg fill="currentColor" viewBox="0 0 24 24" style="width:14px;"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                         </button>
                     </div>
@@ -1057,6 +1071,9 @@
                         </div>
 
                         <div style="position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; z-index: 50;">
+                            <div class="btn-stat-badge" id="pedal-status-{{ $bike->id }}" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1);">
+                                IDLE
+                            </div>
                             <button onclick="showSummary({{ $bike->id }})" class="edit-btn" style="background: none; border: none; color: var(--success); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Show Summary">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
                             </button>
@@ -2071,6 +2088,7 @@
                 lastHistorySample: 0,
                 hr: 70, 
                 npAcc: 0, 
+                isPedaling: false, // New: Start from stopped/resting
                 avgPowerAcc: 0,
                 sampleCount: 0.001, 
                 hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 },
@@ -2410,7 +2428,7 @@
                 const powerSlider = document.querySelector(`.bike-power-input[data-bike-id="${bike.id}"]`);
                 const sliderTargetWatts = powerSlider ? parseFloat(powerSlider.value) : (bike.power || 200);
                 
-                let effectiveRiderPower = sliderTargetWatts;
+                let effectiveRiderPower = bike.isPedaling ? sliderTargetWatts : 0;
 
                 // NEW: APPLY SEGMENT OVERRIDES
                 let currentSegment = null;
@@ -2474,6 +2492,13 @@
                     const netForce = driveForce - totalResistance - brakeForce;
                     const acceleration = netForce / mass;
 
+                    // UI Updates for status
+                    const pedalBadge = document.getElementById(`pedal-status-${bike.id}`);
+                    if (pedalBadge) {
+                        pedalBadge.innerText = bike.isPedaling ? 'PEDALING' : (bike.speed > 0.1 ? 'COASTING' : 'IDLE');
+                        pedalBadge.style.background = bike.isPedaling ? 'var(--success)' : (bike.speed > 0.1 ? 'var(--accent)' : 'rgba(255,255,255,0.05)');
+                        pedalBadge.style.color = (bike.isPedaling || bike.speed > 0.1) ? '#0f172a' : 'rgba(255,255,255,0.4)';
+                    }
                     // 3. Update Velocity
                     bike.speed = Math.max(0, bike.speed + acceleration * delta);
                     speed = bike.speed; // Update local speed variable for loop-wide use
@@ -3013,11 +3038,15 @@
             bikeState.forEach(b => {
                 b.distance = 0;
                 b.elevationGain = 0;
+                b.speed = 0;
+                b.isPedaling = false;
                 b.isFinished = false;
                 
                 // Force UI update
                 const dkm = document.getElementById(`dist-km-${b.id}`);
                 const elv = document.getElementById(`elev-${b.id}`);
+                const spd = document.getElementById(`speed-${b.id}`);
+                const pedalBadge = document.getElementById(`pedal-status-${b.id}`);
                 const pFill = document.getElementById(`progress-fill-${b.id}`);
                 const pText = document.getElementById(`progress-text-${b.id}`);
                 const card = document.getElementById(`bike-card-${b.id}`);
@@ -3025,6 +3054,12 @@
 
                 if (dkm) dkm.innerText = "0.00";
                 if (elv) elv.innerText = "0";
+                if (spd) spd.innerText = "0.0";
+                if (pedalBadge) {
+                    pedalBadge.innerText = 'IDLE';
+                    pedalBadge.style.background = 'rgba(255,255,255,0.05)';
+                    pedalBadge.style.color = 'rgba(255,255,255,0.4)';
+                }
                 if (pFill) pFill.style.width = "0%";
                 if (pText) pText.innerText = "0% Complete";
                 if (card) card.classList.remove('finished');
@@ -3036,6 +3071,13 @@
                 b.logs = [];
             });
             elapsedSeconds = 0;
+            isPlaying = false; // Pause simulation on reset
+            
+            // Sync buttons
+            playBtn.classList.remove('active');
+            stopBtn.classList.remove('active');
+            pauseBtn.classList.add('active');
+
             const timerElem = document.getElementById('globalTimer');
             if (timerElem) timerElem.innerText = "00:00:00";
             
@@ -3122,7 +3164,7 @@
         pauseBtn.classList.add('active');
 
         playBtn.onclick = () => {
-            if (!isPlaying && elapsedSeconds === 0) {
+            if (elapsedSeconds === 0) {
                  // First start logic
                  bikeState.forEach(b => {
                      if (!b.startLogged) {
@@ -3140,9 +3182,11 @@
                  });
             }
             isPlaying = true;
+            bikeState.forEach(b => b.isPedaling = true);
             playBtn.classList.add('active');
             pauseBtn.classList.remove('active');
             if (stopBtn) stopBtn.classList.remove('active');
+            showToast('🚴 Start Pedaling!');
         };
 
         pauseBtn.onclick = () => {
@@ -3150,20 +3194,16 @@
             pauseBtn.classList.add('active');
             playBtn.classList.remove('active');
             if (stopBtn) stopBtn.classList.remove('active');
+            showToast('⏸️ Simulation Paused');
         };
 
         if (stopBtn) {
             stopBtn.onclick = () => {
-                isPlaying = false;
-                timeScale = 1.0;
-                // Reset speed UI
-                speedBtns.forEach(b => b.classList.remove('active'));
-                const s1 = document.querySelector('.speed-btn[data-speed="1"]');
-                if (s1) s1.classList.add('active');
-                
+                bikeState.forEach(b => b.isPedaling = false);
                 stopBtn.classList.add('active');
                 playBtn.classList.remove('active');
                 pauseBtn.classList.remove('active');
+                showToast('🛑 Stop Pedaling (Coasting)');
             };
         }
 

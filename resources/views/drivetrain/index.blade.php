@@ -176,10 +176,10 @@
 
         /* Workbench Bottom Grid */
         .workbench {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 2rem;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
         }
 
         @media (max-width: 1024px) {
@@ -189,8 +189,11 @@
         .card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 2rem;
+            padding: 1.25rem;
             border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .card-title {
@@ -265,10 +268,9 @@
         }
 
         .stat-value {
-            font-size: 4rem;
+            font-size: 2.2rem;
             font-weight: 800;
-            font-style: italic;
-            letter-spacing: -0.05em;
+            color: white;
             line-height: 1;
         }
 
@@ -503,6 +505,32 @@
         <!-- Interactive Workbench -->
         <div class="workbench">
             
+            <!-- Session Control Card -->
+            <div class="card" style="border-top: 4px solid var(--success);">
+                <div class="card-title">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                    Session Control
+                </div>
+                
+                <div id="session-status-pill" class="badge" style="width: 100%; justify-content: center; margin-bottom: 1rem; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4);">
+                    <span class="badge-label">Status</span>
+                    <span class="badge-value" id="session-status-val">IDLE</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <button id="start-pedaling-btn" class="shift-btn" style="background: var(--success); color: #0f172a; height: 40px;" onclick="togglePedaling(true)">
+                        START
+                    </button>
+                    <button id="stop-pedaling-btn" class="shift-btn" style="background: #ef4444; color: white; height: 40px;" onclick="togglePedaling(false)">
+                        STOP
+                    </button>
+                </div>
+                
+                <button class="shift-btn" style="width: 100%; margin-top: 0.5rem; height: 32px; font-size: 0.6rem;" onclick="resetLab()">
+                    RESET PHYSICS
+                </button>
+            </div>
+
             <!-- Transmission Card -->
             <div class="card">
                 <div class="card-title">
@@ -592,28 +620,28 @@
             </div>
 
             <!-- Physics HUD Card -->
-            <div class="card" style="background: #020617; border-left: 4px solid var(--accent);">
-                <div class="card-title">Physics Environment</div>
+            <div class="card" style="background: #020617; border-left: 4px solid var(--accent); gap: 0.5rem;">
+                <div class="card-title">Physics HUD</div>
                 
-                <div class="stat-huge">
+                <div class="stat-huge" style="margin-top: 0.5rem;">
                     <span id="speed-display" class="stat-value">0.0</span>
                     <span class="stat-unit">km/h</span>
                 </div>
 
-                <div style="margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">
-                    <span>GEAR RATIO: <span id="ratio-display" style="color: white;">1.00</span></span>
+                <div style="display: flex; justify-content: space-between; font-size: 0.6rem; font-weight: 800; color: var(--text-secondary);">
+                    <span>RATIO: <span id="ratio-display" style="color: white;">1.00</span></span>
                     <span>CADENCE: <span id="cadence-display" style="color: var(--accent);">0 RPM</span></span>
                 </div>
 
-                <div class="progress-bar">
+                <div class="progress-bar" style="margin-top: 0.25rem;">
                     <div id="power-bar" class="progress-fill"></div>
                 </div>
-                <div style="margin-top: 0.5rem; display: flex; justify-content: space-between;">
-                    <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-secondary);">RESISTANCE FORCE</span>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-secondary);">FORCE</span>
                     <span style="font-size: 0.75rem; font-weight: 900; color: var(--accent);"><span id="resistance-display">0</span> <small style="font-size: 0.5rem;">W</small></span>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -644,6 +672,7 @@
         let currentCRIdx = 0; // Starting easiest (smallest chainring)
         let currentCSIdx = 0; // Starting easiest (largest cog)
         let autoShiftEnabled = true;
+        let isPedaling = false;
 
         const crEl = document.getElementById('chainring');
         const csEl = document.getElementById('cassette');
@@ -687,6 +716,31 @@
                 currentCSIdx = newIdx;
                 updateVisuals(true, dir > 0 ? "UPSHIFT ↑" : "DOWNSHIFT ↓");
             }
+        }
+
+        function togglePedaling(val) {
+            isPedaling = val;
+            const statusVal = document.getElementById('session-status-val');
+            const statusPill = document.getElementById('session-status-pill');
+            
+            if (val) {
+                statusVal.innerText = 'PEDALING';
+                statusPill.style.background = 'rgba(34, 197, 94, 0.1)';
+                statusPill.style.color = '#22c55e';
+                showShiftMessage("Applied effort active");
+            } else {
+                statusVal.innerText = currentVelocity > 0.1 ? 'COASTING' : 'IDLE';
+                statusPill.style.background = currentVelocity > 0.1 ? 'rgba(56, 189, 248, 0.1)' : 'rgba(255,255,255,0.05)';
+                statusPill.style.color = currentVelocity > 0.1 ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
+                showShiftMessage("Effort stopped - Coasting");
+            }
+        }
+
+        function resetLab() {
+            currentVelocity = 0;
+            isPedaling = false;
+            togglePedaling(false);
+            showShiftMessage("Physics Reset");
         }
 
         function updateVisuals(shiftOccurred, shiftType) {
@@ -759,10 +813,12 @@
             const totalResistanceForce = gravityForce + dragForce + (currentVelocity > 0 ? rollingResist : 0);
             
             let driveForce = 0;
-            if (currentVelocity < 0.2) {
-                driveForce = targetPower / 0.2; 
-            } else {
-                driveForce = targetPower / currentVelocity;
+            if (isPedaling) {
+                if (currentVelocity < 0.2) {
+                    driveForce = targetPower / 0.2; 
+                } else {
+                    driveForce = targetPower / currentVelocity;
+                }
             }
 
             // Apply Brake Force
@@ -832,6 +888,17 @@
             const catEl = document.getElementById('resistance-cat');
             catEl.innerText = resistCat;
             catEl.style.color = resistColor;
+
+            // Dynamic Status Update
+            if (!isPedaling && currentVelocity > 0.1) {
+                document.getElementById('session-status-val').innerText = 'COASTING';
+                document.getElementById('session-status-pill').style.background = 'rgba(56, 189, 248, 0.1)';
+                document.getElementById('session-status-pill').style.color = 'var(--accent)';
+            } else if (!isPedaling && currentVelocity <= 0.1) {
+                document.getElementById('session-status-val').innerText = 'IDLE';
+                document.getElementById('session-status-pill').style.background = 'rgba(255,255,255,0.05)';
+                document.getElementById('session-status-pill').style.color = 'rgba(255,255,255,0.4)';
+            }
 
             const resistanceWatts = totalResistanceForce * currentVelocity;
             document.getElementById('resistance-display').innerText = Math.round(Math.abs(resistanceWatts));
