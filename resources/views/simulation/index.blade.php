@@ -887,7 +887,31 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                <!-- Relocated Sim Debug Overlay -->
+                <div id="sim-debug-overlay" style="margin-top: 10px; background: rgba(15, 23, 42, 0.4); color: #22c55e; padding: 12px 15px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; z-index: 100; border: 1px solid rgba(34, 197, 94, 0.2); line-height: 1.6; display: flex; flex-wrap: wrap; gap: 20px; backdrop-filter: blur(4px);">
+                    <div style="display: flex; gap: 6px;">
+                        <span style="opacity: 0.5;">SIM STATUS:</span>
+                        <span id="debug-status" style="font-weight: 800; text-transform: uppercase;">Initializing...</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="opacity: 0.5;">ATHELETES:</span>
+                        <span id="debug-riders" style="font-weight: 800; color: white;">0</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="opacity: 0.5;">RES:</span>
+                        <span id="debug-res" style="font-weight: 800; color: white;">0x0</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="opacity: 0.5;">FRAMES:</span>
+                        <span id="debug-frames" style="font-weight: 800; color: white;">0</span>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="opacity: 0.5;">CANVAS:</span>
+                        <span id="debug-canvas" style="font-weight: 800;">Checking...</span>
+                    </div>
+                </div>
+
+                <div style="margin: 10px 0; display: flex; justify-content: flex-end;">
                      <button onclick="openHistoryModal()" class="playback-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); font-size: 0.65rem; padding: 4px 10px; height: auto; width: auto; font-weight: bold; color: var(--accent);">
                         📋 VIEW HISTORY
                     </button>
@@ -1050,9 +1074,22 @@
                         </select>
                     </div>
                 </div>
-                <div class="bike-list" id="bikeList">
+                <div class="sidebar-section" style="padding: 1.25rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3 style="margin: 0; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.05em; color: var(--text-secondary); text-transform: uppercase;">Racedeck</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="bikeLibrarySelect" onchange="addBikeToDeck(this.value)" style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; max-width: 140px;">
+                                <option value="" style="background: #1e293b; color: white;">+ Add to Deck</option>
+                                @foreach($bicycles as $libBike)
+                                    <option value="{{ $libBike->id }}" style="background: #1e293b; color: white;">{{ $libBike->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="bike-list" id="bikeList">
                     @forelse($bicycles as $bike)
-                    <div class="bike-card" id="bike-card-{{ $bike->id }}">
+                    <div class="bike-card" id="bike-card-{{ $bike->id }}" style="{{ $loop->index >= 2 ? 'display: none;' : '' }}">
                         <!-- Bonk Alert Overlay -->
                         <div id="bonk-overlay-{{ $bike->id }}" class="bonk-overlay">
                             <div class="bonk-title">BONKED!</div>
@@ -1080,18 +1117,18 @@
                             <button onclick="openEditModal({{ json_encode($bike) }})" class="edit-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Edit Rider">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </button>
-                            <form action="{{ route('bicycles.destroy', $bike->id) }}" method="POST" onsubmit="return confirm('Remove rider?')" class="delete-form">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="delete-btn" style="position: static;">✕</button>
-                            </form>
+                            <button onclick="removeBikeFromDeck({{ $bike->id }})" class="delete-btn" style="position: static;" title="Remove from Deck">✕</button>
                         </div>
 
-                        <div class="bike-header">
-                            <div class="bike-color" style="background-color: {{ $bike->color }}"></div>
-                            <span class="bike-name">{{ $bike->name }}</span>
-                            <div id="finish-badge-{{ $bike->id }}" class="finish-badge">Finished</div>
-                            <span style="font-size: 0.7rem; opacity: 0.5;">(B:{{ $bike->bicycle_weight }}kg + Rider <span class="rider-name-display">...</span> / {{ $bike->efficiency * 100 }}%)</span>
+                        <div class="bike-header" style="flex-direction: column; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="bike-color" style="background-color: {{ $bike->color }}"></div>
+                                <span class="bike-name">{{ $bike->name }}</span>
+                                <div id="finish-badge-{{ $bike->id }}" class="finish-badge">Finished</div>
+                            </div>
+                            <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 2px; margin-left: 18px;">
+                                (B:{{ $bike->bicycle_weight }}kg + Rider <span class="rider-name-display">...</span> / {{ $bike->efficiency * 100 }}%)
+                            </div>
                         </div>
 
                         <!-- Track Progress Bar -->
@@ -1138,7 +1175,13 @@
                                     <button class="mode-btn-sm active" id="mode-auto-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, true)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: #0f172a;">AUTO</button>
                                     <button class="mode-btn-sm" id="mode-manual-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, false)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: rgba(255,255,255,0.4);">MAN</button>
                                 </div>
-                                <button id="brake-btn-{{ $bike->id }}" class="btn-brake-sm" style="background: rgba(244, 63, 94, 0.1); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 0; font-weight: 800; font-size: 0.55rem; cursor: pointer;">BRAKE</button>
+                                <button id="brake-btn-{{ $bike->id }}" class="btn-brake-sm" 
+                                    onmousedown="setBikeBraking({{ $bike->id }}, true)"
+                                    onmouseup="setBikeBraking({{ $bike->id }}, false)"
+                                    onmouseleave="setBikeBraking({{ $bike->id }}, false)"
+                                    ontouchstart="event.preventDefault(); setBikeBraking({{ $bike->id }}, true);"
+                                    ontouchend="setBikeBraking({{ $bike->id }}, false)"
+                                    style="background: rgba(244, 63, 94, 0.1); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 0; font-weight: 800; font-size: 0.55rem; cursor: pointer;">BRAKE</button>
                             </div>
                         </div>
 
@@ -1279,14 +1322,6 @@
             </div>
     </div>
 
-    <!-- Debug Info Overlay -->
-    <div id="sim-debug-overlay" style="position: absolute; top: 10px; left: 10px; background: rgba(15, 23, 42, 0.85); color: #22c55e; padding: 10px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; z-index: 100; border: 1px solid #22c55e; pointer-events: none; line-height: 1.4;">
-        <div>SIM STATUS: <span id="debug-status">Initializing...</span></div>
-        <div>RIDERS: <span id="debug-riders">0</span></div>
-        <div>RESOLUTION: <span id="debug-res">0x0</span></div>
-        <div>FRAMES: <span id="debug-frames">0</span></div>
-        <div>CANVAS: <span id="debug-canvas">Checking...</span></div>
-    </div>
 
     <div id="js-error-log" style="position: fixed; top: 10px; right: 10px; background: rgba(220, 38, 38, 1); color: white; padding: 20px; border-radius: 12px; z-index: 99999; display: none; max-width: 450px; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid white;">
         <strong style="font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.3); display: block; margin-bottom: 10px; padding-bottom: 5px;">🛑 CRITICAL JAVASCRIPT ERROR</strong>
@@ -1337,7 +1372,7 @@
         function initMap() {
             if (!routeMap) {
                 // Initialize map - centered on Surabaya (Example Start: -7.3068, 112.7930)
-                routeMap = L.map('map', { scrollWheelZoom: false }).setView([-7.3068, 112.7930], 11);
+                routeMap = L.map('map', { scrollWheelZoom: true }).setView([-7.3068, 112.7930], 11);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(routeMap);
@@ -1961,7 +1996,8 @@
         // PHASE 30: INITIALIZATION & STATE
         // ==========================================
         window.onload = function() {
-            const bikesData = @json($bicycles);
+            window.bikesData = @json($bicycles);
+            window.pendingRemoveBikeId = null;
             const ridersData = @json($riders);
             const globalRiderSelect = document.getElementById('globalRiderSelect');
             
@@ -1982,7 +2018,7 @@
                 
                 // Update internal states if simulation is running? 
                 // Better to just reactive it on next cycle or restart.
-                bikeState.forEach(bike => {
+                window.bikeState.forEach(bike => {
                     bike.rider_id = selectedRider.id;
                     bike.rider_weight = selectedRider.weight_kg;
                     bike.ftp = selectedRider.ftp;
@@ -1996,7 +2032,7 @@
             const debugFrames = document.getElementById('debug-frames');
             const debugCanvas = document.getElementById('debug-canvas');
             
-            if (debugRiders) debugRiders.innerText = bikesData.length;
+            if (debugRiders) debugRiders.innerText = window.bikesData.length;
             
             const canvas = document.getElementById('simCanvas');
             if (!canvas) {
@@ -2042,62 +2078,62 @@
             }
 
 
-            const bikeState = bikesData.map(bike => {
-                const frontGears = Array.isArray(bike.front_gears) ? bike.front_gears : [50, 34];
-                const rearGears = Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28];
-            return {
-                ...bike,
-                front_gears: (Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34]).sort((a,b) => a - b),
-                rear_gears: (Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28]).sort((a,b) => b - a),
-                speed: 0,
-                power: 150,
-                cadence: 80,
-                currentFrontGear: null, // Will set below
-                currentRearGear: null,  // Will set below
-                wheel_diameter: 700, 
-                wheel_circumference: 2.105,
-                efficiency: bike.efficiency || 0.24,
-                calories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
-                maxCalories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
-                staminaW: 100,
-                fatigue: 0,
-                totalJoules: 0,
-                totalKm: 0,
-                lastLogTime: 0,
-                lastMealTime: 0, 
-                lockedCadence: null,
-                lockedPower: null,
-                hasConflict: false,
-                isFinished: false,
-                startLogged: false, 
-                isEating: false,    
-                mealEndTime: 0,    
-                finishTime: null,  
-                autoShiftEnabled: true, 
-                isBraking: false,      
-                elevationGain: parseFloat(bike.initial_elevation || 0),
-                distance: parseFloat(bike.initial_distance || 0) * 1000, 
-                currentSlope: 0,
-                rider_id: selectedRider.id,
-                rider_weight: selectedRider.weight_kg,
-                ftp: selectedRider.ftp,
-                max_hr: selectedRider.max_hr,
-                anaerobic_threshold_w: selectedRider.anaerobic_threshold_w,
-                logs: [],
-                history: [], 
-                lastHistorySample: 0,
-                hr: 70, 
-                npAcc: 0, 
-                isPedaling: false, // New: Start from stopped/resting
-                avgPowerAcc: 0,
-                sampleCount: 0.001, 
-                hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 },
-                segmentResults: {} 
-            };
-        });
+            function getBikeInitialState(bike, rider) {
+                return {
+                    ...bike,
+                    front_gears: (Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34]).sort((a,b) => a - b),
+                    rear_gears: (Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28]).sort((a,b) => b - a),
+                    speed: 0,
+                    power: 150,
+                    cadence: 80,
+                    currentFrontGear: null,
+                    currentRearGear: null,
+                    wheel_diameter: 700, 
+                    wheel_circumference: 2.105,
+                    efficiency: bike.efficiency || 0.24,
+                    calories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
+                    maxCalories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
+                    staminaW: 100,
+                    fatigue: 0,
+                    totalJoules: 0,
+                    totalKm: 0,
+                    lastLogTime: 0,
+                    lastMealTime: 0, 
+                    lockedCadence: null,
+                    lockedPower: null,
+                    hasConflict: false,
+                    isFinished: false,
+                    startLogged: false, 
+                    isEating: false,    
+                    mealEndTime: 0,    
+                    finishTime: null,  
+                    autoShiftEnabled: true, 
+                    isBraking: false,      
+                    elevationGain: parseFloat(bike.initial_elevation || 0),
+                    distance: parseFloat(bike.initial_distance || 0) * 1000, 
+                    currentSlope: 0,
+                    rider_id: rider.id,
+                    rider_weight: rider.weight_kg,
+                    ftp: rider.ftp,
+                    max_hr: rider.max_hr,
+                    anaerobic_threshold_w: rider.anaerobic_threshold_w,
+                    logs: [],
+                    history: [], 
+                    lastHistorySample: 0,
+                    hr: 70, 
+                    npAcc: 0, 
+                    isPedaling: false,
+                    avgPowerAcc: 0,
+                    sampleCount: 0.001, 
+                    hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 },
+                    segmentResults: {} 
+                };
+            }
+
+            window.bikeState = window.bikesData.slice(0, 2).map(bike => getBikeInitialState(bike, selectedRider));
 
         // Set initial gears to Index 0 (Easiest)
-        bikeState.forEach(b => {
+        window.bikeState.forEach(b => {
             b.currentFrontGear = b.front_gears[0];
             b.currentRearGear = b.rear_gears[0];
             
@@ -2108,8 +2144,8 @@
         });
 
         // ── MANUAL CONTROL HELPERS ──────────────────────────────────────────
-        function setBikeMode(bikeId, auto) {
-            const bike = bikeState.find(b => b.id == bikeId);
+        window.setBikeMode = function(bikeId, auto) {
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike) return;
             
             bike.autoShiftEnabled = auto;
@@ -2140,7 +2176,7 @@
         }
 
         function manualShiftBikeCR(bikeId, dir) {
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike || bike.autoShiftEnabled) return;
             
             const gears = bike.front_gears;
@@ -2158,7 +2194,7 @@
         }
 
         function manualShiftBikeCS(bikeId, dir) {
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike || bike.autoShiftEnabled) return;
             
             const gears = bike.rear_gears;
@@ -2175,8 +2211,8 @@
             }
         }
 
-        function setBikeBraking(bikeId, braking) {
-            const bike = bikeState.find(b => b.id == bikeId);
+        window.setBikeBraking = function(bikeId, braking) {
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike) return;
             
             bike.isBraking = braking;
@@ -2228,7 +2264,96 @@
         function updateSimulation() {
             if (debugStatus) debugStatus.innerText = isPlaying ? "RUNNING" : "STOPPED";
             
-            // Adjust canvas size safely
+            // Expose removal function globally
+            window.removeBikeFromDeck = function(bikeId) {
+                window.pendingRemoveBikeId = bikeId;
+                const modal = document.getElementById('confirmRemovalModal');
+                if (modal) modal.style.display = 'block';
+            };
+
+            window.closeConfirmRemovalModal = function() {
+                const modal = document.getElementById('confirmRemovalModal');
+                if (modal) modal.style.display = 'none';
+                window.pendingRemoveBikeId = null;
+            };
+
+            window.confirmRemoval = function() {
+                const bikeId = window.pendingRemoveBikeId;
+                if (!bikeId) return;
+
+                // Remove from state
+                const idx = window.bikeState.findIndex(b => b.id == bikeId);
+                if (idx !== -1) {
+                    window.bikeState.splice(idx, 1);
+                    
+                    // Instead of removing, we hide and splice from state
+                    const card = document.getElementById(`bike-card-${bikeId}`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(20px)';
+                        card.style.transition = 'all 0.3s ease';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                            // Reset styles for potential re-addition
+                            card.style.opacity = '';
+                            card.style.transform = '';
+                        }, 300);
+                    }
+                    
+                    showToast('🚲 Removed from Racedeck');
+                }
+
+                window.closeConfirmRemovalModal();
+            };
+
+            window.addBikeToDeck = function(bikeId) {
+            if (!bikeId) return;
+            
+            const bData = window.bikesData.find(x => x.id == bikeId);
+            if (!bData) return;
+            
+            // Check if already in deck (active state)
+            if (window.bikeState.find(x => x.id == bikeId)) {
+                showToast('🚲 Athlete is already in the simulation.');
+                document.getElementById('bikeLibrarySelect').value = '';
+                return;
+            }
+            
+            // Add to state
+            const newState = getBikeInitialState(bData, selectedRider);
+            // Set initial gears
+            newState.currentFrontGear = newState.front_gears[0];
+            newState.currentRearGear = newState.rear_gears[0];
+            
+            window.bikeState.push(newState);
+            
+            // Show the card
+            const card = document.getElementById(`bike-card-${bikeId}`);
+            if (card) {
+                card.style.display = 'block';
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(-10px)';
+                card.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 10);
+
+                // Sync gear selects
+                const fSelect = card.querySelector('.front-gear-select');
+                const rSelect = card.querySelector('.rear-gear-select');
+                if (fSelect) fSelect.value = newState.currentFrontGear;
+                if (rSelect) rSelect.value = newState.currentRearGear;
+                
+                showToast(`🚲 ${bData.name} added to Racedeck`);
+            }
+
+            // Reset select
+            document.getElementById('bikeLibrarySelect').value = '';
+        };
+
+            const bikesForUpdate = window.bikeState || [];
+            if (debugRiders) debugRiders.innerText = bikesForUpdate.length;
             const parent = canvas.parentElement;
             const targetWidth = parent ? parent.clientWidth : 800;
             const targetHeight = parent ? parent.clientHeight : 550;
@@ -2244,7 +2369,7 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const maxDist = (bikeState.length > 0) ? Math.max(...bikeState.map(b => b.distance), 0.001) : 0.001;
+            const maxDist = (window.bikeState && window.bikeState.length > 0) ? Math.max(...window.bikeState.map(b => b.distance), 0.001) : 0.001;
             
             // Helper for dynamic slope
             const getRouteSlope = (distMeters) => {
@@ -2271,6 +2396,10 @@
                 }
                 return profile[profile.length - 1].relElev;
             };
+            const trackGoalKm = parseFloat(document.getElementById('trackGoalInput').value) || 10;
+            const trackGoalMeters = trackGoalKm * 1000;
+            const canvasPadding = 50;
+            const trackWidth = canvas.width - (canvasPadding * 2);
             
             ctx.save();
             // Removed slope tilt for absolute track perspective
@@ -2278,11 +2407,8 @@
 
             // Drafting Check
             // Sort bikes by distance to find who is ahead of whom
-            const sortedBikes = [...bikeState].sort((a, b) => b.distance - a.distance);
-            const trackGoalKm = parseFloat(document.getElementById('trackGoalInput').value) || 10;
-            const trackGoalMeters = trackGoalKm * 1000;
-            const canvasPadding = 50;
-            const trackWidth = canvas.width - (canvasPadding * 2);
+            const sortedBikes = [...window.bikeState].sort((a, b) => b.distance - a.distance);
+            
 
             // Draw Progress Guides
             ctx.save();
@@ -2403,7 +2529,7 @@
                 elapsedSeconds += (1/60) * timeScale;
             }
 
-            bikeState.forEach((bike, index) => {
+            if (window.bikeState) window.bikeState.forEach((bike, index) => {
                 // Terrain and Physics Info (Calculated every frame for smooth visuals)
                 const riderSlope = getRouteSlope(bike.distance);
                 const slopeAngleRider = Math.atan(riderSlope / 100);
@@ -2559,7 +2685,7 @@
                         if (fBadge) fBadge.style.display = 'inline-block';
                         
                         // Check if all riders are finished
-                        const allFinished = bikeState.every(b => b.isFinished);
+                        const allFinished = window.bikeState.every(b => b.isFinished);
                         if (allFinished) {
                             isPlaying = false;
                             const playBtn = document.getElementById('playBtn');
@@ -2928,7 +3054,7 @@
         document.addEventListener('input', (e) => {
             if (e.target.classList.contains('bike-power-input')) {
                 const id = e.target.getAttribute('data-bike-id');
-                const bike = bikeState.find(b => b.id == id);
+                const bike = window.bikeState.find(b => b.id == id);
                 if(bike) {
                     bike.power = parseInt(e.target.value);
                     const display = document.getElementById(`power-display-${id}`);
@@ -2937,43 +3063,32 @@
             }
             if (e.target.classList.contains('bike-efficiency-input')) {
                 const id = e.target.getAttribute('data-bike-id');
-                const bike = bikeState.find(b => b.id == id);
+                const bike = window.bikeState.find(b => b.id == id);
                 if(bike) {
                     bike.efficiency = parseFloat(e.target.value) / 100;
                 }
             }
             if (e.target.classList.contains('bike-dist-input')) {
                 const id = e.target.getAttribute('data-bike-id');
-                const bike = bikeState.find(b => b.id == id);
+                const bike = window.bikeState.find(b => b.id == id);
                 if(bike) {
                     bike.distance = parseFloat(e.target.value) * 1000;
                 }
             }
             if (e.target.classList.contains('bike-elev-input')) {
                 const id = e.target.getAttribute('data-bike-id');
-                const bike = bikeState.find(b => b.id == id);
+                const bike = window.bikeState.find(b => b.id == id);
                 if(bike) {
                     bike.elevationGain = parseFloat(e.target.value);
                 }
             }
         });
 
-        // ── Brake Button Listeners ──────────────────────────────────────────
-        bikeState.forEach(bike => {
-            const btn = document.getElementById(`brake-btn-${bike.id}`);
-            if (btn) {
-                btn.addEventListener('mousedown', () => setBikeBraking(bike.id, true));
-                btn.addEventListener('mouseup', () => setBikeBraking(bike.id, false));
-                btn.addEventListener('mouseleave', () => setBikeBraking(bike.id, false));
-                btn.addEventListener('touchstart', (e) => { e.preventDefault(); setBikeBraking(bike.id, true); });
-                btn.addEventListener('touchend', () => setBikeBraking(bike.id, false));
-            }
-        });
 
         // ── Keyboard Shortcuts (for Active Rider) ──────────────────────────
         window.addEventListener('keydown', (e) => {
             const activeId = document.getElementById('globalRiderSelect')?.value;
-            // The activeId in globalRiderSelect is rider_id, but bikeState uses bike_id (from $bike->id)
+            // The activeId in globalRiderSelect is rider_id, but window.bikeState uses bike_id (from $bike->id)
             // Actually, in this sim, each rider profile is registered as a "bike-card" with its own bike.id
             // Let's find the bike that has this rider_id or is linked to the active selection
             const riderId = parseInt(activeId);
@@ -2984,7 +3099,7 @@
             // A better way is to find which bike card is "active" or just focus on the first one for now.
             // Or use the hover state. Let's stick to the first bike for simplicity, or find by rider name.
             
-            const bike = bikeState[0]; // Default to first athlete for shortcuts
+            const bike = window.bikeState ? window.bikeState[0] : null; // Default to first athlete for shortcuts
             if (!bike) return;
 
             if (e.code === 'Space') {
@@ -3000,7 +3115,7 @@
         });
 
         window.addEventListener('keyup', (e) => {
-            const bike = bikeState[0];
+            const bike = window.bikeState ? window.bikeState[0] : null;
             if (!bike) return;
             if (e.code === 'Space') {
                 setBikeBraking(bike.id, false);
@@ -3024,18 +3139,18 @@
         document.addEventListener('change', (e) => {
             if (e.target.classList.contains('front-gear-select')) {
                 const id = e.target.getAttribute('data-bike-id');
-                const bike = bikeState.find(b => b.id == id);
+                const bike = window.bikeState.find(b => b.id == id);
                 if(bike) bike.currentFrontGear = parseInt(e.target.value);
             }
             if (e.target.classList.contains('rear-gear-select')) {
                 const id = e.target.getAttribute('data-bike-id');
-                const bike = bikeState.find(b => b.id == id);
+                const bike = window.bikeState.find(b => b.id == id);
                 if(bike) bike.currentRearGear = parseInt(e.target.value);
             }
         });
 
         function resetSimulation() {
-            bikeState.forEach(b => {
+            window.bikeState.forEach(b => {
                 b.distance = 0;
                 b.elevationGain = 0;
                 b.speed = 0;
@@ -3089,15 +3204,15 @@
 
         window.applyGlobalDist = (val) => {
             const meters = parseFloat(val) * 1000;
-            if (!isNaN(meters)) {
-                bikeState.forEach(b => b.distance = meters);
+            if (!isNaN(meters) && window.bikeState) {
+                window.bikeState.forEach(b => b.distance = meters);
             }
         };
 
         window.applyGlobalElev = (val) => {
             const meters = parseFloat(val);
-            if (!isNaN(meters)) {
-                bikeState.forEach(b => b.elevationGain = meters);
+            if (!isNaN(meters) && window.bikeState) {
+                window.bikeState.forEach(b => b.elevationGain = meters);
             }
         };
 
@@ -3141,14 +3256,14 @@
         document.querySelectorAll('.gear-lock-front').forEach(cb => {
             cb.onchange = (e) => {
                 const bid = e.target.getAttribute('data-bike-id');
-                const b = bikeState.find(x => x.id == bid);
+                const b = window.bikeState.find(x => x.id == bid);
                 if (b) b.frontGearLocked = e.target.checked;
             };
         });
         document.querySelectorAll('.gear-lock-rear').forEach(cb => {
             cb.onchange = (e) => {
                 const bid = e.target.getAttribute('data-bike-id');
-                const b = bikeState.find(x => x.id == bid);
+                const b = window.bikeState.find(x => x.id == bid);
                 if (b) b.rearGearLocked = e.target.checked;
             };
         });
@@ -3166,7 +3281,7 @@
         playBtn.onclick = () => {
             if (elapsedSeconds === 0) {
                  // First start logic
-                 bikeState.forEach(b => {
+                 window.bikeState.forEach(b => {
                      if (!b.startLogged) {
                          const timeStr = formatSimulationTime(0);
                          b.logs.unshift({ time: timeStr, msg: "🚀 Race Started!" });
@@ -3182,7 +3297,7 @@
                  });
             }
             isPlaying = true;
-            bikeState.forEach(b => b.isPedaling = true);
+            if (window.bikeState) window.bikeState.forEach(b => b.isPedaling = true);
             playBtn.classList.add('active');
             pauseBtn.classList.remove('active');
             if (stopBtn) stopBtn.classList.remove('active');
@@ -3199,7 +3314,7 @@
 
         if (stopBtn) {
             stopBtn.onclick = () => {
-                bikeState.forEach(b => b.isPedaling = false);
+                if (window.bikeState) window.bikeState.forEach(b => b.isPedaling = false);
                 stopBtn.classList.add('active');
                 playBtn.classList.remove('active');
                 pauseBtn.classList.remove('active');
@@ -3225,7 +3340,7 @@
 
         // Phase 6: Interactive Mechanics
         window.openCadenceModal = (bikeId) => {
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike) return;
             
             const modal = document.getElementById('cadenceModal');
@@ -3264,7 +3379,7 @@
         };
 
         window.openPowerModal = (bikeId) => {
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike) return;
             
             const modal = document.getElementById('powerModal');
@@ -3280,7 +3395,7 @@
         window.savePowerLock = () => {
             const bikeId = document.getElementById('power-bike-id').value;
             const watts = parseInt(document.getElementById('target-power-input').value);
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             
             if (bike && !isNaN(watts) && watts >= 0) {
                 bike.lockedPower = watts;
@@ -3308,7 +3423,7 @@
 
         window.releasePowerLock = () => {
             const bikeId = document.getElementById('power-bike-id').value;
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (bike) {
                 bike.lockedPower = null;
                 const indicator = document.getElementById(`power-lock-${bikeId}`);
@@ -3319,7 +3434,7 @@
 
         window.releaseCadenceLock = () => {
             const bikeId = document.getElementById('cadence-bike-id').value;
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (bike) {
                 if (bike.preLockPower !== undefined) {
                     bike.power = bike.preLockPower;
@@ -3341,7 +3456,7 @@
                 const timerElem = document.getElementById('globalTimer');
                 if (timerElem) timerElem.innerText = "00:00:00"; // Force UI update
                 
-                bikeState.forEach(b => {
+                window.bikeState.forEach(b => {
                     b.distance = 0;
                     b.calories = b.maxCalories;
                     b.hr = 70;
@@ -3375,7 +3490,7 @@
             };
 
         window.refuelRider = (bikeId) => {
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (bike) {
                 bike.calories = Math.min(bike.maxCalories, bike.calories + 500);
                 if (bike.calories > 200) bike.isBonking = false;
@@ -3410,7 +3525,8 @@
 
             const tableBody = document.getElementById('global-summary-body');
             if (tableBody) {
-                tableBody.innerHTML = bikeState.map(bike => {
+                let html = '';
+                window.bikeState.forEach(bike => {
                     const raceTime = bike.finishTime || elapsedSeconds;
                     const avgSpd = ( (bike.distance / 1000) / (raceTime / 3600) ) || 0;
                     const currentNp = Math.pow(bike.npAcc / bike.sampleCount, 0.25) || 0;
@@ -3418,23 +3534,52 @@
                     const ifFactor = (currentNp / ftp);
                     const tss = Math.round((raceTime * currentNp * ifFactor) / (ftp * 3600) * 100);
 
-                    return `
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                    html += `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; background: rgba(0,0,0,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='rgba(0,0,0,0.1)'">
                             <td style="padding: 12px 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${bike.color};"></div>
-                                    <span style="font-weight: 600; color: white;">${bike.name}</span>
+                                    <span style="font-weight: 800; color: white;">${bike.name}</span>
+                                    ${(window.routeSegments && window.routeSegments.length > 0) ? '<span style="font-size: 0.7rem; opacity: 0.5;">(Total)</span>' : ''}
                                 </div>
                             </td>
-                            <td style="padding: 12px 8px; font-family: 'JetBrains Mono'; color: rgba(255,255,255,0.8);">${formatSimulationTime(raceTime)}</td>
-                            <td style="padding: 12px 8px; color: rgba(255,255,255,0.8);">${(bike.distance / 1000).toFixed(2)} km</td>
+                            <td style="padding: 12px 8px; font-family: 'JetBrains Mono'; color: white;">${formatSimulationTime(raceTime)}</td>
+                            <td style="padding: 12px 8px; color: white;">${(bike.distance / 1000).toFixed(2)} km</td>
                             <td style="padding: 12px 8px; font-weight: bold;">${avgSpd.toFixed(1)} <small style="opacity:0.5; font-weight:normal;">km/h</small></td>
-                            <td style="padding: 12px 8px; color: rgba(255,255,255,0.8);">${Math.round(bike.avgPowerAcc / bike.sampleCount) || 0}W</td>
+                            <td style="padding: 12px 8px; color: white;">${Math.round(bike.avgPowerAcc / bike.sampleCount) || 0}W</td>
                             <td style="padding: 12px 8px; color: var(--success); font-weight: 700;">${Math.round(currentNp)}W</td>
-                            <td style="padding: 12px 8px; color: #f59e0b; font-weight: 700;">${tss}</td>
+                            <td style="padding: 12px 8px; color: #f59e0b; font-weight: 700;">${Math.max(0, tss)}</td>
                         </tr>
                     `;
-                }).join('');
+
+                    if (window.routeSegments && window.routeSegments.length > 0 && bike.segmentResults) {
+                        window.routeSegments.forEach(seg => {
+                            const res = bike.segmentResults[seg.id];
+                            if (res) {
+                                const sTime = res.time;
+                                const sDist = res.dist;
+                                const sAvgSpd = ( (sDist / 1000) / (sTime / 3600) ) || 0;
+                                const sAvgPwr = Math.round(res.pwr_acc / Math.max(1, res.sample_count)) || 0;
+                                
+                                html += `
+                                    <tr style="border-bottom: 1px dashed rgba(255,255,255,0.02); font-size: 0.75rem;">
+                                        <td style="padding: 6px 8px 6px 30px; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 6px;">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                                            ${seg.name}
+                                        </td>
+                                        <td style="padding: 6px 8px; font-family: 'JetBrains Mono'; color: rgba(255,255,255,0.5);">${formatSimulationTime(sTime)}</td>
+                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.5);">${(sDist / 1000).toFixed(2)} km</td>
+                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.5); font-weight: bold;">${sAvgSpd.toFixed(1)} <small style="opacity:0.4; font-weight:normal;">km/h</small></td>
+                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.5);">${sAvgPwr}W</td>
+                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.2);">-</td>
+                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.2);">-</td>
+                                    </tr>
+                                `;
+                            }
+                        });
+                    }
+                });
+                tableBody.innerHTML = html;
             }
 
             // NEW: Add "Save Results" button to summary
@@ -3478,9 +3623,9 @@
                 return;
             }
             
-            if (bikeState.length === 0) return;
+            if (window.bikeState.length === 0) return;
 
-            content.innerHTML = bikeState.map(bike => {
+            content.innerHTML = window.bikeState.map(bike => {
                 const results = Object.keys(bike.segmentResults).map(segId => {
                     const s = bike.segmentResults[segId];
                     const rs = window.routeSegments.find(r => r.id == segId);
@@ -3539,7 +3684,7 @@
             const now = new Date();
             document.getElementById('sessionNameInput').value = `Race ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
             
-            const b = bikeState[0];
+            const b = window.bikeState[0];
             const raceTime = b.finishTime || elapsedSeconds;
             const distKm = (b.distance / 1000).toFixed(2);
             const avgSpd = ( (b.distance / 1000) / (raceTime / 3600) ).toFixed(1);
@@ -3563,7 +3708,7 @@
              btn.disabled = true;
              btn.innerText = 'Saving...';
              
-             const b = bikeState[0];
+             const b = window.bikeState[0];
              const raceTime = b.finishTime || elapsedSeconds;
              const avgPwr = Math.round(b.avgPowerAcc / b.sampleCount) || 0;
              let avgSpd = ( (b.distance / 1000) / ( (raceTime || 1) / 3600) ) || 0;
@@ -3756,7 +3901,7 @@
         };
 
         window.downloadCSV = (bikeId) => {
-            const bike = bikeState.find(b => b.id == bikeId);
+            const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike || !bike.history.length) return;
 
             let csv = "Time (s),Power (W),HR (BPM),Distance (km),Speed (km/h)\n";
@@ -4103,6 +4248,31 @@
 
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
                 <button class="btn btn-outline" onclick="closeLoadRouteModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRM REMOVAL MODAL -->
+    <div id="confirmRemovalModal" class="modal" style="z-index: 2500;">
+        <div class="modal-content" style="max-width: 400px; border-top: 6px solid #ef4444; background: #0f172a;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">⚠️ Confirm Removal</h2>
+                </div>
+                <span class="close" onclick="closeConfirmRemovalModal()">&times;</span>
+            </div>
+            
+            <div style="margin: 1.5rem 0;">
+                <p style="font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.8);">
+                    Are you sure you want to remove this rider from the simulation deck? 
+                    <br><br>
+                    <span style="font-size: 0.8rem; opacity: 0.6;">Note: This will not delete the bicycle from the database.</span>
+                </p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="btn btn-outline" onclick="closeConfirmRemovalModal()">Cancel</button>
+                <button class="btn" style="background: #ef4444; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);" onclick="confirmRemoval()">Remove Rider</button>
             </div>
         </div>
     </div>

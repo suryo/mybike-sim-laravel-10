@@ -41,6 +41,7 @@ class Bicycle extends Model
         'head_tube_length',
         'bb_drop',
         'fork_offset',
+        'tire_width',
     ];
 
     public function category()

@@ -330,7 +330,6 @@
             <a href="{{ route('home') }}" class="nav-item active">Home</a>
             <a href="{{ route('simulation') }}" class="nav-item">Simulation</a>
             <a href="{{ route('compare') }}" class="nav-item">Compare</a>
-            <a href="{{ route('drivetrain') }}" class="nav-item">Drivetrain</a>
             <div class="dropdown">
                 <a href="#" class="nav-item">Riders ▾</a>
                 <div class="dropdown-content">
@@ -351,6 +350,7 @@
                 <a href="{{ route('login') }}" class="nav-item">Login</a>
             @endauth
 
+            <a href="{{ route('drivetrain') }}" class="btn-sim" style="background: rgba(255,255,255,0.05); color: var(--text-primary); box-shadow: none; border: 1px solid rgba(255,255,255,0.1); margin-right: -0.5rem;">Drivetrain Lab</a>
             <a href="{{ route('simulation') }}" class="btn-sim">Route Simulation</a>
         </div>
     </nav>

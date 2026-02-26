@@ -90,6 +90,18 @@
             background: rgba(255,255,255,0.05);
         }
 
+        .btn-sim {
+            background: var(--gradient);
+            color: var(--bg-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 800;
+            text-decoration: none;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+            transition: all 0.3s;
+        }
+
         /* Layout Structure */
         main {
             padding-top: 80px; /* Space for fixed nav */
@@ -418,13 +430,15 @@
             <a href="/" class="nav-item">Home</a>
             <a href="/simulation" class="nav-item">Simulator</a>
             <a href="/compare" class="nav-item">Comparison</a>
-            <a href="/drivetrain" class="nav-item active">Drivetrain</a>
             
             @auth
                 <div class="nav-item">{{ Auth::user()->name }}</div>
             @else
                 <a href="{{ route('login') }}" class="btn-auth">Log in</a>
             @endauth
+
+            <a href="/drivetrain" class="btn-sim" style="background: rgba(255,255,255,0.05); color: var(--text-primary); box-shadow: none; border: 1px solid rgba(255,255,255,0.1); margin-right: -0.5rem;">Drivetrain Lab</a>
+            <a href="/simulation" class="btn-sim">Route Simulation</a>
         </div>
     </nav>
 

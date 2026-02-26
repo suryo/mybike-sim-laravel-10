@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             DefaultBicycleSeeder::class,
+            RealWorldBikeSeeder::class,
+            BikeInsightSeeder::class,
         ]);
     }
 }

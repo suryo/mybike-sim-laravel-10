@@ -11,9 +11,9 @@ class DefaultBicycleSeeder extends Seeder
 {
     public function run(): void
     {
-        $road = BicycleCategory::create(['name' => 'Road', 'slug' => 'road']);
-        $gravel = BicycleCategory::create(['name' => 'Gravel', 'slug' => 'gravel']);
-        $mtb = BicycleCategory::create(['name' => 'Mountain', 'slug' => 'mtb']);
+        $road = BicycleCategory::firstOrCreate(['slug' => 'road'], ['name' => 'Road']);
+        $gravel = BicycleCategory::firstOrCreate(['slug' => 'gravel'], ['name' => 'Gravel']);
+        $mtb = BicycleCategory::firstOrCreate(['slug' => 'mtb'], ['name' => 'Mountain']);
 
         // Specialized Tarmac SL8 (Simulation Data + Geometry)
         Bicycle::create([
@@ -27,10 +27,6 @@ class DefaultBicycleSeeder extends Seeder
             'drag_coefficient' => 0.30,
             'rolling_coefficient' => 0.003,
             'crank_length_mm' => 172.5,
-            'max_heart_rate' => 190,
-            'max_power_output' => 1000,
-            'aerobic_threshold' => 250,
-            'anaerobic_threshold' => 350,
             'initial_fuel_kcal' => 2000,
             // Geometry
             'stack' => 543,
@@ -43,6 +39,8 @@ class DefaultBicycleSeeder extends Seeder
             'wheelbase' => 991,
             'head_tube_length' => 143,
             'bb_drop' => 72,
+            'front_gears' => [52, 36],
+            'rear_gears' => [11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 30, 34],
         ]);
 
         // Cannondale Topstone (Gravel)
@@ -57,10 +55,6 @@ class DefaultBicycleSeeder extends Seeder
             'drag_coefficient' => 0.35,
             'rolling_coefficient' => 0.005,
             'crank_length_mm' => 170.0,
-            'max_heart_rate' => 185,
-            'max_power_output' => 800,
-            'aerobic_threshold' => 200,
-            'anaerobic_threshold' => 300,
             'initial_fuel_kcal' => 2500,
             // Geometry
             'stack' => 579,
@@ -73,6 +67,8 @@ class DefaultBicycleSeeder extends Seeder
             'wheelbase' => 1030,
             'head_tube_length' => 165,
             'bb_drop' => 61,
+            'front_gears' => [40],
+            'rear_gears' => [11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42],
         ]);
         
         // Pinarello Dogma F
@@ -87,10 +83,6 @@ class DefaultBicycleSeeder extends Seeder
             'drag_coefficient' => 0.29,
             'rolling_coefficient' => 0.003,
             'crank_length_mm' => 172.5,
-            'max_heart_rate' => 195,
-            'max_power_output' => 1200,
-            'aerobic_threshold' => 280,
-            'anaerobic_threshold' => 400,
             'initial_fuel_kcal' => 1800,
             // Geometry
             'stack' => 542,
@@ -103,6 +95,8 @@ class DefaultBicycleSeeder extends Seeder
             'wheelbase' => 988,
             'head_tube_length' => 139,
             'bb_drop' => 72,
+            'front_gears' => [50, 34],
+            'rear_gears' => [11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 30, 34],
         ]);
     }
 }

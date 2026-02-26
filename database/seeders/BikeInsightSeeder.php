@@ -9,13 +9,16 @@ class BikeInsightSeeder extends Seeder
 {
     public function run(): void
     {
+        $road = \App\Models\BicycleCategory::firstOrCreate(['slug' => 'road'], ['name' => 'Road']);
+        $hybrid = \App\Models\BicycleCategory::firstOrCreate(['slug' => 'hybrid'], ['name' => 'Hybrid']);
+
         // Centurion 2023 Sweep FX (Size L)
         Bicycle::updateOrCreate(
             ['slug' => 'centurion-2023-sweep-fx'],
             [
                 'name' => 'Centurion 2023 Sweep FX (L)',
                 'type' => 'Hybrid',
-                'bicycle_category_id' => 2, // Hybrid
+                'bicycle_category_id' => $hybrid->id,
                 'weight_kg' => 10.5,
                 'frame_material' => 'Aluminum',
                 'fork_material' => 'Aluminum',
@@ -50,7 +53,7 @@ class BikeInsightSeeder extends Seeder
             [
                 'name' => 'Marin 2025 Four Corners 2 (S)',
                 'type' => 'Road',
-                'bicycle_category_id' => 1, // Road
+                'bicycle_category_id' => $road->id,
                 'weight_kg' => 12.5,
                 'frame_material' => 'Steel',
                 'fork_material' => 'Steel',
@@ -85,7 +88,7 @@ class BikeInsightSeeder extends Seeder
             [
                 'name' => 'Marin 2025 Four Corners 2 (M)',
                 'type' => 'Road',
-                'bicycle_category_id' => 1, // Road
+                'bicycle_category_id' => $road->id,
                 'weight_kg' => 12.8,
                 'frame_material' => 'Steel',
                 'fork_material' => 'Steel',

@@ -26,13 +26,10 @@ class RealWorldBikeSeeder extends Seeder
                 'color' => 'Dark Teal',
                 // Simulation defaults
                 'bicycle_weight' => 10.2, 
-                'rider_weight' => 75.0,
                 'front_gears' => [40], // 1x drivetrain
                 'rear_gears' => [11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42],
                 'wheel_diameter' => 700,
                 'efficiency' => 0.98,
-                'max_hr' => 190,
-                'ftp' => 250,
                 'drag_coefficient' => 0.4,
                 'rolling_coefficient' => 0.005,
                 // Geometry data
@@ -64,13 +61,10 @@ class RealWorldBikeSeeder extends Seeder
                 'color' => 'Deep Blue',
                 // Simulation defaults
                 'bicycle_weight' => 8.9,
-                'rider_weight' => 75.0,
                 'front_gears' => [50, 34],
                 'rear_gears' => [11, 12, 13, 14, 15, 17, 19, 21, 24, 28, 32],
                 'wheel_diameter' => 700,
                 'efficiency' => 0.98,
-                'max_hr' => 190,
-                'ftp' => 250,
                 'drag_coefficient' => 0.32,
                 'rolling_coefficient' => 0.003,
                 // Geometry data
@@ -101,13 +95,10 @@ class RealWorldBikeSeeder extends Seeder
                 'weight_kg'            => 10.4,
                 'color'                => 'Khaki Green',
                 'bicycle_weight'       => 10.4,
-                'rider_weight'         => 75.0,
                 'front_gears'          => [40],
                 'rear_gears'           => [11, 13, 15, 17, 19, 21, 24, 28, 32, 37, 42],
                 'wheel_diameter'       => 700,
                 'efficiency'           => 0.98,
-                'max_hr'               => 190,
-                'ftp'                  => 250,
                 'drag_coefficient'     => 0.42,
                 'rolling_coefficient'  => 0.006,
                 // Geometry
@@ -138,13 +129,10 @@ class RealWorldBikeSeeder extends Seeder
                 'weight_kg'            => 9.0,
                 'color'                => 'Matte Black',
                 'bicycle_weight'       => 9.0,
-                'rider_weight'         => 75.0,
                 'front_gears'          => [40],
                 'rear_gears'           => [10, 12, 14, 16, 18, 21, 24, 28, 33, 39, 45],
                 'wheel_diameter'       => 700,
                 'efficiency'           => 0.99,
-                'max_hr'               => 190,
-                'ftp'                  => 250,
                 'drag_coefficient'     => 0.38,
                 'rolling_coefficient'  => 0.005,
                 // Geometry — same frame as Tambora G4 (higher spec groupset/carbon frame)
