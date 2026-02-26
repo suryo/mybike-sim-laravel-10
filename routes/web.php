@@ -37,6 +37,7 @@ Route::post('/sessions', [SimulationController::class, 'saveSession'])->name('se
 Route::delete('/sessions/{session}', [SimulationController::class, 'deleteSession'])->name('sessions.destroy');
 Route::get('/simulation', [SimulationController::class, 'index'])->name('simulation');
 Route::get('/compare', [CompareController::class, 'index'])->name('compare');
+Route::get('/drivetrain', [\App\Http\Controllers\DrivetrainController::class, 'index'])->name('drivetrain');
 
 // Planned Routes
 Route::get('/planned-routes', [SimulationController::class, 'listPlannedRoutes'])->name('routes.index');

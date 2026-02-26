@@ -330,6 +330,7 @@
             <a href="{{ route('home') }}" class="nav-item active">Home</a>
             <a href="{{ route('simulation') }}" class="nav-item">Simulation</a>
             <a href="{{ route('compare') }}" class="nav-item">Compare</a>
+            <a href="{{ route('drivetrain') }}" class="nav-item">Drivetrain</a>
             <div class="dropdown">
                 <a href="#" class="nav-item">Riders ▾</a>
                 <div class="dropdown-content">

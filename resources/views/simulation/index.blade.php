@@ -66,7 +66,7 @@
             display: grid;
             grid-template-columns: 1fr 420px;
             gap: 1.5rem;
-            height: calc(100vh - 120px);
+            margin-bottom: 3rem;
         }
 
         .simulation-area {
@@ -137,20 +137,17 @@
         .bike-list {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-            min-height: 0; /* Allow grid scaling */
+            gap: 0.75rem;
         }
 
         .bike-card {
             background: rgba(30, 41, 59, 0.4);
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 0.75rem; /* More compact */
+            border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
             transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .bike-card:hover { border-color: var(--primary); background: rgba(30, 41, 59, 0.6); }
 
@@ -191,8 +188,8 @@
         .gear-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 0.5rem; /* Reduced gap */
+            margin-bottom: 0.75rem;
         }
 
         select {
@@ -216,9 +213,10 @@
         .stat-item {
             display: flex;
             flex-direction: column;
-            background: rgba(0,0,0,0.2);
-            padding: 0.4rem;
-            border-radius: 4px;
+            background: rgba(0,0,0,0.25);
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.03);
         }
 
         .stat-label {
@@ -1040,7 +1038,7 @@
                 </div>
                 <div class="bike-list" id="bikeList">
                     @forelse($bicycles as $bike)
-                    <div class="bike-card" id="bike-{{ $bike->id }}">
+                    <div class="bike-card" id="bike-card-{{ $bike->id }}">
                         <!-- Bonk Alert Overlay -->
                         <div id="bonk-overlay-{{ $bike->id }}" class="bonk-overlay">
                             <div class="bonk-title">BONKED!</div>
@@ -1058,7 +1056,7 @@
                             <p id="meal-status-{{ $bike->id }}" style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Refueling...</p>
                         </div>
 
-                        <div style="position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem;">
+                        <div style="position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; z-index: 50;">
                             <button onclick="showSummary({{ $bike->id }})" class="edit-btn" style="background: none; border: none; color: var(--success); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Show Summary">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
                             </button>
@@ -1102,46 +1100,63 @@
                             <span class="tooltip-text" style="bottom: 110%;">Target wattage for this rider. High power depletes stamina! Click to LOCK.</span>
                         </div>
                         
-                        <div class="gear-controls">
+                        <div class="gear-controls" style="margin-bottom: 0.5rem;">
                             <div class="control-group">
-                                <label>Efficiency (%)</label>
-                                <input type="number" name="efficiency" value="24" step="1" class="form-control" placeholder="Avg 24%">
+                                <label style="font-size: 0.65rem; margin-bottom: 1px;">Efficiency (%)</label>
+                                <input type="number" name="efficiency" value="{{ $bike->efficiency * 100 }}" step="1" data-bike-id="{{ $bike->id }}" class="form-control bike-efficiency-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
                             <div class="control-group">
-                                <label>Start Dist (km)</label>
-                                <input type="number" name="initial_distance" value="0" step="0.1" class="form-control">
+                                <label style="font-size: 0.65rem; margin-bottom: 1px;">Start Dist (km)</label>
+                                <input type="number" name="initial_distance" value="{{ $bike->initial_distance }}" data-bike-id="{{ $bike->id }}" step="0.1" class="form-control bike-dist-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                            </div>
+                        </div>
+
+                        <div class="gear-controls" style="margin-bottom: 0.75rem; align-items: flex-end;">
+                            <div class="control-group">
+                                <label style="font-size: 0.65rem; margin-bottom: 1px;">Start EG (m)</label>
+                                <input type="number" name="initial_elevation" value="{{ $bike->initial_elevation }}" data-bike-id="{{ $bike->id }}" step="1" class="form-control bike-elev-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; height: 28px;">
+                                <div style="display: flex; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 2px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <button class="mode-btn-sm active" id="mode-auto-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, true)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: #0f172a;">AUTO</button>
+                                    <button class="mode-btn-sm" id="mode-manual-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, false)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: rgba(255,255,255,0.4);">MAN</button>
+                                </div>
+                                <button id="brake-btn-{{ $bike->id }}" class="btn-brake-sm" style="background: rgba(244, 63, 94, 0.1); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 0; font-weight: 800; font-size: 0.55rem; cursor: pointer;">BRAKE</button>
+                            </div>
+                        </div>
+
+                        <div class="gear-controls" style="margin-bottom: 0.75rem;">
+                            <div class="control-group">
+                                <label style="font-size: 0.65rem; margin-bottom: 2px;">Chainring (Front)</label>
+                                <div style="display: flex; gap: 2px; align-items: center;">
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCR({{ $bike->id }}, -1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">-</button>
+                                    <select class="front-gear-select" data-bike-id="{{ $bike->id }}" disabled style="height: 22px; padding: 0 2px; font-size: 0.65rem; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; flex: 1;">
+                                        @php
+                                            $sortedFront = $bike->front_gears;
+                                            sort($sortedFront);
+                                        @endphp
+                                        @foreach($sortedFront as $gear)
+                                            <option value="{{ $gear }}">{{ $gear }}T</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCR({{ $bike->id }}, 1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">+</button>
+                                </div>
                             </div>
                             <div class="control-group">
-                                <label>Start EG (m)</label>
-                                <input type="number" name="initial_elevation" value="0" step="1" class="form-control">
-                            </div>
-                            <div class="control-group">
-                                <label style="display: flex; justify-content: space-between; align-items: center;">
-                                    Chainring
-                                    <label style="font-size: 0.65rem; display: flex; align-items: center; gap: 3px; cursor: pointer; opacity: 0.8;">
-                                        <input type="checkbox" id="lock-front-{{ $bike->id }}" class="gear-lock-front" data-bike-id="{{ $bike->id }}" checked>
-                                        Lock
-                                    </label>
-                                </label>
-                                <select class="front-gear-select" data-bike-id="{{ $bike->id }}">
-                                    @foreach($bike->front_gears as $gear)
-                                        <option value="{{ $gear }}">{{ $gear }}T</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="control-group">
-                                <label style="display: flex; justify-content: space-between; align-items: center;">
-                                    Cassette
-                                    <label style="font-size: 0.65rem; display: flex; align-items: center; gap: 3px; cursor: pointer; opacity: 0.8;">
-                                        <input type="checkbox" id="lock-rear-{{ $bike->id }}" class="gear-lock-rear" data-bike-id="{{ $bike->id }}" checked>
-                                        Lock
-                                    </label>
-                                </label>
-                                <select class="rear-gear-select" data-bike-id="{{ $bike->id }}">
-                                    @foreach($bike->rear_gears as $gear)
-                                        <option value="{{ $gear }}">{{ $gear }}T</option>
-                                    @endforeach
-                                </select>
+                                <label style="font-size: 0.65rem; margin-bottom: 2px;">Cassette (Rear)</label>
+                                <div style="display: flex; gap: 2px; align-items: center;">
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCS({{ $bike->id }}, -1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">-</button>
+                                    <select class="rear-gear-select" data-bike-id="{{ $bike->id }}" disabled style="height: 22px; padding: 0 2px; font-size: 0.65rem; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; flex: 1;">
+                                        @php
+                                            $sortedRear = $bike->rear_gears;
+                                            rsort($sortedRear);
+                                        @endphp
+                                        @foreach($sortedRear as $gear)
+                                            <option value="{{ $gear }}">{{ $gear }}T</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCS({{ $bike->id }}, 1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">+</button>
+                                </div>
                             </div>
                         </div>
 
@@ -1230,13 +1245,13 @@
                             </div>
                         </div>
 
-                        <div class="log-section">
-                            <div class="log-header">
-                                <span>Refuel Activity Log</span>
-                                <span>T | Dist | Spd</span>
+                        <div class="log-section" style="margin-top: 0.75rem;">
+                            <div class="log-header" style="font-size: 0.6rem; padding: 4px 0; opacity: 0.5; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <span>ACTIVITY LOG</span>
+                                <span>T | D | S</span>
                             </div>
-                            <div id="log-list-{{ $bike->id }}" class="log-list">
-                                <div style="opacity: 0.3; font-style: italic; text-align: center; margin-top: 10px;">No logs yet</div>
+                            <div id="log-list-{{ $bike->id }}" class="log-list" style="max-height: 60px; font-size: 0.65rem;">
+                                <div style="opacity: 0.3; font-style: italic; text-align: center; margin-top: 5px;">Empty</div>
                             </div>
                         </div>
                     </div>
@@ -1305,7 +1320,7 @@
         function initMap() {
             if (!routeMap) {
                 // Initialize map - centered on Surabaya (Example Start: -7.3068, 112.7930)
-                routeMap = L.map('map').setView([-7.3068, 112.7930], 11);
+                routeMap = L.map('map', { scrollWheelZoom: false }).setView([-7.3068, 112.7930], 11);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(routeMap);
@@ -1997,10 +2012,10 @@
             let timeScale = 1.0;
             let elapsedSeconds = 0;
 
-            const RHO = 1.225; 
+            const RHO = 1.2; 
             const CRR = 0.005; 
             const G = 9.81;    
-            const CDA = 0.32;  
+            const CDA = 0.24;  
 
             function formatSimulationTime(seconds) {
                 const h = Math.floor(seconds / 3600);
@@ -2015,15 +2030,16 @@
                 const rearGears = Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28];
             return {
                 ...bike,
-                front_gears: Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34],
-                rear_gears: Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28],
+                front_gears: (Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34]).sort((a,b) => a - b),
+                rear_gears: (Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28]).sort((a,b) => b - a),
                 speed: 0,
                 power: 150,
                 cadence: 80,
-                currentFrontGear: parseInt(document.querySelector(`.front-gear-select[data-bike-id="${bike.id}"]`)?.value) || 52,
-                currentRearGear: parseInt(document.querySelector(`.rear-gear-select[data-bike-id="${bike.id}"]`)?.value) || 15,
+                currentFrontGear: null, // Will set below
+                currentRearGear: null,  // Will set below
                 wheel_diameter: 700, 
-                wheel_circumference: 2.096,
+                wheel_circumference: 2.105,
+                efficiency: bike.efficiency || 0.24,
                 calories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
                 maxCalories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
                 staminaW: 100,
@@ -2031,17 +2047,17 @@
                 totalJoules: 0,
                 totalKm: 0,
                 lastLogTime: 0,
-                lastMealTime: 0, // NEW: Track last time they ate
+                lastMealTime: 0, 
                 lockedCadence: null,
                 lockedPower: null,
                 hasConflict: false,
                 isFinished: false,
-                startLogged: false, // NEW: Prevent duplicate start logs
-                isEating: false,    // NEW: Meal break state
-                mealEndTime: 0,    // NEW: Timestamp when meal ends
-                finishTime: null,  // NEW: Individual finish time
-                frontGearLocked: true, // NEW: Auto-shifting toggle
-                rearGearLocked: true,  // NEW: Auto-shifting toggle
+                startLogged: false, 
+                isEating: false,    
+                mealEndTime: 0,    
+                finishTime: null,  
+                autoShiftEnabled: true, 
+                isBraking: false,      
                 elevationGain: parseFloat(bike.initial_elevation || 0),
                 distance: parseFloat(bike.initial_distance || 0) * 1000, 
                 currentSlope: 0,
@@ -2051,16 +2067,107 @@
                 max_hr: selectedRider.max_hr,
                 anaerobic_threshold_w: selectedRider.anaerobic_threshold_w,
                 logs: [],
-                history: [], // Metric snapshots for export
+                history: [], 
                 lastHistorySample: 0,
-                hr: 70, // Initialize to avoid NaN
+                hr: 70, 
                 npAcc: 0, 
                 avgPowerAcc: 0,
-                sampleCount: 0.001, // Avoid division by zero
+                sampleCount: 0.001, 
                 hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 },
-                segmentResults: {} // NEW: Track metrics per segment ID
+                segmentResults: {} 
             };
         });
+
+        // Set initial gears to Index 0 (Easiest)
+        bikeState.forEach(b => {
+            b.currentFrontGear = b.front_gears[0];
+            b.currentRearGear = b.rear_gears[0];
+            
+            const fSelect = document.querySelector(`.front-gear-select[data-bike-id="${b.id}"]`);
+            const rSelect = document.querySelector(`.rear-gear-select[data-bike-id="${b.id}"]`);
+            if (fSelect) fSelect.value = b.currentFrontGear;
+            if (rSelect) rSelect.value = b.currentRearGear;
+        });
+
+        // ── MANUAL CONTROL HELPERS ──────────────────────────────────────────
+        function setBikeMode(bikeId, auto) {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike) return;
+            
+            bike.autoShiftEnabled = auto;
+            
+            const autoBtn = document.getElementById(`mode-auto-${bikeId}`);
+            const manualBtn = document.getElementById(`mode-manual-${bikeId}`);
+            
+            if (autoBtn) {
+                autoBtn.style.background = auto ? 'var(--accent)' : 'transparent';
+                autoBtn.style.color = auto ? '#0f172a' : 'rgba(255,255,255,0.4)';
+            }
+            if (manualBtn) {
+                manualBtn.style.background = !auto ? 'var(--accent)' : 'transparent';
+                manualBtn.style.color = !auto ? '#0f172a' : 'rgba(255,255,255,0.4)';
+            }
+
+            // Disable/Enable selectors
+            const fSelect = document.querySelector(`.front-gear-select[data-bike-id="${bikeId}"]`);
+            const rSelect = document.querySelector(`.rear-gear-select[data-bike-id="${bikeId}"]`);
+            
+            [fSelect, rSelect].forEach(el => {
+                if (el) {
+                    el.disabled = auto;
+                    el.style.opacity = auto ? '0.5' : '1';
+                    el.style.cursor = auto ? 'not-allowed' : 'pointer';
+                }
+            });
+        }
+
+        function manualShiftBikeCR(bikeId, dir) {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike || bike.autoShiftEnabled) return;
+            
+            const gears = bike.front_gears;
+            const currentIdx = gears.indexOf(bike.currentFrontGear);
+            const newIdx = currentIdx + dir;
+            
+            if (newIdx >= 0 && newIdx < gears.length) {
+                bike.currentFrontGear = gears[newIdx];
+                const select = document.querySelector(`.front-gear-select[data-bike-id="${bikeId}"]`);
+                if (select) select.value = bike.currentFrontGear;
+                
+                const timeStr = formatSimulationTime(elapsedSeconds);
+                bike.logs.unshift({ time: timeStr, msg: `⚙️ Shift CR: ${bike.currentFrontGear}T` });
+            }
+        }
+
+        function manualShiftBikeCS(bikeId, dir) {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike || bike.autoShiftEnabled) return;
+            
+            const gears = bike.rear_gears;
+            const currentIdx = gears.indexOf(bike.currentRearGear);
+            const newIdx = currentIdx + dir;
+            
+            if (newIdx >= 0 && newIdx < gears.length) {
+                bike.currentRearGear = gears[newIdx];
+                const select = document.querySelector(`.rear-gear-select[data-bike-id="${bikeId}"]`);
+                if (select) select.value = bike.currentRearGear;
+                
+                const timeStr = formatSimulationTime(elapsedSeconds);
+                bike.logs.unshift({ time: timeStr, msg: `⚙️ Shift CS: ${bike.currentRearGear}T` });
+            }
+        }
+
+        function setBikeBraking(bikeId, braking) {
+            const bike = bikeState.find(b => b.id == bikeId);
+            if (!bike) return;
+            
+            bike.isBraking = braking;
+            const btn = document.getElementById(`brake-btn-${bikeId}`);
+            if (btn) {
+                btn.style.background = braking ? '#f43f5e' : 'rgba(244, 63, 94, 0.1)';
+                btn.style.color = braking ? 'white' : '#f43f5e';
+            }
+        }
 
         function getCadenceEfficiency(cadence) {
             // Gaussian bell curve centered at 90 RPM
@@ -2072,12 +2179,12 @@
             return Math.max(0.15, factor); // Minimum efficiency floor
         }
 
-        function calculateSpeed(power, weight, slopePercent, windKmh, draftFactor = 1.0) {
+        function calculateSpeed(power, weight, slopePercent, windKmh, draftFactor = 1.0, brakeForce = 0) {
             // Pure physics: given mechanical power (watts at wheel), find terminal velocity.
             // Cadence efficiency is applied upstream by the caller, not here.
-            const mechanicalEfficiency = 0.98; // 2% drivetrain loss
+            const mechanicalEfficiency = 1.0; // Synced with lab (100% mechanical efficiency)
             const effectivePower = power * mechanicalEfficiency;
-            if (effectivePower <= 0) return 0;
+            if (effectivePower <= 0 && brakeForce <= 0) return 0;
 
             const slopeAngle = Math.atan(slopePercent / 100);
             const m = weight; // kg, bike + rider
@@ -2093,7 +2200,7 @@
                 const mid = (low + high) / 2;
                 const relativeAirSpeed = mid - windMs;
                 const dragForce = C_drag_base * relativeAirSpeed * Math.abs(relativeAirSpeed);
-                const p_req = (C_gravity + C_roll + dragForce) * mid;
+                const p_req = (C_gravity + C_roll + dragForce + brakeForce) * mid;
                 if (p_req < effectivePower) low = mid;
                 else high = mid;
             }
@@ -2344,87 +2451,107 @@
 
                 if (isPlaying && !bike.isFinished && !bike.isEating) {
                     const ratio = bike.currentFrontGear / bike.currentRearGear;
-                    const circ = bike.wheel_circumference || 2.096;
-                    const totalWeight = bike.bicycle_weight + bike.rider_weight;
+                    const circ = bike.wheel_circumference || 2.105;
+                    const mass = (bike.rider_weight || 75) + (bike.bicycle_weight || 10);
+                    const windMs = currentWind / 3.6;
+                    
+                    // 1. Calculate Forces (Synced with Drivetrain Lab)
+                    const slopeAngle = Math.atan(riderSlope / 100);
+                    const gravityForce = mass * G * Math.sin(slopeAngle);
+                    const dragForce = (bike.drag_coefficient || 0.4) * draftFactor * Math.pow(bike.speed - windMs, 2) * Math.sign(bike.speed - windMs);
+                    const rollingResistForce = (bike.rolling_coefficient || 0.005) * mass * G * Math.cos(slopeAngle);
+                    const totalResistance = gravityForce + dragForce + (bike.speed > 0.1 ? rollingResistForce : 0);
 
-                    if (bike.lockedCadence && bike.lockedPower !== null) {
-                        // Both cadence and power locked — honour the locked power/cadence target
-                        bike.power = bike.lockedPower;
-                        const cadEff = getCadenceEfficiency(bike.lockedCadence);
-                        speed = calculateSpeed(bike.lockedPower * cadEff * fatigueMultiplier, totalWeight, riderSlope, windKmh, draftFactor);
-
-                        const targetSpeed = (bike.lockedCadence * ratio * circ) / 60;
-                        const F_g = totalWeight * G * Math.sin(slopeAngleRider);
-                        const F_r = CRR * totalWeight * G * Math.cos(slopeAngleRider);
-                        const relV = targetSpeed - (windKmh / 3.6);
-                        const F_d = 0.5 * RHO * CDA * draftFactor * relV * Math.abs(relV);
-                        const P_req = ((F_g + F_r + F_d) * targetSpeed) / cadEff;
-                        if (Math.abs(P_req - bike.lockedPower) > 15) hasConflict = true;
-
-                    } else if (bike.lockedCadence) {
-                        // Only cadence locked — speed is set by cadence, power derived from physics
-                        speed = (bike.lockedCadence * ratio * circ) / 60;
-                        const P_mech = (totalWeight * G * Math.sin(slopeAngleRider)
-                            + CRR * totalWeight * G * Math.cos(slopeAngleRider)
-                            + 0.5 * RHO * CDA * draftFactor * Math.pow(speed - (windKmh / 3.6), 2)) * speed;
-                        bike.power = Math.max(0, Math.min(1500, P_mech));
-
+                    // 2. Drive Force
+                    let driveForce = 0;
+                    if (bike.speed < 0.2) {
+                        driveForce = effectiveRiderPower / 0.2;
                     } else {
-                        // NORMAL MODE: Speed from pure physics (no cadence penalty on speed)
-                        // Cadence efficiency only affects calorie burn — rider still produces same watts
-                        const ftpTarget = bike.ftp || 200;
-                        const climbPacingFactor = Math.min(1, Math.max(0, riderSlope / 8));
-                        const pacedPower = Math.max(50,
-                            effectiveRiderPower - (effectiveRiderPower - ftpTarget) * climbPacingFactor * 0.6
-                        );
-                        bike.power = pacedPower;
-                        speed = calculateSpeed(pacedPower, totalWeight, riderSlope, windKmh, draftFactor);
+                        driveForce = effectiveRiderPower / bike.speed;
                     }
 
-                    bike.distance += speed * delta;
-                    bike.speed = speed;         // ← commit speed to state
+                    const brakeForce = bike.isBraking ? 800 : 0;
+                    const netForce = driveForce - totalResistance - brakeForce;
+                    const acceleration = netForce / mass;
+
+                    // 3. Update Velocity
+                    bike.speed = Math.max(0, bike.speed + acceleration * delta);
+                    speed = bike.speed; // Update local speed variable for loop-wide use
+                    
+                    // 4. Update Distance & Elevation
+                    bike.distance += bike.speed * delta;
+                    bike.elevationGain += (bike.speed * delta) * Math.sin(slopeAngle);
                     bike.currentSlope = riderSlope;
-                    if (riderSlope > 0) {
-                        bike.elevationGain += speed * delta * (riderSlope / 100);
-                    }
 
-                    // Stats Update
-                    // Cadence efficiency here affects calorie burn only (not speed)
-                    const metabolicEff = (bike.efficiency && bike.efficiency <= 1.0) ? bike.efficiency : 0.24;
-                    const cadEffForCalories = getCadenceEfficiency(bike.cadence > 0 ? bike.cadence : 80);
-                    // Bad cadence = more calories burned per second
-                    const kcalPerSec = bike.power / (4184 * metabolicEff * cadEffForCalories);
-                    bike.calories = Math.max(0, bike.calories - kcalPerSec * delta);
+                    // 5. Derived Metrics
+                    const wheelRpm = (bike.speed * 60) / circ;
+                    bike.cadence = wheelRpm / ratio;
+
+                    // Heart Rate (Matches lab feel)
+                    const targetHr = 70 + (effectiveRiderPower / (bike.ftp || 250)) * 110 + (bike.fatigue * 0.5);
+                    bike.hr += (targetHr - bike.hr) * 0.02;
+
+                    // Calorie Burn
+                    const metabolicEff = bike.efficiency || 0.24;
+                    const joulesThisFrame = (effectiveRiderPower * delta) / metabolicEff;
+                    const kcalThisFrame = joulesThisFrame / 4184;
+                    const kcalPerSec = (effectiveRiderPower / metabolicEff) / 4184;
+                    bike.totalJoules += joulesThisFrame;
+                    bike.calories = Math.max(0, bike.calories - kcalThisFrame);
                     
                     if (bike.calories < 100 && !bike.isBonking && !bike.isEating) {
                         bike.isBonking = true;
-                        const timeStr = formatSimulationTime(elapsedSeconds);
-                        bike.logs.unshift({ time: timeStr, msg: "⚠️ Low Fuel! (Bonking)" });
+                        bike.logs.unshift({ time: formatSimulationTime(elapsedSeconds), msg: "⚠️ Low Fuel! (Bonking)" });
                     }
 
-                    const ftp = bike.ftp;
-                    if (bike.power > ftp) bike.staminaW = Math.max(0, bike.staminaW - ((bike.power - ftp) / 1000) * delta);
-                    else bike.staminaW = Math.min(100, bike.staminaW + ((ftp - bike.power) / 2000) * delta * (1 - (bike.fatigue / 100) * 0.5));
-                    
-                    bike.fatigue = Math.min(100, bike.fatigue + (bike.power * delta / 100000) * 0.5 + (bike.staminaW < 50 ? 0.01 : 0) * timeScale);
-                    
-                    // Analytics Accumulation
-                    const hrBase = 70;
-                    const maxHr = bike.max_hr || 190;
-                    const targetHr = hrBase + (bike.power / (bike.ftp * 1.5)) * (maxHr - hrBase);
-                    if (!bike.hr) bike.hr = hrBase;
-                    bike.hr += (targetHr - bike.hr) * 0.2 * delta; // Smooth HR adjustment
+                    // Stamina & Fatigue
+                    const ftp = bike.ftp || 250;
+                    if (effectiveRiderPower > ftp) {
+                        bike.staminaW = Math.max(0, bike.staminaW - ((effectiveRiderPower - ftp) / 1000) * delta);
+                    } else {
+                        bike.staminaW = Math.min(100, bike.staminaW + ((ftp - effectiveRiderPower) / 2000) * delta);
+                    }
+                    bike.fatigue = Math.min(100, bike.fatigue + (effectiveRiderPower * delta / 200000));
 
-                    bike.avgPowerAcc += bike.power * delta;
-                    bike.npAcc += Math.pow(bike.power, 4) * delta;
-                    bike.sampleCount += delta;
+                    // Segment Tracking
+                    if (currentSegment && bike._lastSegId !== currentSegment.id) {
+                        bike.logs.unshift({ time: formatSimulationTime(elapsedSeconds), msg: `📍 Entering ${currentSegment.name}` });
+                        bike._lastSegId = currentSegment.id;
+                    }
 
-                    // HR Zone tracking
-                    if (bike.hr >= maxHr * 0.9) bike.hrZonesTime.Z5 += delta;
-                    else if (bike.hr >= maxHr * 0.8) bike.hrZonesTime.Z4 += delta;
-                    else if (bike.hr >= maxHr * 0.7) bike.hrZonesTime.Z3 += delta;
-                    else if (bike.hr >= maxHr * 0.6) bike.hrZonesTime.Z2 += delta;
-                    else bike.hrZonesTime.Z1 += delta;
+                    if (bike.distance >= trackGoalMeters) {
+                        bike.distance = trackGoalMeters;
+                        bike.isFinished = true;
+                        bike.finishTime = elapsedSeconds;
+                        
+                        // Log finish
+                        const timeStr = formatSimulationTime(elapsedSeconds);
+                        const distStr = (bike.distance / 1000).toFixed(2);
+                        bike.logs.unshift({ time: timeStr, msg: `🏁 Race Finished at ${distStr}km` });
+                        
+                        // Show finish badge immediately
+                        const fBadge = document.getElementById(`finish-badge-${bike.id}`);
+                        if (fBadge) fBadge.style.display = 'inline-block';
+                        
+                        // Check if all riders are finished
+                        const allFinished = bikeState.every(b => b.isFinished);
+                        if (allFinished) {
+                            isPlaying = false;
+                            const playBtn = document.getElementById('playBtn');
+                            const pauseBtn = document.getElementById('pauseBtn');
+                            if (playBtn) playBtn.classList.remove('active');
+                            if (pauseBtn) pauseBtn.classList.add('active');
+                            
+                            // Show Global Summary after a short delay
+                            if (typeof showGlobalSummary === 'function') {
+                                setTimeout(() => showGlobalSummary(), 2000);
+                            }
+                        }
+                    }
+
+
+                    
+
 
                     // History Sampling (Every 5 simulation seconds)
                     if (elapsedSeconds - bike.lastHistorySample >= 5) {
@@ -2487,11 +2614,11 @@
                 }
 
                 // ── STEP 1: Auto-Shifting (runs BEFORE speed so we use the best gear THIS frame)
-                if (!bike.frontGearLocked || !bike.rearGearLocked) {
+                if (bike.autoShiftEnabled) {
                     const shiftCirc = bike.wheel_circumference || 2.096;
-                    const frontOptions = bike.frontGearLocked ? [bike.currentFrontGear] : bike.front_gears;
-                    const rearOptions  = bike.rearGearLocked  ? [bike.currentRearGear]  : bike.rear_gears;
                     const shiftWeight  = bike.bicycle_weight + bike.rider_weight;
+                    const frontOptions = bike.front_gears;
+                    const rearOptions  = bike.rear_gears;
 
                     // On flat: speed dominates; on climb (≥10%): cadence efficiency dominates
                     const climbFactor   = Math.min(1, Math.max(0, riderSlope / 10));
@@ -2628,30 +2755,7 @@
                     const pFill = document.getElementById(`progress-fill-${bike.id}`);
                     if (pFill) pFill.style.width = `${totalProgress}%`;
                     
-                    if (progressRatio >= 1.0 && !bike.isFinished) {
-                        bike.isFinished = true;
-                        bike.finishTime = elapsedSeconds; // Store individual finish time
-                        const timeStr = formatSimulationTime(elapsedSeconds);
-                        const distStr = (bike.distance / 1000).toFixed(2);
-                        bike.logs.unshift({ time: timeStr, msg: `🏁 Race Finished at ${distStr}km` });
-                        const alert = document.getElementById(`finish-badge-${bike.id}`);
-                        if(alert) alert.style.display = 'inline-block';
-                        
-                        // Check if all riders are finished
-                        const allFinished = bikeState.every(b => b.isFinished);
-                        if (allFinished) {
-                            isPlaying = false;
-                            const playBtn = document.getElementById('playBtn');
-                            const pauseBtn = document.getElementById('pauseBtn');
-                            if (playBtn) playBtn.classList.remove('active');
-                            if (pauseBtn) pauseBtn.classList.add('active');
-                            
-                            // NEW: Show Global Summary
-                            if (typeof showGlobalSummary === 'function') {
-                                setTimeout(() => showGlobalSummary(), 2000);
-                            }
-                        }
-                    }
+
 
                     // Update Meal Timer if eating
                     if (bike.isEating) {
@@ -2678,7 +2782,7 @@
 
                 // Visual Drawing
                 const screenX = canvasPadding + (Math.min(bike.distance, trackGoalMeters) / trackGoalMeters) * trackWidth;
-                drawBike(ctx, screenX, adjustedY, bike.color, bike.name, bike.isFinished, bike.isDrafting, riderSlope, bike.cadence);
+                drawBike(ctx, screenX, adjustedY, bike.color, bike.name, bike.isFinished, bike.isDrafting, riderSlope, bike.cadence, bike.isBraking);
             });
 
             // Removed Global Totals update logic as these inputs are now configurable Targets
@@ -2705,7 +2809,7 @@
             }
         }
 
-        function drawBike(ctx, x, y, color, name, isFinished, isDrafting, slope = 0, cadence = 80) {
+        function drawBike(ctx, x, y, color, name, isFinished, isDrafting, slope = 0, cadence = 80, isBraking = false) {
             ctx.save();
             ctx.translate(x, y);
             
@@ -2746,9 +2850,24 @@
             ctx.beginPath();
             ctx.arc(0, 0, 18 * scale, 0, Math.PI * 2);
             ctx.stroke();
+            if (isBraking) {
+                ctx.save();
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = (4 + Math.sin(Date.now()/50)*2) * scale;
+                ctx.stroke();
+                ctx.restore();
+            }
+
             ctx.beginPath();
             ctx.arc(50 * scale, 0, 18 * scale, 0, Math.PI * 2);
             ctx.stroke();
+            if (isBraking) {
+                ctx.save();
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = (4 + Math.sin(Date.now()/50)*2) * scale;
+                ctx.stroke();
+                ctx.restore();
+            }
 
             // Head
             ctx.fillStyle = "#f8fafc";
@@ -2790,6 +2909,76 @@
                     const display = document.getElementById(`power-display-${id}`);
                     if(display) display.innerText = bike.power;
                 }
+            }
+            if (e.target.classList.contains('bike-efficiency-input')) {
+                const id = e.target.getAttribute('data-bike-id');
+                const bike = bikeState.find(b => b.id == id);
+                if(bike) {
+                    bike.efficiency = parseFloat(e.target.value) / 100;
+                }
+            }
+            if (e.target.classList.contains('bike-dist-input')) {
+                const id = e.target.getAttribute('data-bike-id');
+                const bike = bikeState.find(b => b.id == id);
+                if(bike) {
+                    bike.distance = parseFloat(e.target.value) * 1000;
+                }
+            }
+            if (e.target.classList.contains('bike-elev-input')) {
+                const id = e.target.getAttribute('data-bike-id');
+                const bike = bikeState.find(b => b.id == id);
+                if(bike) {
+                    bike.elevationGain = parseFloat(e.target.value);
+                }
+            }
+        });
+
+        // ── Brake Button Listeners ──────────────────────────────────────────
+        bikeState.forEach(bike => {
+            const btn = document.getElementById(`brake-btn-${bike.id}`);
+            if (btn) {
+                btn.addEventListener('mousedown', () => setBikeBraking(bike.id, true));
+                btn.addEventListener('mouseup', () => setBikeBraking(bike.id, false));
+                btn.addEventListener('mouseleave', () => setBikeBraking(bike.id, false));
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); setBikeBraking(bike.id, true); });
+                btn.addEventListener('touchend', () => setBikeBraking(bike.id, false));
+            }
+        });
+
+        // ── Keyboard Shortcuts (for Active Rider) ──────────────────────────
+        window.addEventListener('keydown', (e) => {
+            const activeId = document.getElementById('globalRiderSelect')?.value;
+            // The activeId in globalRiderSelect is rider_id, but bikeState uses bike_id (from $bike->id)
+            // Actually, in this sim, each rider profile is registered as a "bike-card" with its own bike.id
+            // Let's find the bike that has this rider_id or is linked to the active selection
+            const riderId = parseInt(activeId);
+            // In simulation.index, $bicycles are loop-rendered. Each has a unique $bike->id.
+            // Wait, the globalRiderSelect chooses a rider PROFILE. 
+            // The bike cards are rendered from foreach($bicycles as $bike).
+            // Let's assume the user wants shortcuts to affect the bike they are interacting with or the first one.
+            // A better way is to find which bike card is "active" or just focus on the first one for now.
+            // Or use the hover state. Let's stick to the first bike for simplicity, or find by rider name.
+            
+            const bike = bikeState[0]; // Default to first athlete for shortcuts
+            if (!bike) return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                setBikeBraking(bike.id, true);
+            }
+            
+            if (bike.autoShiftEnabled) return;
+            if (e.key === '[') manualShiftBikeCS(bike.id, -1);
+            if (e.key === ']') manualShiftBikeCS(bike.id, 1);
+            if (e.key === '1') manualShiftBikeCR(bike.id, -1);
+            if (e.key === '2') manualShiftBikeCR(bike.id, 1);
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const bike = bikeState[0];
+            if (!bike) return;
+            if (e.code === 'Space') {
+                setBikeBraking(bike.id, false);
             }
         });
 
@@ -3882,5 +4071,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </div>
 </body>
 </html>
