@@ -1,66 +1,87 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MyBike Simulation Project
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A web-based bicycle simulation application that calculates real-time rider performance, race progression, and physiological data based on real-world physics. It features a custom route elevation profile, customizable bike models with specific drivetrains, auto/manual shifting logic, and a dynamic race dashboard.
 
-## About Laravel
+## Physics Engine & Formulas
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The core simulation updates the rider's state at 60 FPS ($\Delta t \approx 0.016$s). It employs classical mechanics to determine acceleration, velocity, distance, and energy expenditure. Below are the key formulas used in the simulation loop (`updateSimulation`).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1. Driving Force
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The driving force is derived from the rider's effective power output ($P_{rider}$ in Watts).
+$$F_{drive} = \frac{P_{rider}}{v}$$
+_Note: To avoid division by zero when starting from a standstill, the simulation caps the minimum velocity divisor at $0.2 \text{ m/s}$._
 
-## Learning Laravel
+$$F_{drive} = \begin{cases} \frac{P_{rider}}{0.2}, & \text{if } v < 0.2 \\ \frac{P_{rider}}{v}, & \text{otherwise} \end{cases}$$
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 2. Resistance Forces
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+The total resistance ($F_{resistance}$) combating the rider is the sum of three primary forces:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+#### a. Gravity Force ($F_{gravity}$)
 
-## Laravel Sponsors
+The force pulling the rider down an incline.
+$$F_{gravity} = m \cdot g \cdot \sin(\theta)$$
+Where:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+- $m$ = Total mass (Rider + Bicycle) in kg
+- $g$ = $9.81 \text{ m/s}^2$
+- $\theta = \arctan\left(\frac{\text{slope \%}}{100}\right)$
 
-### Premium Partners
+#### b. Aerodynamic Drag ($F_{drag}$)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+The air resistance against the rider.
+$$F_{drag} = C_{d}A \cdot \text{draft\_factor} \cdot (v - v_{wind})^2 \cdot \text{sign}(v - v_{wind})$$
+Where:
 
-## Contributing
+- $C_{d}A$ combines the drag coefficient and frontal area (approx $0.4$).
+- $\text{draft\_factor}$ = Reduction in drag when closely following another rider.
+- $v_{wind}$ = Headwind/Tailwind velocity in m/s.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+#### c. Rolling Resistance ($F_{rolling}$)
 
-## Code of Conduct
+The friction between the tires and the road surface (applied only when moving).
+$$F_{rolling} = C_{rr} \cdot m \cdot g \cdot \cos(\theta)$$
+Where $C_{rr}$ is the coefficient of rolling resistance (e.g., $0.005$ for tarmac).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 3. Net Force and Acceleration
 
-## Security Vulnerabilities
+Using Newton's Second Law to find acceleration.
+$$F_{net} = F_{drive} - F_{gravity} - F_{drag} - F_{rolling} - F_{brake}$$
+$$a = \frac{F_{net}}{m}$$
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Kinematics (Velocity & Distance)
 
-## License
+The state updates linearly over the time delta ($\Delta t$).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Velocity:** $v_{new} = \max(0, v_{old} + a \cdot \Delta t)$
+- **Distance:** $d_{new} = d_{old} + v_{new} \cdot \Delta t$
+- **Elevation Gain:** $E_{new} = E_{old} + (v_{new} \cdot \Delta t) \cdot \sin(\theta)$
+
+### 5. Drivetrain & Cadence
+
+Given a selected gear ratio, the simulation computes the required leg cadence.
+
+- **Gear Ratio ($R$):** $R = \frac{\text{Front Chainring Teeth}}{\text{Rear Cassette Cog Teeth}}$
+- **Wheel RPM:** $RPM_{wheel} = \frac{v \cdot 60}{C_{wheel}}$ (where $C_{wheel}$ is tire circumference in meters)
+- **Cadence (RPM):** $\text{Cadence} = \frac{RPM_{wheel}}{R}$
+
+**Cadence Efficiency:**
+A Gaussian curve is used to simulate human biomechanical efficiency, peaking optimally at ~90 RPM.
+$$\text{Efficiency} = \max\left(0.15, e^{-\frac{(\text{cadence} - 90)^2}{2 \cdot 35^2}}\right)$$
+
+### 6. Walk/Push (Tuntun) Logic
+
+If the terrain is too steep and the rider's momentum stalls, the simulation forces a dismount:
+
+- **Trigger:** If $v < 0.5 \text{ m/s}$ and $\text{slope} > 2\%$, the rider state switches to `WALKING`.
+- **Walking State:** $v$ is fixed at $1.11 \text{ m/s}$ ($\approx 4 \text{ km/h}$).
+- **Remount Check:** The system uses a binary search to constantly recalculate the pure physics terminal velocity $V_{pure}$ (where $P_{req} = P_{avail}$) given the terrain. If the slope eases and $V_{pure} > 1.39 \text{ m/s}$ ($\approx 5 \text{ km/h}$), the rider remounts and normal physics resume.
+
+### 7. Physiology (Energy & Heart Rate)
+
+- **Energy Expenditure:** The mechanical work performed is scaled by human metabolic efficiency ($\approx 24\%$).
+  $$\Delta \text{Joules} = \frac{P_{rider} \cdot \Delta t}{0.24}$$
+- **Calories:** $kcal = \frac{\Delta \text{Joules}}{4184}$
+- **Heart Rate:** Dynamically adjusts toward a target HR based on effort relative to Functional Threshold Power (FTP) and accumulated fatigue.
+  $$HR_{target} = 70 + \left(\frac{P_{rider}}{\text{FTP}} \cdot 110\right) + (Fatigue \cdot 0.5)$$

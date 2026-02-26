@@ -2109,6 +2109,8 @@
                     finishTime: null,  
                     autoShiftEnabled: true, 
                     isBraking: false,      
+                    isWalking: false,      
+                    lastPureSpeed: 0,
                     elevationGain: parseFloat(bike.initial_elevation || 0),
                     distance: parseFloat(bike.initial_distance || 0) * 1000, 
                     currentSlope: 0,
@@ -2618,16 +2620,50 @@
                     const netForce = driveForce - totalResistance - brakeForce;
                     const acceleration = netForce / mass;
 
+                    // 3. Update Velocity
+                    bike.speed = Math.max(0, bike.speed + acceleration * delta);
+
+                    // --- NEW: TUNTUN (Walk/Push) Logic ---
+                    if (!bike.isWalking) {
+                        // Check if stalled on steep hill despite pedaling
+                        if (bike.speed < 0.5 && riderSlope > 2 && !bike.isBraking && bike.calories > 0) {
+                            bike.isWalking = true;
+                            const timeStr = formatSimulationTime(elapsedSeconds);
+                            const distStr = (bike.distance / 1000).toFixed(2);
+                            bike.logs.unshift({ time: timeStr, msg: `🚶‍♂️ Start tuntun at ${distStr}km` });
+                        }
+                    } else {
+                        // In Walking State: lock speed to ~4 km/h
+                        bike.speed = 1.11; 
+
+                        // Calculate pure speed to see if we can ride again
+                        const shiftWeight  = bike.bicycle_weight + bike.rider_weight;
+                        const pureSpeed = calculateSpeed(effectiveRiderPower, shiftWeight, riderSlope, windKmh, draftFactor);
+                        bike.lastPureSpeed = pureSpeed;
+
+                        if (pureSpeed > 1.39) { // > 5 km/h natural speed indicates terrain eased
+                            bike.isWalking = false;
+                            bike.speed = pureSpeed; // remount with expected speed
+                            const timeStr = formatSimulationTime(elapsedSeconds);
+                            bike.logs.unshift({ time: timeStr, msg: `🚴‍♂️ Stop tuntun dan start pedal kembali` });
+                        }
+                    }
+
+                    speed = bike.speed; // Update local speed variable for loop-wide use
+
                     // UI Updates for status
                     const pedalBadge = document.getElementById(`pedal-status-${bike.id}`);
                     if (pedalBadge) {
-                        pedalBadge.innerText = bike.isPedaling ? 'PEDALING' : (bike.speed > 0.1 ? 'COASTING' : 'IDLE');
-                        pedalBadge.style.background = bike.isPedaling ? 'var(--success)' : (bike.speed > 0.1 ? 'var(--accent)' : 'rgba(255,255,255,0.05)');
-                        pedalBadge.style.color = (bike.isPedaling || bike.speed > 0.1) ? '#0f172a' : 'rgba(255,255,255,0.4)';
+                        if (bike.isWalking) {
+                            pedalBadge.innerText = 'WALKING';
+                            pedalBadge.style.background = '#f59e0b'; // Orange warning color
+                            pedalBadge.style.color = '#000';
+                        } else {
+                            pedalBadge.innerText = bike.isPedaling ? 'PEDALING' : (bike.speed > 0.1 ? 'COASTING' : 'IDLE');
+                            pedalBadge.style.background = bike.isPedaling ? 'var(--success)' : (bike.speed > 0.1 ? 'var(--accent)' : 'rgba(255,255,255,0.05)');
+                            pedalBadge.style.color = (bike.isPedaling || bike.speed > 0.1) ? '#0f172a' : 'rgba(255,255,255,0.4)';
+                        }
                     }
-                    // 3. Update Velocity
-                    bike.speed = Math.max(0, bike.speed + acceleration * delta);
-                    speed = bike.speed; // Update local speed variable for loop-wide use
                     
                     // 4. Update Distance & Elevation
                     bike.distance += bike.speed * delta;
