@@ -85,3 +85,30 @@ If the terrain is too steep and the rider's momentum stalls, the simulation forc
 - **Calories:** $kcal = \frac{\Delta \text{Joules}}{4184}$
 - **Heart Rate:** Dynamically adjusts toward a target HR based on effort relative to Functional Threshold Power (FTP) and accumulated fatigue.
   $$HR_{target} = 70 + \left(\frac{P_{rider}}{\text{FTP}} \cdot 110\right) + (Fatigue \cdot 0.5)$$
+### 8. Variabel Ekstra & Pengaruhnya pada Fisika Sepeda
+
+Simulasi ini dirancang secara dinamis sehingga setiap komponen fisik yang menempel pada pengendara maupun sepeda akan memengaruhi kalkulasi:
+
+#### a. Ukuran Ban dan *Rolling Resistance* ($C_{rr}$)
+Luas tapak ban dan tekanan udara secara langsung mereduksi atau menambah hambatan gulir ($F_{rolling}$).
+- **Ban Lebar (Gravel/MTB)**: Volume tinggi dan tekanan rendah membuat ban mampu meredam getaran jalan rusak, namun area kontak yang luas ke aspal akan meningkatkan nilai $C_{rr}$.
+- **Ban Tipis (Road Racing)**: Tekanan tinggi membuat ban sangar keras. Di jalan mulus (aspal), profil area kontak terminimalisir secara drastis, menurunkan nilai $C_{rr}$ (misal $0.003$ vs $0.008$ gravel) membuat kecepatan di rute *flat* (datar) jauh lebih tinggi.
+Rumus dasar mengikuti profil gesekan:
+$$F_{rolling} = C_{rr}(\text{Lebar Ban}, \text{Tekanan}) \cdot m \cdot g \cdot \cos(\theta)$$
+
+#### b. Pengaruh Total Massa (Berat Sepeda)
+Total massa dihitung dari **$m = m_{Rider} + m_{Bike}$**. Dampak massa $m$ tidak merata di semua lanskap:
+- **Tanjakan / Incline ($\theta > 0$)**: Massa adalah musuh utama. Semakin berat sepeda, semakin besar nilai $F_{gravity}$ yang menarik ke belakang (karena $\sin(\theta)$ bertambah). Untuk kecepatan menanjak yang sama, sepeda yang berat secara linear memaksa rider mengeluarkan Watt (Power) lebih besar.
+- **Turunan / Decline ($\theta < 0$)**: Sepeda yang berat menjadi keuntungan. Massa beralih fungsi menjadi gaya pendorong maju (karena $\sin(-\theta)$ bernilai negatif), menyebabkan momentum inersia menembus *Air Drag* ($F_{drag}$) lebih cepat.
+- **Jalan Datar / Flat ($\theta = 0$)**: Pengaruh beban sangat kecil terhadap *Top Speed*, karena $F_{gravity} \approx 0$. Sepeda berat hanya menghambat **Akselerasi** dasar saat percepatan dari 0 ke titik konstan.
+
+#### c. Beban Ekstensi (Tas, Carrier, Pannier)
+Sama halnya dengan massa sepeda dasar, massa bagasi langsung diakumulasikan ke total massa ($m = m_{Rider} + m_{Bike} + m_{Baggage}$).
+**Dampak Tambahan**: Selain beban gravitasi, pemasangan pannier dan carrier memperluas profil *Frontal Area* ($C_{d}A$).
+- **Flat & Turunan**: Pannier akan sangat menahan kecepatan ekstrim karena $F_{drag}$ tumbuh secara kuadratik terhadap profil penampang angin depan sepeda.
+- **Tanjakan**: Ekstensi tas akan memicu penalti berganda (berat ekstra + profil aerodinamis yang kendur jika menanjak berangin).
+
+#### d. Material Sepeda (Carbon, Alloy, Steel)
+Material bingkai (frame) sepeda menyumbang pada bobot dasar ($m_{Bike}$), namun pada dinamika (*feel* simulasi biomekanika), juga memengaruhi faktor-faktor tersembunyi:
+1. **Rasio Kekakuan (Stiffness-to-Weight)**: Frame serat karbon menyalurkan gaya kayuhan kaki ($P_{rider}$) secara nyaris sempurna ke pelek belakang tanpa distorsi melentur (*Flex*). Pada material steel/alloy kelas bawah, sebagian kecil Watt terbuang sebagai panas deformasi elastis, mengurangi efisiensi transmisi $F_{drive}$.
+2. **Peredaman Getaran (Damping)**: Material Steel dan Carbon mampu menyerap frekuensi getaran jalan secara parsial. Material Alloy super-kaku justru mementahkan getaran (road vibrations) langsung ke badan pengendara, mempercepat akumulasi **Fatigue** (Kelelahan), yang pada akhirnya akan menekan efisiensi energi kalori rider seiring berjalannya simulasi secara drastis.

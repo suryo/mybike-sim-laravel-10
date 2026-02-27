@@ -1159,18 +1159,45 @@
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Efficiency (%)</label>
                                 <input type="number" name="efficiency" value="{{ $bike->efficiency * 100 }}" step="1" data-bike-id="{{ $bike->id }}" class="form-control bike-efficiency-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
+                        </div>
+
+                        <div class="gear-controls" style="margin-bottom: 0.75rem; align-items: flex-end; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Start Dist (km)</label>
                                 <input type="number" name="initial_distance" value="{{ $bike->initial_distance }}" data-bike-id="{{ $bike->id }}" step="0.1" class="form-control bike-dist-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
-                        </div>
-
-                        <div class="gear-controls" style="margin-bottom: 0.75rem; align-items: flex-end;">
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Start EG (m)</label>
                                 <input type="number" name="initial_elevation" value="{{ $bike->initial_elevation }}" data-bike-id="{{ $bike->id }}" step="1" class="form-control bike-elev-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; height: 28px;">
+                        </div>
+
+                        <div class="gear-controls tooltip-container" style="margin-bottom: 0.75rem; align-items: flex-end; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;">
+                            <div class="control-group">
+                                <label style="font-size: 0.65rem; margin-bottom: 1px;">Tire (mm)</label>
+                                <select onchange="if(window.updateBikeTire) window.updateBikeTire({{ $bike->id }}, this.value)" class="form-control" style="height: 28px; font-size: 0.75rem; padding: 0 4px;">
+                                    @for($i=25; $i<=55; $i++)
+                                        <option value="{{$i}}" {{ (isset($bike->tire_width) && $bike->tire_width == $i) || (!isset($bike->tire_width) && $i == 25) ? 'selected' : '' }}>{{$i}}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label style="font-size: 0.65rem; margin-bottom: 1px;">Material</label>
+                                <select onchange="if(window.updateBikeMaterial) window.updateBikeMaterial({{ $bike->id }}, this.value)" class="form-control" style="height: 28px; font-size: 0.75rem; padding: 0 4px; border: 1px solid rgba(255,255,255,0.1);">
+                                    <option value="carbon" {{ (isset($bike->frame_material) && $bike->frame_material == 'carbon') ? 'selected' : '' }}>Carbon</option>
+                                    <option value="alloy" {{ (isset($bike->frame_material) && $bike->frame_material == 'alloy') || !isset($bike->frame_material) ? 'selected' : '' }}>Alloy</option>
+                                    <option value="steel" {{ (isset($bike->frame_material) && $bike->frame_material == 'steel') ? 'selected' : '' }}>Steel</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label style="font-size: 0.65rem; margin-bottom: 1px;">Baggage (kg)</label>
+                                <input type="number" value="0" step="0.5" min="0" data-bike-id="{{ $bike->id }}" oninput="if(window.updateBikeBaggage) window.updateBikeBaggage({{ $bike->id }}, this.value)" class="form-control bike-baggage-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                            </div>
+                            <span class="tooltip-text" style="bottom: 105%;">Advanced Physics: Wider tires add Rolling Resistance. Alloy transfers 15% more fatigue vs Carbon. Baggage ruins aerodynamics (CdA) & adds mass to climbs.</span>
+                        </div>
+
+                        <div class="gear-controls" style="margin-bottom: 0.75rem; align-items: flex-end;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; height: 28px; flex: 1;">
                                 <div style="display: flex; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 2px; border: 1px solid rgba(255,255,255,0.05);">
                                     <button class="mode-btn-sm active" id="mode-auto-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, true)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: #0f172a;">AUTO</button>
                                     <button class="mode-btn-sm" id="mode-manual-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, false)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: rgba(255,255,255,0.4);">MAN</button>
@@ -2090,6 +2117,9 @@
                     currentRearGear: null,
                     wheel_diameter: 700, 
                     wheel_circumference: 2.105,
+                    tire_width: bike.tire_width || 25,
+                    frame_material: bike.frame_material || 'alloy',
+                    baggage_weight: 0,
                     efficiency: bike.efficiency || 0.24,
                     calories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
                     maxCalories: parseFloat(bike.initial_fuel || (parseFloat(bike.ftp || 200) * 10)),
@@ -2177,6 +2207,27 @@
             });
         }
 
+        window.updateBikeBaggage = function(bikeId, weightKg) {
+            const bike = window.bikeState.find(b => b.id == bikeId);
+            if (bike) {
+                bike.baggage_weight = parseFloat(weightKg) || 0;
+            }
+        };
+
+        window.updateBikeTire = function(bikeId, widthMm) {
+            const bike = window.bikeState.find(b => b.id == bikeId);
+            if (bike) {
+                bike.tire_width = parseInt(widthMm) || 25;
+            }
+        };
+
+        window.updateBikeMaterial = function(bikeId, materialStr) {
+            const bike = window.bikeState.find(b => b.id == bikeId);
+            if (bike) {
+                bike.frame_material = materialStr;
+            }
+        };
+
         function manualShiftBikeCR(bikeId, dir) {
             const bike = window.bikeState.find(b => b.id == bikeId);
             if (!bike || bike.autoShiftEnabled) return;
@@ -2235,20 +2286,24 @@
             return Math.max(0.15, factor); // Minimum efficiency floor
         }
 
-        function calculateSpeed(power, weight, slopePercent, windKmh, draftFactor = 1.0, brakeForce = 0) {
+        function calculateSpeed(power, weight, slopePercent, windKmh, draftFactor = 1.0, brakeForce = 0, tireWidth = 25, baggageWeight = 0) {
             // Pure physics: given mechanical power (watts at wheel), find terminal velocity.
-            // Cadence efficiency is applied upstream by the caller, not here.
-            const mechanicalEfficiency = 1.0; // Synced with lab (100% mechanical efficiency)
+            const mechanicalEfficiency = 1.0; 
             const effectivePower = power * mechanicalEfficiency;
             if (effectivePower <= 0 && brakeForce <= 0) return 0;
 
             const slopeAngle = Math.atan(slopePercent / 100);
-            const m = weight; // kg, bike + rider
+            const m = weight + baggageWeight; // kg, bike + rider + baggage
             const windMs = windKmh / 3.6;
 
+            // Dynamic Rolling Resistance based on Tire Width (base 0.003 for 25mm)
+            const dynamicCRR = 0.003 + (Math.max(0, tireWidth - 25) * 0.0002);
+            // Dynamic Aero Drag Area based on Baggage
+            const dynamicCDA = 0.4 + (baggageWeight * 0.005);
+
             const C_gravity  = m * G * Math.sin(slopeAngle);
-            const C_roll     = CRR * m * G * Math.cos(slopeAngle);
-            const C_drag_base = 0.5 * RHO * CDA * draftFactor;
+            const C_roll     = dynamicCRR * m * G * Math.cos(slopeAngle);
+            const C_drag_base = 0.5 * RHO * dynamicCDA * draftFactor;
 
             // Binary search for terminal velocity where P_available == P_required
             let low = 0, high = 60;
@@ -2598,14 +2653,28 @@
                 if (isPlaying && !bike.isFinished && !bike.isEating) {
                     const ratio = bike.currentFrontGear / bike.currentRearGear;
                     const circ = bike.wheel_circumference || 2.105;
-                    const mass = (bike.rider_weight || 75) + (bike.bicycle_weight || 10);
+                    // Dynamic Mass
+                    const baggageKg = parseFloat(bike.baggage_weight || 0);
+                    const mass = (bike.rider_weight || 75) + (bike.bicycle_weight || 10) + baggageKg;
                     const windMs = currentWind / 3.6;
+
+                    // Material Power Transfer Efficiency
+                    let materialEff = 0.99; // Alloy base
+                    if (bike.frame_material === 'carbon') materialEff = 1.0;
+                    else if (bike.frame_material === 'steel') materialEff = 0.98;
+                    
+                    effectiveRiderPower *= materialEff;
+
+                    // Dynamic Aero Drag Area based on Baggage
+                    const dynamicCDA = (bike.drag_coefficient || 0.4) + (baggageKg * 0.005);
+                    // Dynamic Rolling Resistance based on Tire Width
+                    const dynamicCRR = (bike.rolling_coefficient || 0.004) + (Math.max(0, (bike.tire_width || 25) - 25) * 0.0002);
                     
                     // 1. Calculate Forces (Synced with Drivetrain Lab)
                     const slopeAngle = Math.atan(riderSlope / 100);
                     const gravityForce = mass * G * Math.sin(slopeAngle);
-                    const dragForce = (bike.drag_coefficient || 0.4) * draftFactor * Math.pow(bike.speed - windMs, 2) * Math.sign(bike.speed - windMs);
-                    const rollingResistForce = (bike.rolling_coefficient || 0.005) * mass * G * Math.cos(slopeAngle);
+                    const dragForce = dynamicCDA * draftFactor * Math.pow(bike.speed - windMs, 2) * Math.sign(bike.speed - windMs);
+                    const rollingResistForce = dynamicCRR * mass * G * Math.cos(slopeAngle);
                     const totalResistance = gravityForce + dragForce + (bike.speed > 0.1 ? rollingResistForce : 0);
 
                     // 2. Drive Force
@@ -2638,7 +2707,7 @@
 
                         // Calculate pure speed to see if we can ride again
                         const shiftWeight  = bike.bicycle_weight + bike.rider_weight;
-                        const pureSpeed = calculateSpeed(effectiveRiderPower, shiftWeight, riderSlope, windKmh, draftFactor);
+                        const pureSpeed = calculateSpeed(effectiveRiderPower, shiftWeight, riderSlope, windKmh, draftFactor, 0, bike.tire_width, bike.baggage_weight);
                         bike.lastPureSpeed = pureSpeed;
 
                         if (pureSpeed > 1.39) { // > 5 km/h natural speed indicates terrain eased
@@ -2674,6 +2743,13 @@
                     const wheelRpm = (bike.speed * 60) / circ;
                     bike.cadence = wheelRpm / ratio;
 
+                    // Power Metrics Accumulators
+                    if (!bike.isWalking && !bike.isEating && bike.speed > 0) {
+                        bike.avgPowerAcc += effectiveRiderPower * delta;
+                        bike.npAcc += Math.pow(effectiveRiderPower, 4) * delta;
+                        bike.sampleCount += delta;
+                    }
+
                     // Heart Rate (Matches lab feel)
                     const targetHr = 70 + (effectiveRiderPower / (bike.ftp || 250)) * 110 + (bike.fatigue * 0.5);
                     bike.hr += (targetHr - bike.hr) * 0.02;
@@ -2698,7 +2774,12 @@
                     } else {
                         bike.staminaW = Math.min(100, bike.staminaW + ((ftp - effectiveRiderPower) / 2000) * delta);
                     }
-                    bike.fatigue = Math.min(100, bike.fatigue + (effectiveRiderPower * delta / 200000));
+
+                    // Material dictates vibration damping which affects fatigue over time
+                    let materialFatiguePenalty = 1.0;
+                    if (bike.frame_material === 'alloy') materialFatiguePenalty = 1.15; // 15% faster fatigue on rigid alloy
+                    
+                    bike.fatigue = Math.min(100, bike.fatigue + ((effectiveRiderPower * delta / 200000) * materialFatiguePenalty));
 
                     // Segment Tracking
                     if (currentSegment && bike._lastSegId !== currentSegment.id) {
@@ -2779,12 +2860,13 @@
                     // NEW: Accumulate Per-Segment Results
                     if (currentSegment) {
                         if (!bike.segmentResults[currentSegment.id]) {
-                            bike.segmentResults[currentSegment.id] = { time: 0, dist: 0, pwr_acc: 0, kcal_acc: 0, sample_count: 0 };
+                            bike.segmentResults[currentSegment.id] = { time: 0, dist: 0, pwr_acc: 0, kcal_acc: 0, sample_count: 0, np_acc: 0 };
                         }
                         const s = bike.segmentResults[currentSegment.id];
                         s.time += delta;
                         s.dist += speed * delta;
-                        s.pwr_acc += bike.power * delta;
+                        s.pwr_acc += effectiveRiderPower * delta;
+                        s.np_acc += Math.pow(effectiveRiderPower, 4) * delta;
                         s.kcal_acc += kcalPerSec * delta;
                         s.sample_count += delta;
                     }
@@ -2817,7 +2899,7 @@
                     let bestScore = -Infinity;
 
                     // Calculate the pure-physics speed at current power (gear-independent)
-                    const pureSpeed = calculateSpeed(effectiveRiderPower, shiftWeight, riderSlope, windKmh, draftFactor);
+                    const pureSpeed = calculateSpeed(effectiveRiderPower, shiftWeight, riderSlope, windKmh, draftFactor, 0, bike.tire_width, bike.baggage_weight);
 
                     frontOptions.forEach(f => {
                         rearOptions.forEach(r => {
@@ -3582,7 +3664,7 @@
                             <td style="padding: 12px 8px; font-family: 'JetBrains Mono'; color: white;">${formatSimulationTime(raceTime)}</td>
                             <td style="padding: 12px 8px; color: white;">${(bike.distance / 1000).toFixed(2)} km</td>
                             <td style="padding: 12px 8px; font-weight: bold;">${avgSpd.toFixed(1)} <small style="opacity:0.5; font-weight:normal;">km/h</small></td>
-                            <td style="padding: 12px 8px; color: white;">${Math.round(bike.avgPowerAcc / bike.sampleCount) || 0}W</td>
+                            <td style="padding: 12px 8px; color: white;">${Math.round(bike.avgPowerAcc / Math.max(0.1, bike.sampleCount)) || 0}W</td>
                             <td style="padding: 12px 8px; color: var(--success); font-weight: 700;">${Math.round(currentNp)}W</td>
                             <td style="padding: 12px 8px; color: #f59e0b; font-weight: 700;">${Math.max(0, tss)}</td>
                         </tr>
@@ -3595,7 +3677,10 @@
                                 const sTime = res.time;
                                 const sDist = res.dist;
                                 const sAvgSpd = ( (sDist / 1000) / (sTime / 3600) ) || 0;
-                                const sAvgPwr = Math.round(res.pwr_acc / Math.max(1, res.sample_count)) || 0;
+                                const sAvgPwr = Math.round(res.pwr_acc / Math.max(0.1, res.sample_count)) || 0;
+                                const sCurrentNp = Math.pow(res.np_acc / Math.max(0.1, res.sample_count), 0.25) || 0;
+                                const sIfFactor = (sCurrentNp / ftp);
+                                const sTss = Math.round((sTime * sCurrentNp * sIfFactor) / (ftp * 3600) * 100);
                                 
                                 html += `
                                     <tr style="border-bottom: 1px dashed rgba(255,255,255,0.02); font-size: 0.75rem;">
@@ -3607,8 +3692,8 @@
                                         <td style="padding: 6px 8px; color: rgba(255,255,255,0.5);">${(sDist / 1000).toFixed(2)} km</td>
                                         <td style="padding: 6px 8px; color: rgba(255,255,255,0.5); font-weight: bold;">${sAvgSpd.toFixed(1)} <small style="opacity:0.4; font-weight:normal;">km/h</small></td>
                                         <td style="padding: 6px 8px; color: rgba(255,255,255,0.5);">${sAvgPwr}W</td>
-                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.2);">-</td>
-                                        <td style="padding: 6px 8px; color: rgba(255,255,255,0.2);">-</td>
+                                        <td style="padding: 6px 8px; color: var(--success); opacity: 0.8;">${Math.round(sCurrentNp)}W</td>
+                                        <td style="padding: 6px 8px; color: #f59e0b; opacity: 0.8;">${Math.max(0, sTss)}</td>
                                     </tr>
                                 `;
                             }
