@@ -867,6 +867,9 @@
                         <button class="speed-btn" data-speed="80">80x</button>
                         <button class="speed-btn" data-speed="100">100x</button>
                         <button class="speed-btn" data-speed="200">200x</button>
+                        <button class="speed-btn" data-speed="400">400x</button>
+                        <button class="speed-btn" data-speed="600">600x</button>
+                        <button class="speed-btn" data-speed="1000">1000x</button>
                     </div>
 
                     <div style="display: flex; gap: 5px;">
@@ -1088,43 +1091,46 @@
                     </div>
                     
                     <div class="bike-list" id="bikeList">
-                    @forelse($bicycles as $bike)
-                    <div class="bike-card" id="bike-card-{{ $bike->id }}" style="{{ $loop->index >= 2 ? 'display: none;' : '' }}">
+                    <div id="bike-templates" style="display: none;">
+                        @foreach($bicycles as $bike)
+                        <div class="bike-card-template" data-bike-id="{{ $bike->id }}">
+                            <div class="bike-card" id="bike-card-TMPL_ID">
+
                         <!-- Bonk Alert Overlay -->
-                        <div id="bonk-overlay-{{ $bike->id }}" class="bonk-overlay">
+                        <div id="bonk-overlay-TMPL_ID" class="bonk-overlay">
                             <div class="bonk-title">BONKED!</div>
                             <p style="color: rgba(255,255,255,0.8); font-size: 0.8rem; margin-bottom: 1rem;">Out of fuel. Slowing down...</p>
-                            <button onclick="refuelRider({{ $bike->id }})" class="btn-refuel">
+                            <button onclick="refuelRider('TMPL_ID')" class="btn-refuel">
                                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6z"/></svg>
                                 Eat Power Gel (+500 kcal)
                             </button>
                         </div>
 
                         <!-- Meal Break Overlay -->
-                        <div id="meal-overlay-{{ $bike->id }}" class="meal-overlay">
+                        <div id="meal-overlay-TMPL_ID" class="meal-overlay">
                             <div class="meal-title">MEAL BREAK</div>
-                            <div style="font-size: 2rem; font-weight: 800; color: white; font-family: 'JetBrains Mono', monospace;" id="meal-timer-{{ $bike->id }}">00:00</div>
-                            <p id="meal-status-{{ $bike->id }}" style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Refueling...</p>
+                            <div style="font-size: 2rem; font-weight: 800; color: white; font-family: 'JetBrains Mono', monospace;" id="meal-timer-TMPL_ID">00:00</div>
+                            <p id="meal-status-TMPL_ID" style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">Refueling...</p>
                         </div>
 
                         <div style="position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; z-index: 50;">
                             <div class="btn-stat-badge" id="pedal-status-{{ $bike->id }}" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1);">
                                 IDLE
                             </div>
-                            <button onclick="showSummary({{ $bike->id }})" class="edit-btn" style="background: none; border: none; color: var(--success); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Show Summary">
+                            <button onclick="showSummary('TMPL_ID')" class="edit-btn" style="background: none; border: none; color: var(--success); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Show Summary">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
                             </button>
-                            <button onclick="openEditModal({{ json_encode($bike) }})" class="edit-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Edit Rider">
+                            <button onclick='openEditModal(TMPL_JSON)' class="edit-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; opacity: 0.5; transition: opacity 0.2s;" title="Edit Rider">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </button>
-                            <button onclick="removeBikeFromDeck({{ $bike->id }})" class="delete-btn" style="position: static;" title="Remove from Deck">✕</button>
+                            <button onclick="removeBikeFromDeck('TMPL_ID')" class="delete-btn" style="position: static;" title="Remove from Deck">✕</button>
                         </div>
 
                         <div class="bike-header" style="flex-direction: column; align-items: flex-start;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <div class="bike-color" style="background-color: {{ $bike->color }}"></div>
                                 <span class="bike-name">{{ $bike->name }}</span>
-                                <div id="finish-badge-{{ $bike->id }}" class="finish-badge">Finished</div>
+                                <div id="finish-badge-TMPL_ID" class="finish-badge">Finished</div>
                             </div>
                             <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 2px; margin-left: 18px;">
                                 (B:{{ $bike->bicycle_weight }}kg + Rider <span class="rider-name-display">...</span> / {{ $bike->efficiency * 100 }}%)
@@ -1133,23 +1139,23 @@
 
                         <!-- Track Progress Bar -->
                         <div class="progress-container">
-                            <div id="progress-text-{{ $bike->id }}" class="progress-text">0% Complete</div>
-                            <div id="progress-fill-{{ $bike->id }}" class="progress-fill"></div>
+                            <div id="progress-text-TMPL_ID" class="progress-text">0% Complete</div>
+                            <div id="progress-fill-TMPL_ID" class="progress-fill"></div>
                         </div>
 
-                        <div id="conflict-alert-{{ $bike->id }}" class="conflict-alert" style="display:none;">
+                        <div id="conflict-alert-TMPL_ID" class="conflict-alert" style="display:none;">
                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
                             Locked Power vs Cadence Conflict
                         </div>
 
                         <div class="control-group tooltip-container" style="margin-bottom: 1rem;">
                             <label style="display: flex; justify-content: space-between;">
-                                Rider Power
-                                <span id="power-lock-{{ $bike->id }}" class="lock-indicator" style="display:none; position: static;">LOCK</span>
+                                Max Rider Power (Cap)
+                                <span id="power-lock-TMPL_ID" class="lock-indicator" style="display:none; position: static;">LOCK</span>
                             </label>
-                            <input type="range" class="bike-power-input" data-bike-id="{{ $bike->id }}" min="0" max="1000" value="200">
-                            <div class="value-display cadence-clickable" style="font-size: 0.9rem; margin-top: 5px; border-radius: 4px; padding: 2px 10px;" onclick="window.openPowerModal({{ $bike->id }})">
-                                <span id="power-display-{{ $bike->id }}">200</span> Watts
+                            <input type="range" class="bike-power-input" data-bike-id="TMPL_ID" min="0" max="1000" value="200">
+                            <div class="value-display cadence-clickable" style="font-size: 0.9rem; margin-top: 5px; border-radius: 4px; padding: 2px 10px;" onclick="window.openPowerModal('TMPL_ID')">
+                                <span id="power-display-TMPL_ID">200</span> Watts
                             </div>
                             <span class="tooltip-text" style="bottom: 110%;">Target wattage for this rider. High power depletes stamina! Click to LOCK.</span>
                         </div>
@@ -1157,25 +1163,25 @@
                         <div class="gear-controls" style="margin-bottom: 0.5rem;">
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Efficiency (%)</label>
-                                <input type="number" name="efficiency" value="{{ $bike->efficiency * 100 }}" step="1" data-bike-id="{{ $bike->id }}" class="form-control bike-efficiency-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                                <input type="number" name="efficiency" value="{{ $bike->efficiency * 100 }}" step="1" data-bike-id="TMPL_ID" class="form-control bike-efficiency-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
                         </div>
 
                         <div class="gear-controls" style="margin-bottom: 0.75rem; align-items: flex-end; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Start Dist (km)</label>
-                                <input type="number" name="initial_distance" value="{{ $bike->initial_distance }}" data-bike-id="{{ $bike->id }}" step="0.1" class="form-control bike-dist-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                                <input type="number" name="initial_distance" value="{{ $bike->initial_distance }}" data-bike-id="TMPL_ID" step="0.1" class="form-control bike-dist-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Start EG (m)</label>
-                                <input type="number" name="initial_elevation" value="{{ $bike->initial_elevation }}" data-bike-id="{{ $bike->id }}" step="1" class="form-control bike-elev-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                                <input type="number" name="initial_elevation" value="{{ $bike->initial_elevation }}" data-bike-id="TMPL_ID" step="1" class="form-control bike-elev-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
                         </div>
 
                         <div class="gear-controls tooltip-container" style="margin-bottom: 0.75rem; align-items: flex-end; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;">
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Tire (mm)</label>
-                                <select onchange="if(window.updateBikeTire) window.updateBikeTire({{ $bike->id }}, this.value)" class="form-control" style="height: 28px; font-size: 0.75rem; padding: 0 4px;">
+                                <select onchange="if(window.updateBikeTire) window.updateBikeTire('TMPL_ID', this.value)" class="form-control" style="height: 28px; font-size: 0.75rem; padding: 0 4px;">
                                     @for($i=25; $i<=55; $i++)
                                         <option value="{{$i}}" {{ (isset($bike->tire_width) && $bike->tire_width == $i) || (!isset($bike->tire_width) && $i == 25) ? 'selected' : '' }}>{{$i}}</option>
                                     @endfor
@@ -1183,7 +1189,7 @@
                             </div>
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Material</label>
-                                <select onchange="if(window.updateBikeMaterial) window.updateBikeMaterial({{ $bike->id }}, this.value)" class="form-control" style="height: 28px; font-size: 0.75rem; padding: 0 4px; border: 1px solid rgba(255,255,255,0.1);">
+                                <select onchange="if(window.updateBikeMaterial) window.updateBikeMaterial('TMPL_ID', this.value)" class="form-control" style="height: 28px; font-size: 0.75rem; padding: 0 4px; border: 1px solid rgba(255,255,255,0.1);">
                                     <option value="carbon" {{ (isset($bike->frame_material) && $bike->frame_material == 'carbon') ? 'selected' : '' }}>Carbon</option>
                                     <option value="alloy" {{ (isset($bike->frame_material) && $bike->frame_material == 'alloy') || !isset($bike->frame_material) ? 'selected' : '' }}>Alloy</option>
                                     <option value="steel" {{ (isset($bike->frame_material) && $bike->frame_material == 'steel') ? 'selected' : '' }}>Steel</option>
@@ -1191,7 +1197,7 @@
                             </div>
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 1px;">Baggage (kg)</label>
-                                <input type="number" value="0" step="0.5" min="0" data-bike-id="{{ $bike->id }}" oninput="if(window.updateBikeBaggage) window.updateBikeBaggage({{ $bike->id }}, this.value)" class="form-control bike-baggage-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
+                                <input type="number" value="0" step="0.5" min="0" data-bike-id="TMPL_ID" oninput="if(window.updateBikeBaggage) window.updateBikeBaggage('TMPL_ID', this.value)" class="form-control bike-baggage-input" style="height: 28px; font-size: 0.75rem; padding: 2px 8px;">
                             </div>
                             <span class="tooltip-text" style="bottom: 105%;">Advanced Physics: Wider tires add Rolling Resistance. Alloy transfers 15% more fatigue vs Carbon. Baggage ruins aerodynamics (CdA) & adds mass to climbs.</span>
                         </div>
@@ -1199,15 +1205,15 @@
                         <div class="gear-controls" style="margin-bottom: 0.75rem; align-items: flex-end;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; height: 28px; flex: 1;">
                                 <div style="display: flex; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 2px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <button class="mode-btn-sm active" id="mode-auto-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, true)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: #0f172a;">AUTO</button>
-                                    <button class="mode-btn-sm" id="mode-manual-{{ $bike->id }}" onclick="setBikeMode({{ $bike->id }}, false)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: rgba(255,255,255,0.4);">MAN</button>
+                                    <button class="mode-btn-sm active" id="mode-auto-TMPL_ID" onclick="setBikeMode('TMPL_ID', true)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: #0f172a;">AUTO</button>
+                                    <button class="mode-btn-sm" id="mode-manual-TMPL_ID" onclick="setBikeMode('TMPL_ID', false)" style="flex: 1; padding: 0; font-size: 0.55rem; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: rgba(255,255,255,0.4);">MAN</button>
                                 </div>
-                                <button id="brake-btn-{{ $bike->id }}" class="btn-brake-sm" 
-                                    onmousedown="setBikeBraking({{ $bike->id }}, true)"
-                                    onmouseup="setBikeBraking({{ $bike->id }}, false)"
-                                    onmouseleave="setBikeBraking({{ $bike->id }}, false)"
-                                    ontouchstart="event.preventDefault(); setBikeBraking({{ $bike->id }}, true);"
-                                    ontouchend="setBikeBraking({{ $bike->id }}, false)"
+                                <button id="brake-btn-TMPL_ID" class="btn-brake-sm" 
+                                    onmousedown="setBikeBraking('TMPL_ID', true)"
+                                    onmouseup="setBikeBraking('TMPL_ID', false)"
+                                    onmouseleave="setBikeBraking('TMPL_ID', false)"
+                                    ontouchstart="event.preventDefault(); setBikeBraking('TMPL_ID', true);"
+                                    ontouchend="setBikeBraking('TMPL_ID', false)"
                                     style="background: rgba(244, 63, 94, 0.1); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 0; font-weight: 800; font-size: 0.55rem; cursor: pointer;">BRAKE</button>
                             </div>
                         </div>
@@ -1216,8 +1222,8 @@
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 2px;">Chainring (Front)</label>
                                 <div style="display: flex; gap: 2px; align-items: center;">
-                                    <button class="shift-btn-sm" onclick="manualShiftBikeCR({{ $bike->id }}, -1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">-</button>
-                                    <select class="front-gear-select" data-bike-id="{{ $bike->id }}" disabled style="height: 22px; padding: 0 2px; font-size: 0.65rem; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; flex: 1;">
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCR('TMPL_ID', -1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">-</button>
+                                    <select class="front-gear-select" data-bike-id="TMPL_ID" disabled style="height: 22px; padding: 0 2px; font-size: 0.65rem; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; flex: 1;">
                                         @php
                                             $sortedFront = $bike->front_gears;
                                             sort($sortedFront);
@@ -1226,14 +1232,14 @@
                                             <option value="{{ $gear }}">{{ $gear }}T</option>
                                         @endforeach
                                     </select>
-                                    <button class="shift-btn-sm" onclick="manualShiftBikeCR({{ $bike->id }}, 1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">+</button>
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCR('TMPL_ID', 1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">+</button>
                                 </div>
                             </div>
                             <div class="control-group">
                                 <label style="font-size: 0.65rem; margin-bottom: 2px;">Cassette (Rear)</label>
                                 <div style="display: flex; gap: 2px; align-items: center;">
-                                    <button class="shift-btn-sm" onclick="manualShiftBikeCS({{ $bike->id }}, -1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">-</button>
-                                    <select class="rear-gear-select" data-bike-id="{{ $bike->id }}" disabled style="height: 22px; padding: 0 2px; font-size: 0.65rem; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; flex: 1;">
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCS('TMPL_ID', -1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">-</button>
+                                    <select class="rear-gear-select" data-bike-id="TMPL_ID" disabled style="height: 22px; padding: 0 2px; font-size: 0.65rem; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; flex: 1;">
                                         @php
                                             $sortedRear = $bike->rear_gears;
                                             rsort($sortedRear);
@@ -1242,7 +1248,7 @@
                                             <option value="{{ $gear }}">{{ $gear }}T</option>
                                         @endforeach
                                     </select>
-                                    <button class="shift-btn-sm" onclick="manualShiftBikeCS({{ $bike->id }}, 1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">+</button>
+                                    <button class="shift-btn-sm" onclick="manualShiftBikeCS('TMPL_ID', 1)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 20px; height: 22px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">+</button>
                                 </div>
                             </div>
                         </div>
@@ -1250,18 +1256,18 @@
                         <div class="control-group" style="margin-top: 1rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
                                 <label style="margin: 0; font-size: 0.75rem; opacity: 0.7;">Nutrition (Fuel)</label>
-                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);"><span id="cal-num-{{ $bike->id }}">2000</span> kcal</span>
+                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);"><span id="cal-num-TMPL_ID">2000</span> kcal</span>
                             </div>
                             <div class="stamina-container" style="height: 8px;">
-                                <div id="stamina-bar-{{ $bike->id }}" class="stamina-bar" style="width: 100%;"></div>
+                                <div id="stamina-bar-TMPL_ID" class="stamina-bar" style="width: 100%;"></div>
                             </div>
                             <div style="margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
                                 <label class="tooltip-container" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.7rem; opacity: 0.8;">
-                                    <input type="checkbox" id="auto-refuel-{{ $bike->id }}" style="accent-color: var(--success);"> 
+                                    <input type="checkbox" id="auto-refuel-TMPL_ID" style="accent-color: var(--success);"> 
                                     Auto-Refuel
                                     <span class="tooltip-text">Automatically refuel at the global interval set in the header</span>
                                 </label>
-                                <button onclick="refuelRider({{ $bike->id }})" class="btn-refuel">
+                                <button onclick="refuelRider('TMPL_ID')" class="btn-refuel">
                                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6z"/></svg>
                                     Fuel Up
                                 </button>
@@ -1271,20 +1277,20 @@
                         <div class="control-group" style="margin-top: 1rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
                                 <label style="margin: 0; font-size: 0.75rem; opacity: 0.7;">Stamina (Anaerobic Tank W')</label>
-                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent);"><span id="stamina-num-{{ $bike->id }}">100</span>%</span>
+                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent);"><span id="stamina-num-TMPL_ID">100</span>%</span>
                             </div>
                             <div class="stamina-container" style="height: 8px; background: rgba(56, 189, 248, 0.1);">
-                                <div id="stamina-tank-{{ $bike->id }}" class="stamina-bar" style="width: 100%; background: var(--accent);"></div>
+                                <div id="stamina-tank-TMPL_ID" class="stamina-bar" style="width: 100%; background: var(--accent);"></div>
                             </div>
                         </div>
 
                         <div class="control-group tooltip-container" style="margin-top: 1rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
                                 <label style="margin: 0; font-size: 0.75rem; opacity: 0.7;">Fatigue (Exhaustion Level)</label>
-                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--fatigue);"><span id="fatigue-num-{{ $bike->id }}">0</span>%</span>
+                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--fatigue);"><span id="fatigue-num-TMPL_ID">0</span>%</span>
                             </div>
                             <div class="stamina-container" style="height: 8px; background: rgba(249, 115, 22, 0.1);">
-                                <div id="fatigue-bar-{{ $bike->id }}" class="stamina-bar" style="width: 0%; background: var(--fatigue);"></div>
+                                <div id="fatigue-bar-TMPL_ID" class="stamina-bar" style="width: 0%; background: var(--fatigue);"></div>
                             </div>
                             <span class="tooltip-text" style="bottom: 110%;">Fatigue increases with high power, low cadence, steep hills, and headwinds. High fatigue caps your max power and slows recovery!</span>
                         </div>
@@ -1292,43 +1298,43 @@
                         
                         <div class="bike-stats">
                             <div class="stat-item">
-                                <span class="stat-label">Heart Rate <span id="hr-zone-{{ $bike->id }}" style="font-size: 0.7em; opacity: 0.7; margin-left: 4px;">Z1</span></span>
-                                <div class="stat-value"><span id="hr-{{ $bike->id }}">70</span> <span style="font-size: 0.6em;">BPM</span></div>
+                                <span class="stat-label">Heart Rate <span id="hr-zone-TMPL_ID" style="font-size: 0.7em; opacity: 0.7; margin-left: 4px;">Z1</span></span>
+                                <div class="stat-value"><span id="hr-TMPL_ID">70</span> <span style="font-size: 0.6em;">BPM</span></div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Velocity</span>
-                                <div class="stat-value"><span id="speed-{{ $bike->id }}">0.0</span> <span style="font-size: 0.6em;">km/h</span></div>
+                                <div class="stat-value"><span id="speed-TMPL_ID">0.0</span> <span style="font-size: 0.6em;">km/h</span></div>
                             </div>
-                            <div class="stat-item cadence-clickable" onclick="window.openCadenceModal({{ $bike->id }})">
-                                <span class="stat-label">Cadence <span id="cadence-lock-{{ $bike->id }}" class="lock-indicator" style="display:none;">LOCK</span></span>
+                            <div class="stat-item cadence-clickable" onclick="window.openCadenceModal('TMPL_ID')">
+                                <span class="stat-label">Cadence <span id="cadence-lock-TMPL_ID" class="lock-indicator" style="display:none;">LOCK</span></span>
                                 <div class="stat-value">
-                                    <span id="cadence-{{ $bike->id }}">0</span> <small>RPM</small>
-                                    <div id="eff-indicator-{{ $bike->id }}" style="font-size: 0.65rem; color: var(--success); font-weight: 800; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Eff: 100%</div>
+                                    <span id="cadence-TMPL_ID">0</span> <small>RPM</small>
+                                    <div id="eff-indicator-TMPL_ID" style="font-size: 0.65rem; color: var(--success); font-weight: 800; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Eff: 100%</div>
                                 </div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Terrain</span>
-                                <div class="stat-value" id="slope-display-{{ $bike->id }}">0.0%</div>
+                                <div class="stat-value" id="slope-display-TMPL_ID">0.0%</div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Elevation Gain</span>
-                                <span class="stat-value"><span id="elev-{{ $bike->id }}">0</span> <small>m</small></span>
+                                <span class="stat-value"><span id="elev-TMPL_ID">0</span> <small>m</small></span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Avg Power</span>
-                                <div class="stat-value"><span id="avgp-{{ $bike->id }}">0</span> <small style="font-size: 0.6em;">W</small></div>
+                                <div class="stat-value"><span id="avgp-TMPL_ID">0</span> <small style="font-size: 0.6em;">W</small></div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Norm Power (NP)</span>
-                                <div class="stat-value" style="color: var(--success);"><span id="np-{{ $bike->id }}">0</span> <small style="font-size: 0.6em;">W</small></div>
+                                <div class="stat-value" style="color: var(--success);"><span id="np-TMPL_ID">0</span> <small style="font-size: 0.6em;">W</small></div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">TSS</span>
-                                <div class="stat-value" style="color: #f59e0b;"><span id="tss-{{ $bike->id }}">0</span> <small style="font-size: 0.6em;">pts</small></div>
+                                <div class="stat-value" style="color: #f59e0b;"><span id="tss-TMPL_ID">0</span> <small style="font-size: 0.6em;">pts</small></div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Distance</span>
-                                <div class="stat-value"><span id="dist-km-{{ $bike->id }}">0.00</span> <small>km</small></div>
+                                <div class="stat-value"><span id="dist-km-TMPL_ID">0.00</span> <small>km</small></div>
                             </div>
                         </div>
 
@@ -1337,14 +1343,13 @@
                                 <span>ACTIVITY LOG</span>
                                 <span>T | D | S</span>
                             </div>
-                            <div id="log-list-{{ $bike->id }}" class="log-list" style="max-height: 60px; font-size: 0.65rem;">
+                            <div id="log-list-TMPL_ID" class="log-list" style="max-height: 60px; font-size: 0.65rem;">
                                 <div style="opacity: 0.3; font-style: italic; text-align: center; margin-top: 5px;">Empty</div>
                             </div>
                         </div>
                     </div>
-                    @empty
-                        <p style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">No riders registered.</p>
-                    @endforelse
+                </div>
+                @endforeach
                 </div>
             </div>
     </div>
@@ -1394,6 +1399,8 @@
         let routeProfile = []; // Array of {dist, elev, slope}
         let totalElevationGain = 0;
         let lastRouteCoordinates = []; // NEW: Store polyline coordinates for saving
+        let bikeMapMarkers = {};  // { bikeId: L.Marker } - live position markers
+        let restMapMarkers = [];  // Array of L.Marker - rest/refuel flag markers
 
 
         function initMap() {
@@ -1409,6 +1416,67 @@
                 });
             }
             setTimeout(() => routeMap.invalidateSize(), 200);
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        // MAP MARKER HELPERS
+        // ──────────────────────────────────────────────────────────────
+        /** Interpolate a LatLng along the OSRM route given meters traveled.
+         *  Handles both [lng, lat] arrays and {lat, lng} objects, skips NaN. */
+        function getLatLngAtDistance(distMeters) {
+            if (!lastRouteCoordinates || lastRouteCoordinates.length < 2) return null;
+            const totalDist = routeDistance * 1000; // metres
+            if (totalDist <= 0) return null;
+            const clampedDist = Math.min(distMeters, totalDist);
+
+            // Helper: extract lat/lng regardless of coordinate format
+            function coordToLatLng(c) {
+                if (!c) return null;
+                const lat = Array.isArray(c) ? c[1] : c.lat;
+                const lng = Array.isArray(c) ? c[0] : c.lng;
+                if (isNaN(lat) || isNaN(lng) || lat == null || lng == null) return null;
+                return L.latLng(lat, lng);
+            }
+
+            let accumulated = 0;
+            for (let i = 1; i < lastRouteCoordinates.length; i++) {
+                const a = coordToLatLng(lastRouteCoordinates[i - 1]);
+                const b = coordToLatLng(lastRouteCoordinates[i]);
+                if (!a || !b) continue; // skip invalid coords
+
+                const seg = a.distanceTo(b);
+                if (seg <= 0) continue;
+
+                if (accumulated + seg >= clampedDist) {
+                    const t = (clampedDist - accumulated) / seg;
+                    return L.latLng(
+                        a.lat + t * (b.lat - a.lat),
+                        a.lng + t * (b.lng - a.lng)
+                    );
+                }
+                accumulated += seg;
+            }
+            return coordToLatLng(lastRouteCoordinates[lastRouteCoordinates.length - 1]);
+        }
+
+        /** Colored bike icon for each rider */
+        function createBikeIcon(color) {
+            return L.divIcon({
+                className: '',
+                html: `<div style="background:${color}; border:2px solid white; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition: transform 0.3s;">🚴</div>`,
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            });
+        }
+
+        /** Flag icon placed at rest/refuel points */
+        function createRestIcon() {
+            return L.divIcon({
+                className: '',
+                html: `<div style="font-size:20px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6)); line-height:1;">🛑</div>`,
+                iconSize: [22, 22],
+                iconAnchor: [11, 22]
+            });
         }
 
         function openMapModal() {
@@ -2077,6 +2145,9 @@
             // Initialize Map on Load
             if (typeof initMap === 'function') initMap();
 
+            // Initialize initial riders from templates
+            if (window.onload_init_deck) window.onload_init_deck();
+
             const slopeInput = document.getElementById('slopeInput');
             const slopeValue = document.getElementById('slopeValue');
             const windInput = document.getElementById('windInput');
@@ -2105,9 +2176,12 @@
             }
 
 
-            function getBikeInitialState(bike, rider) {
+            function getBikeInitialState(bike, rider, instanceId = null) {
+                const uniqueId = instanceId || (Date.now() + Math.random().toString(36).substr(2, 9));
                 return {
                     ...bike,
+                    id: uniqueId, 
+                    original_id: bike.id, 
                     front_gears: (Array.isArray(bike.front_gears) ? bike.front_gears : [52, 34]).sort((a,b) => a - b),
                     rear_gears: (Array.isArray(bike.rear_gears) ? bike.rear_gears : [11, 28]).sort((a,b) => b - a),
                     speed: 0,
@@ -2158,22 +2232,36 @@
                     avgPowerAcc: 0,
                     sampleCount: 0.001, 
                     hrZonesTime: { Z1: 0, Z2: 0, Z3: 0, Z4: 0, Z5: 0 },
+                    maxSpeed: 0,
+                    maxPower: 0, 
+                    maxCadence: 0,
+                    maxHr: 0,
+                    hrAcc: 0,
+                    hrSamples: 0,
                     segmentResults: {} 
                 };
             }
 
-            window.bikeState = window.bikesData.slice(0, 2).map(bike => getBikeInitialState(bike, selectedRider));
+            window.bikeState = []; // Start empty, will be populated by initial display logic if needed
+            
+            // Initialization Logic for first 2 bikes (as requested by existing code logic)
+            window.onload_init_deck = () => {
+                const initialBikes = window.bikesData.slice(0, 2);
+                initialBikes.forEach(b => window.addBikeToDeck(b.id));
+            };
 
         // Set initial gears to Index 0 (Easiest)
-        window.bikeState.forEach(b => {
-            b.currentFrontGear = b.front_gears[0];
-            b.currentRearGear = b.rear_gears[0];
+        // This loop is now redundant as getBikeInitialState sets currentFrontGear/currentRearGear
+        // and addBikeToDeck syncs the UI.
+        // window.bikeState.forEach(b => {
+        //     b.currentFrontGear = b.front_gears[0];
+        //     b.currentRearGear = b.rear_gears[0];
             
-            const fSelect = document.querySelector(`.front-gear-select[data-bike-id="${b.id}"]`);
-            const rSelect = document.querySelector(`.rear-gear-select[data-bike-id="${b.id}"]`);
-            if (fSelect) fSelect.value = b.currentFrontGear;
-            if (rSelect) rSelect.value = b.currentRearGear;
-        });
+        //     const fSelect = document.querySelector(`.front-gear-select[data-bike-id="${b.id}"]`);
+        //     const rSelect = document.querySelector(`.rear-gear-select[data-bike-id="${b.id}"]`);
+        //     if (fSelect) fSelect.value = b.currentFrontGear;
+        //     if (rSelect) rSelect.value = b.currentRearGear;
+        // });
 
         // ── MANUAL CONTROL HELPERS ──────────────────────────────────────────
         window.setBikeMode = function(bikeId, auto) {
@@ -2318,96 +2406,111 @@
             return low;
         }
 
-        function updateSimulation() {
-            if (debugStatus) debugStatus.innerText = isPlaying ? "RUNNING" : "STOPPED";
-            
-            // Expose removal function globally
-            window.removeBikeFromDeck = function(bikeId) {
-                window.pendingRemoveBikeId = bikeId;
-                const modal = document.getElementById('confirmRemovalModal');
-                if (modal) modal.style.display = 'block';
-            };
+        // --- DECK MANAGEMENT HELPERS ---
 
-            window.closeConfirmRemovalModal = function() {
-                const modal = document.getElementById('confirmRemovalModal');
-                if (modal) modal.style.display = 'none';
-                window.pendingRemoveBikeId = null;
-            };
+        window.removeBikeFromDeck = function(bikeId) {
+            window.pendingRemoveBikeId = bikeId;
+            const modal = document.getElementById('confirmRemovalModal');
+            if (modal) modal.style.display = 'block';
+        };
 
-            window.confirmRemoval = function() {
-                const bikeId = window.pendingRemoveBikeId;
-                if (!bikeId) return;
+        window.closeConfirmRemovalModal = function() {
+            const modal = document.getElementById('confirmRemovalModal');
+            if (modal) modal.style.display = 'none';
+            window.pendingRemoveBikeId = null;
+        };
 
-                // Remove from state
-                const idx = window.bikeState.findIndex(b => b.id == bikeId);
-                if (idx !== -1) {
-                    window.bikeState.splice(idx, 1);
-                    
-                    // Instead of removing, we hide and splice from state
-                    const card = document.getElementById(`bike-card-${bikeId}`);
-                    if (card) {
-                        card.style.opacity = '0';
-                        card.style.transform = 'translateX(20px)';
-                        card.style.transition = 'all 0.3s ease';
-                        setTimeout(() => {
-                            card.style.display = 'none';
-                            // Reset styles for potential re-addition
-                            card.style.opacity = '';
-                            card.style.transform = '';
-                        }, 300);
-                    }
-                    
-                    showToast('🚲 Removed from Racedeck');
-                }
-
-                window.closeConfirmRemovalModal();
-            };
-
-            window.addBikeToDeck = function(bikeId) {
+        window.confirmRemoval = function() {
+            const bikeId = window.pendingRemoveBikeId;
             if (!bikeId) return;
+
+            // Remove from state
+            const idx = window.bikeState.findIndex(b => b.id == bikeId);
+            if (idx !== -1) {
+                window.bikeState.splice(idx, 1);
+                
+                // Instead of removing, we hide and splice from state
+                const card = document.getElementById(`bike-card-${bikeId}`);
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(20px)';
+                    card.style.transition = 'all 0.3s ease';
+                    setTimeout(() => {
+                        card.remove(); // Remove the element completely
+                    }, 300);
+                }
+                
+                showToast('🚲 Removed from Racedeck');
+            }
+
+            window.closeConfirmRemovalModal();
+        };
+
+        window.addBikeToDeck = function(bikeModelId) {
+            if (!bikeModelId) return;
             
-            const bData = window.bikesData.find(x => x.id == bikeId);
+            const bData = window.bikesData.find(x => x.id == bikeModelId);
             if (!bData) return;
             
-            // Check if already in deck (active state)
-            if (window.bikeState.find(x => x.id == bikeId)) {
-                showToast('🚲 Athlete is already in the simulation.');
-                document.getElementById('bikeLibrarySelect').value = '';
+            // Find template
+            const templateWrapper = document.querySelector(`.bike-card-template[data-bike-id="${bikeModelId}"]`);
+            if (!templateWrapper) {
+                showToast('❌ Template not found for this bike.');
                 return;
             }
+
+            // Generate Unique Instance ID
+            const instanceId = 'inst-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
             
             // Add to state
-            const newState = getBikeInitialState(bData, selectedRider);
-            // Set initial gears
+            const selectedRider = JSON.parse(document.getElementById('globalRiderSelect').options[document.getElementById('globalRiderSelect').selectedIndex].getAttribute('data-rider'));
+            const newState = getBikeInitialState(bData, selectedRider, instanceId);
             newState.currentFrontGear = newState.front_gears[0];
             newState.currentRearGear = newState.rear_gears[0];
-            
             window.bikeState.push(newState);
             
-            // Show the card
-            const card = document.getElementById(`bike-card-${bikeId}`);
-            if (card) {
-                card.style.display = 'block';
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(-10px)';
-                card.style.transition = 'all 0.3s ease';
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, 10);
+            // Clone the template card
+            const clone = templateWrapper.firstElementChild.cloneNode(true);
+            
+            // Replace all placeholders in HTML
+            const html = clone.innerHTML.replaceAll('TMPL_ID', instanceId)
+                                        .replaceAll('TMPL_JSON', JSON.stringify(bData).replace(/"/g, '&quot;'));
+            clone.innerHTML = html;
+            clone.id = `bike-card-${instanceId}`;
+            
+            // Add to list
+            const bikeList = document.getElementById('bikeList');
+            bikeList.appendChild(clone);
+            
+            // Animate appearance
+            clone.style.opacity = '0';
+            clone.style.transform = 'translateY(-10px)';
+            clone.style.transition = 'all 0.3s ease';
+            setTimeout(() => {
+                clone.style.opacity = '1';
+                clone.style.transform = 'translateY(0)';
+            }, 10);
 
-                // Sync gear selects
-                const fSelect = card.querySelector('.front-gear-select');
-                const rSelect = card.querySelector('.rear-gear-select');
-                if (fSelect) fSelect.value = newState.currentFrontGear;
-                if (rSelect) rSelect.value = newState.currentRearGear;
-                
-                showToast(`🚲 ${bData.name} added to Racedeck`);
-            }
+            // Sync initial UI elements
+            setBikeMode(instanceId, true);
+            
+            const fSelect = clone.querySelector('.front-gear-select');
+            const rSelect = clone.querySelector('.rear-gear-select');
+            if (fSelect) fSelect.value = newState.currentFrontGear;
+            if (rSelect) rSelect.value = newState.currentRearGear;
 
+            const debugRiders = document.getElementById('debug-riders');
+            if (debugRiders) debugRiders.innerText = window.bikeState.length;
+            showToast(`🚲 Added ${bData.name} to Racedeck`);
+            
             // Reset select
             document.getElementById('bikeLibrarySelect').value = '';
         };
+
+        function updateSimulation() {
+            if (debugStatus) debugStatus.innerText = isPlaying ? "RUNNING" : "STOPPED";
+            
+
 
             const bikesForUpdate = window.bikeState || [];
             if (debugRiders) debugRiders.innerText = bikesForUpdate.length;
@@ -2611,7 +2714,9 @@
                 const powerSlider = document.querySelector(`.bike-power-input[data-bike-id="${bike.id}"]`);
                 const sliderTargetWatts = powerSlider ? parseFloat(powerSlider.value) : (bike.power || 200);
                 
-                let effectiveRiderPower = bike.isPedaling ? sliderTargetWatts : 0;
+                // Base target power: Locked power takes precedence over slider target.
+                let targetPower = bike.lockedPower !== null ? bike.lockedPower : sliderTargetWatts;
+                let effectiveRiderPower = bike.isPedaling ? targetPower : 0;
 
                 // NEW: APPLY SEGMENT OVERRIDES
                 let currentSegment = null;
@@ -2645,6 +2750,24 @@
                 const fatigueMultiplier = 1 - (bike.fatigue / 100) * 0.4;
                 effectiveRiderPower *= fatigueMultiplier;
                 if (bike.isBonking) effectiveRiderPower *= 0.35;
+
+                // STRICT CAP: Rider cannot exceed the power set on the slider, 
+                // regardless of segment targets or other overrides.
+                effectiveRiderPower = Math.min(effectiveRiderPower, sliderTargetWatts);
+                
+                // Update internal state for history/logging
+                bike.power = effectiveRiderPower;
+                
+                // Update UI display if throttle period (sync with other stats)
+                if (Math.floor(Date.now() / 100) % 2 === 0) {
+                    const pDisplay = document.getElementById(`power-display-${bike.id}`);
+                    if (pDisplay) {
+                        // Display the ACTUAL output when pedaling, but show the "Cap" value when idle
+                        // so the user can see what they are setting on the slider.
+                        const valToDisplay = bike.isPedaling ? Math.round(effectiveRiderPower) : Math.round(sliderTargetWatts);
+                        pDisplay.innerText = valToDisplay;
+                    }
+                }
 
                 let speed = 0;
                 let hasConflict = false;
@@ -2748,11 +2871,24 @@
                         bike.avgPowerAcc += effectiveRiderPower * delta;
                         bike.npAcc += Math.pow(effectiveRiderPower, 4) * delta;
                         bike.sampleCount += delta;
+
+                        // Peak performance metrics
+                        if (effectiveRiderPower > (bike.maxPower || 0)) bike.maxPower = effectiveRiderPower;
+                        const kmh = bike.speed * 3.6;
+                        if (kmh > (bike.maxSpeed || 0)) bike.maxSpeed = kmh;
+                        if (bike.cadence > (bike.maxCadence || 0)) bike.maxCadence = bike.cadence;
                     }
 
                     // Heart Rate (Matches lab feel)
                     const targetHr = 70 + (effectiveRiderPower / (bike.ftp || 250)) * 110 + (bike.fatigue * 0.5);
                     bike.hr += (targetHr - bike.hr) * 0.02;
+
+                    // HR Accumulators & Peaks
+                    if (!bike.isWalking && !bike.isEating && bike.speed > 0) {
+                        bike.hrAcc += bike.hr * delta;
+                        bike.hrSamples += delta;
+                        if (bike.hr > (bike.maxHr || 0)) bike.maxHr = bike.hr;
+                    }
 
                     // Calorie Burn
                     const metabolicEff = bike.efficiency || 0.24;
@@ -2853,6 +2989,16 @@
                         const distStr = (bike.distance / 1000).toFixed(2);
                         bike.logs.unshift({ time: timeStr, msg: `🛑 Meal Break at ${distStr}km` });
                         
+                        // Place a RED FLAG marker on the Leaflet map at this rest point
+                        if (routeMap && lastRouteCoordinates.length >= 2) {
+                            const pos = getLatLngAtDistance(bike.distance);
+                            if (pos) {
+                                const flag = L.marker(pos, { icon: createRestIcon() }).addTo(routeMap);
+                                flag.bindPopup(`🛑 <b>${bike.name}</b> makan di ${distStr} km`, { closeButton: false });
+                                restMapMarkers.push(flag);
+                            }
+                        }
+
                         const mOverlay = document.getElementById(`meal-overlay-${bike.id}`);
                         if (mOverlay) mOverlay.classList.add('active');
                     }
@@ -2874,7 +3020,7 @@
 
                 if (bike.isEating && elapsedSeconds >= bike.mealEndTime) {
                     bike.isEating = false;
-                    bike.calories = 1000; // Refill to 1000 after a meal break
+                    bike.calories = 500; // Refill to 500 after a meal break
                     const mOverlay = document.getElementById(`meal-overlay-${bike.id}`);
                     if (mOverlay) mOverlay.classList.remove('active');
                     
@@ -3049,7 +3195,27 @@
                     }
                 }
 
-                // Visual Drawing
+                // MAP LIVE POSITION: Update or create a bike marker on the Leaflet map
+                if (routeMap && lastRouteCoordinates.length >= 2) {
+                    const pos = getLatLngAtDistance(bike.distance);
+                    if (pos) {
+                        if (!bikeMapMarkers[bike.id]) {
+                            // Create a new marker for this bike
+                            bikeMapMarkers[bike.id] = L.marker(pos, {
+                                icon: createBikeIcon(bike.color),
+                                zIndexOffset: 1000
+                            }).addTo(routeMap);
+                            bikeMapMarkers[bike.id].bindPopup(
+                                `<b>${bike.name}</b>`,
+                                { closeButton: false, offset: [0, -10] }
+                            );
+                        } else {
+                            bikeMapMarkers[bike.id].setLatLng(pos);
+                        }
+                    }
+                }
+
+                // Visual Drawing (Canvas)
                 const screenX = canvasPadding + (Math.min(bike.distance, trackGoalMeters) / trackGoalMeters) * trackWidth;
                 drawBike(ctx, screenX, adjustedY, bike.color, bike.name, bike.isFinished, bike.isDrafting, riderSlope, bike.cadence, bike.isBraking);
             });
@@ -3305,6 +3471,12 @@
             });
             elapsedSeconds = 0;
             isPlaying = false; // Pause simulation on reset
+
+            // Remove all bike position markers and rest flags from the map
+            Object.values(bikeMapMarkers).forEach(m => { if (m && m.remove) m.remove(); });
+            bikeMapMarkers = {};
+            restMapMarkers.forEach(m => { if (m && m.remove) m.remove(); });
+            restMapMarkers = [];
             
             // Sync buttons
             playBtn.classList.remove('active');
@@ -3338,7 +3510,7 @@
             const modal = document.getElementById('editModal');
             const form = document.getElementById('editBikeForm');
             
-            form.action = `/bicycles/${bike.id}`;
+            form.action = `/bicycles/${bike.original_id || bike.id}`;
             document.getElementById('edit-name').value = bike.name;
             document.getElementById('edit-color').value = bike.color;
             document.getElementById('edit-bicycle_weight').value = bike.bicycle_weight;
@@ -3623,6 +3795,16 @@
                 bike.logs.unshift(logEntry);
                 if (bike.logs.length > 20) bike.logs.pop();
                 
+                // Place a rest flag marker on the map at this position
+                if (routeMap && lastRouteCoordinates.length >= 2) {
+                    const pos = getLatLngAtDistance(bike.distance);
+                    if (pos) {
+                        const flag = L.marker(pos, { icon: createRestIcon() }).addTo(routeMap);
+                        flag.bindPopup(`🛑 <b>${bike.name}</b> rested at ${distStr} km`, { closeButton: false });
+                        restMapMarkers.push(flag);
+                    }
+                }
+                
                 // UI feedback (toast)
                 const toast = document.createElement('div');
                 toast.className = 'toast';
@@ -3635,6 +3817,26 @@
         window.showSummary = (bikeId) => {
             // This is now called per-finish but we wait for all to stop simulation
             // We can show a toast or something, but the global summary replaces the final modal
+        };
+
+        function getHrZone(hr, maxHr) {
+            if (!hr || !maxHr) return 'Z1';
+            const pct = hr / maxHr;
+            if (pct >= 0.9) return 'Z5';
+            if (pct >= 0.8) return 'Z4';
+            if (pct >= 0.7) return 'Z3';
+            if (pct >= 0.6) return 'Z2';
+            return 'Z1';
+        }
+
+        window.toggleBikeDetail = (id) => {
+            const el = document.getElementById(`detail-row-${id}`);
+            const btn = document.getElementById(`toggle-btn-${id}`);
+            if (el) {
+                const isHidden = el.style.display === 'none';
+                el.style.display = isHidden ? 'table-row' : 'none';
+                if (btn) btn.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            }
         };
 
         window.showGlobalSummary = () => {
@@ -3651,11 +3853,14 @@
                     const ftp = bike.ftp || 250;
                     const ifFactor = (currentNp / ftp);
                     const tss = Math.round((raceTime * currentNp * ifFactor) / (ftp * 3600) * 100);
+                    const avgHr = bike.hrSamples > 0 ? (bike.hrAcc / bike.hrSamples) : 0;
+                    const hrZone = getHrZone(avgHr, bike.max_hr || 190);
 
                     html += `
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; background: rgba(0,0,0,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='rgba(0,0,0,0.1)'">
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; background: rgba(0,0,0,0.1); cursor: pointer;" onclick="toggleBikeDetail('${bike.id}')" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='rgba(0,0,0,0.1)'">
                             <td style="padding: 12px 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="toggle-btn-${bike.id}" style="display: inline-block; transition: transform 0.2s; color: var(--accent); font-family: monospace; font-size: 0.8rem;">▶</span>
                                     <div style="width: 12px; height: 12px; border-radius: 50%; background: ${bike.color};"></div>
                                     <span style="font-weight: 800; color: white;">${bike.name}</span>
                                     ${(window.routeSegments && window.routeSegments.length > 0) ? '<span style="font-size: 0.7rem; opacity: 0.5;">(Total)</span>' : ''}
@@ -3667,6 +3872,55 @@
                             <td style="padding: 12px 8px; color: white;">${Math.round(bike.avgPowerAcc / Math.max(0.1, bike.sampleCount)) || 0}W</td>
                             <td style="padding: 12px 8px; color: var(--success); font-weight: 700;">${Math.round(currentNp)}W</td>
                             <td style="padding: 12px 8px; color: #f59e0b; font-weight: 700;">${Math.max(0, tss)}</td>
+                        </tr>
+                        <tr id="detail-row-${bike.id}" style="display: none; background: rgba(0,0,0,0.3);">
+                            <td colspan="7" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 20px;">
+                                    <!-- Bike & Load Stats -->
+                                    <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <h4 style="font-size: 0.7rem; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Equipment Summary</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Tire Width</span> <span style="font-weight:600; color:white;">${bike.tire_width || 25}mm</span></div>
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Frame Material</span> <span style="font-weight:600; color:white; text-transform: capitalize;">${bike.frame_material || 'alloy'}</span></div>
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Baggage Weight</span> <span style="font-weight:600; color:var(--danger);">${bike.baggage_weight || 0}kg</span></div>
+                                        </div>
+                                    </div>
+                                    <!-- Peak Metrics -->
+                                    <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <h4 style="font-size: 0.7rem; color: var(--success); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Peak Performance</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Max Speed</span> <span style="font-weight:600; color:white;">${(bike.maxSpeed || 0).toFixed(1)} km/h</span></div>
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Max Cadence</span> <span style="font-weight:600; color:white;">${Math.round(bike.maxCadence || 0)} RPM</span></div>
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Max Power</span> <span style="font-weight:600; color:white;">${Math.round(bike.maxPower || 0)}W</span></div>
+                                        </div>
+                                    </div>
+                                    <!-- Health Metrics -->
+                                    <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <h4 style="font-size: 0.7rem; color: #f43f5e; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Physiology</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Max Heart Rate</span> <span style="font-weight:600; color:white;">${Math.round(bike.maxHr || 0)} BPM</span></div>
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Avg Heart Rate</span> <span style="font-weight:600; color:white;">${Math.round(avgHr)} BPM</span></div>
+                                            <div style="display: flex; justify-content: space-between;"><span style="opacity:0.5;">Cardiac Zone</span> <span style="font-weight:800; color:#f43f5e;">${hrZone}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Activity Logs -->
+                                <div style="margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); overflow: hidden;">
+                                    <div style="padding: 6px 12px; font-size: 0.6rem; font-weight: 800; opacity: 0.5; border-bottom: 1px solid rgba(255,255,255,0.03); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between;">
+                                        <span>ACTIVITY LOG DETAIL</span>
+                                        <span>${bike.logs.length} EVENTS</span>
+                                    </div>
+                                    <div style="max-height: 150px; overflow-y: auto; padding: 10px; font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;">
+                                        ${bike.logs.map(l => `
+                                            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 10px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.01);">
+                                                <span style="opacity: 0.4;">[${l.time}]</span>
+                                                <span style="color: rgba(255,255,255,0.8);">${l.msg}</span>
+                                            </div>
+                                        `).join('')}
+                                        ${bike.logs.length === 0 ? '<div style="opacity:0.3; text-align:center; padding: 10px;">No logs recorded</div>' : ''}
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     `;
 
