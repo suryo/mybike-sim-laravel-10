@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Compare – MyBike Pro Template</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            body {
+                padding-top: 0;
+            }
+            .compare-header {
+                background: rgba(10, 18, 35, 0.98);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 1.25rem 2rem;
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            .compare-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 2rem;
+                padding: 2rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .compare-card {
+                background: var(--glass);
+                border: 1px solid var(--border);
+                border-radius: 24px;
+                overflow: hidden;
+            }
+            .compare-card-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            .compare-avatar {
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                background: var(--gradient);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+            }
+            .compare-stat {
+                padding: 0.75rem 1.5rem;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .compare-stat:last-child {
+                border-bottom: none;
+            }
+            .compare-bar-wrap {
+                padding: 0.75rem 1.5rem;
+            }
+            .compare-bar {
+                height: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 9999px;
+                overflow: hidden;
+                margin-top: 4px;
+            }
+            .compare-bar-fill {
+                height: 100%;
+                border-radius: 9999px;
+                background: var(--gradient);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <div class="compare-header">
+            <a
+                href="index.html"
+                class="gradient-text"
+                style="
+                    font-weight: 800;
+                    font-size: 1.2rem;
+                    text-decoration: none;
+                "
+                >MyBike Pro</a
+            >
+            <span style="opacity: 0.2">|</span>
+            <span style="font-weight: 800">Gear Comparison</span>
+            <div style="flex: 1"></div>
+            <select style="width: auto; min-width: 160px">
+                <option>Select Bicycle…</option>
+                <option>Polygon Strattos C Base</option>
+                <option>Trek Domane SL 6</option>
+            </select>
+            <select style="width: auto; min-width: 160px">
+                <option>Select Rider…</option>
+                <option>Ahmad Pratama</option>
+                <option>Budi Santoso</option>
+            </select>
+            <button class="btn btn-primary">+ Add to Compare</button>
+            <a href="admin-dashboard.html" class="btn btn-ghost">← Back</a>
+        </div>
+
+        <!-- Compare Grid -->
+        <div class="compare-grid">
+            <!-- Card 1 -->
+            <div class="compare-card">
+                <div class="compare-card-header">
+                    <div class="compare-avatar">🚴</div>
+                    <div>
+                        <div style="font-weight: 800">
+                            Polygon Strattos C Base
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.75rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Rider: Ahmad Pratama · 75 kg
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-danger"
+                        style="
+                            margin-left: auto;
+                            padding: 0.3rem 0.7rem;
+                            font-size: 0.75rem;
+                        "
+                    >
+                        Remove
+                    </button>
+                </div>
+                <div class="compare-bar-wrap">
+                    <div
+                        style="font-size: 0.7rem; color: var(--text-secondary)"
+                    >
+                        Power Output
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-bar-fill" style="width: 62%"></div>
+                    </div>
+                    <div
+                        style="
+                            font-size: 0.85rem;
+                            font-weight: 700;
+                            font-family: &quot;JetBrains Mono&quot;;
+                            margin-top: 4px;
+                        "
+                    >
+                        215 W
+                        <span
+                            style="
+                                font-size: 0.7rem;
+                                font-weight: 400;
+                                color: var(--text-secondary);
+                            "
+                            >avg</span
+                        >
+                    </div>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Avg Speed</span
+                    ><span class="mono" style="font-weight: 700"
+                        >28.4 km/h</span
+                    >
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Max Power</span
+                    ><span
+                        class="mono"
+                        style="font-weight: 700; color: var(--accent)"
+                        >280 W</span
+                    >
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Bike Weight</span
+                    ><span class="mono" style="font-weight: 700">8.8 kg</span>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Tire Width</span
+                    ><span class="mono" style="font-weight: 700">28 mm</span>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Frame Material</span
+                    ><span class="mono" style="font-weight: 700">Alloy</span>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Heart Rate Avg</span
+                    ><span class="mono" style="font-weight: 700; color: #f97316"
+                        >148 bpm</span
+                    >
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Est. Finish Time</span
+                    ><span class="mono" style="font-weight: 700">01:24:32</span>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div
+                class="compare-card"
+                style="border-color: rgba(129, 140, 248, 0.3)"
+            >
+                <div class="compare-card-header">
+                    <div
+                        class="compare-avatar"
+                        style="
+                            background: linear-gradient(
+                                135deg,
+                                #818cf8 0%,
+                                #a78bfa 100%
+                            );
+                        "
+                    >
+                        🚴
+                    </div>
+                    <div>
+                        <div style="font-weight: 800">Trek Domane SL 6</div>
+                        <div
+                            style="
+                                font-size: 0.75rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Rider: Budi Santoso · 68 kg
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-danger"
+                        style="
+                            margin-left: auto;
+                            padding: 0.3rem 0.7rem;
+                            font-size: 0.75rem;
+                        "
+                    >
+                        Remove
+                    </button>
+                </div>
+                <div class="compare-bar-wrap">
+                    <div
+                        style="font-size: 0.7rem; color: var(--text-secondary)"
+                    >
+                        Power Output
+                    </div>
+                    <div class="compare-bar">
+                        <div
+                            class="compare-bar-fill"
+                            style="
+                                width: 78%;
+                                background: linear-gradient(
+                                    135deg,
+                                    #818cf8,
+                                    #a78bfa
+                                );
+                            "
+                        ></div>
+                    </div>
+                    <div
+                        style="
+                            font-size: 0.85rem;
+                            font-weight: 700;
+                            font-family: &quot;JetBrains Mono&quot;;
+                            margin-top: 4px;
+                        "
+                    >
+                        285 W
+                        <span
+                            style="
+                                font-size: 0.7rem;
+                                font-weight: 400;
+                                color: var(--text-secondary);
+                            "
+                            >avg</span
+                        >
+                    </div>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Avg Speed</span
+                    ><span class="mono" style="font-weight: 700; color: #818cf8"
+                        >31.2 km/h</span
+                    >
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Max Power</span
+                    ><span class="mono" style="font-weight: 700; color: #818cf8"
+                        >340 W</span
+                    >
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Bike Weight</span
+                    ><span class="mono" style="font-weight: 700">7.9 kg</span>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Tire Width</span
+                    ><span class="mono" style="font-weight: 700">32 mm</span>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Frame Material</span
+                    ><span class="mono" style="font-weight: 700">Carbon</span>
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Heart Rate Avg</span
+                    ><span class="mono" style="font-weight: 700; color: #f97316"
+                        >162 bpm</span
+                    >
+                </div>
+                <div class="compare-stat">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-secondary)"
+                        >Est. Finish Time</span
+                    ><span class="mono" style="font-weight: 700; color: #818cf8"
+                        >01:17:45</span
+                    >
+                </div>
+            </div>
+
+            <!-- Add Slot -->
+            <div
+                class="compare-card"
+                style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 300px;
+                    cursor: pointer;
+                    background: rgba(255, 255, 255, 0.01);
+                    border: 1px dashed rgba(255, 255, 255, 0.1);
+                "
+            >
+                <div style="text-align: center; opacity: 0.3">
+                    <svg
+                        width="40"
+                        height="40"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        viewBox="0 0 24 24"
+                    >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    <p style="margin-top: 1rem; font-weight: 700">
+                        Add Comparison
+                    </p>
+                    <p style="font-size: 0.8rem">Select a bike + rider above</p>
+                </div>
+            </div>
+        </div>
+        <script src="js/main.js"></script>
+    </body>
+</html>

@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MyBike Pro – Landing Page Template</title>
+        <meta
+            name="description"
+            content="MyBike Pro – Beyond the Ride. The premier platform for cycling performance analysis, simulation, and community."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            /* Page-specific overrides */
+            .hero {
+                padding: 8rem 2rem 4rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .section-title {
+                font-size: 2.5rem;
+                font-weight: 800;
+                margin-bottom: 3rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            .section-title::after {
+                content: "";
+                flex: 1;
+                height: 1px;
+                background: rgba(255, 255, 255, 0.1);
+            }
+            .news-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 2rem;
+                margin-bottom: 4rem;
+            }
+            .main-news {
+                position: relative;
+                height: 500px;
+                border-radius: 24px;
+                overflow: hidden;
+                background-size: cover;
+                background-position: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                padding: 3rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background-color: #1e2d3a;
+            }
+            .main-news::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    to top,
+                    rgba(15, 23, 42, 1) 0%,
+                    rgba(15, 23, 42, 0) 70%
+                );
+            }
+            .main-news-content {
+                position: relative;
+                z-index: 1;
+            }
+            .main-news h2 {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+                line-height: 1.1;
+            }
+            .news-sidebar {
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .side-news-card {
+                background: var(--glass);
+                border-radius: 20px;
+                padding: 1.5rem;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                transition: all 0.3s;
+                cursor: pointer;
+            }
+            .side-news-card:hover {
+                border-color: var(--accent);
+                background: rgba(30, 41, 59, 0.9);
+                transform: translateX(10px);
+            }
+            .features-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 0 2rem 6rem;
+            }
+            .event-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem;
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                transition: all 0.3s;
+                margin-bottom: 1rem;
+            }
+            .event-item:hover {
+                border-color: #818cf8;
+                background: rgba(129, 140, 248, 0.05);
+            }
+            .destination-card {
+                position: relative;
+                height: 200px;
+                border-radius: 20px;
+                overflow: hidden;
+                background-size: cover;
+                background-position: center;
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                margin-bottom: 1rem;
+                transition: all 0.5s;
+                background-color: #1e2d3a;
+            }
+            .destination-card:hover {
+                transform: scale(1.02);
+            }
+            .destination-card::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+            }
+            .dest-info {
+                position: relative;
+                z-index: 1;
+            }
+            .footer-logo {
+                font-weight: 800;
+                font-size: 2rem;
+                margin-bottom: 1rem;
+                display: block;
+            }
+            .destinations-2col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            @media (max-width: 1024px) {
+                .news-grid,
+                .features-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ── NAVIGATION ── -->
+        <nav class="top-nav">
+            <a href="index.html" class="logo gradient-text">MyBike Pro</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item active">Home</a>
+                <a href="simulation.html" class="nav-item">Simulation</a>
+                <a href="compare.html" class="nav-item">Compare</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-item">Riders ▾</a>
+                    <div class="dropdown-content">
+                        <a href="admin-riders.html" class="dropdown-item"
+                            >My Profiles</a
+                        >
+                        <a href="fitting.html" class="dropdown-item"
+                            >Fitting Wizard</a
+                        >
+                    </div>
+                </div>
+                <a href="#events" class="nav-item">Events</a>
+                <a href="#destinations" class="nav-item">Destinations</a>
+                <a
+                    href="admin-dashboard.html"
+                    class="nav-item"
+                    style="color: var(--accent)"
+                    >Admin</a
+                >
+                <a
+                    href="drivetrain.html"
+                    class="btn-sim"
+                    style="
+                        background: rgba(255, 255, 255, 0.05);
+                        color: var(--text-primary);
+                        box-shadow: none;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    "
+                    >Drivetrain Lab</a
+                >
+                <a href="simulation.html" class="btn-sim">Route Simulation</a>
+            </div>
+        </nav>
+
+        <!-- ── MAIN ── -->
+        <main class="hero">
+            <h1 class="section-title">Latest in Cycling</h1>
+
+            <!-- News Grid -->
+            <div class="news-grid">
+                <div
+                    class="main-news"
+                    style="
+                        background-image: linear-gradient(
+                            135deg,
+                            #0f2447 0%,
+                            #1a3a60 100%
+                        );
+                    "
+                >
+                    <div class="main-news-content">
+                        <span class="badge">Race Report</span>
+                        <h2>
+                            2026 Tour de Indonesia: Highlights &amp; Analysis
+                        </h2>
+                        <p
+                            style="
+                                color: var(--text-secondary);
+                                max-width: 600px;
+                            "
+                        >
+                            A comprehensive look at the peloton's fastest stage
+                            times and aerodynamic breakthroughs witnessed this
+                            season.
+                        </p>
+                    </div>
+                </div>
+                <div class="news-sidebar">
+                    <div class="side-news-card">
+                        <span class="badge badge-dark">Tech</span>
+                        <h3 style="margin: 0.5rem 0; font-size: 1.1rem">
+                            New Carbon Gravel Frames
+                        </h3>
+                        <p
+                            style="
+                                font-size: 0.85rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Lightweight innovations push the boundaries of rider
+                            comfort and efficiency.
+                        </p>
+                    </div>
+                    <div class="side-news-card">
+                        <span class="badge badge-dark">Training</span>
+                        <h3 style="margin: 0.5rem 0; font-size: 1.1rem">
+                            High-Altitude Training Methods
+                        </h3>
+                        <p
+                            style="
+                                font-size: 0.85rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            How elite riders adapt their power zones above 2000m
+                            altitude.
+                        </p>
+                    </div>
+                    <div class="side-news-card">
+                        <span class="badge badge-dark">Nutrition</span>
+                        <h3 style="margin: 0.5rem 0; font-size: 1.1rem">
+                            Fuelling for Endurance
+                        </h3>
+                        <p
+                            style="
+                                font-size: 0.85rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Science-backed protocols for multi-day gran fondo
+                            events.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Section -->
+            <section style="margin-bottom: 6rem; position: relative" id="tools">
+                <div
+                    style="
+                        position: absolute;
+                        inset: -40px;
+                        background: radial-gradient(
+                            circle at 50% 50%,
+                            rgba(56, 189, 248, 0.08) 0%,
+                            transparent 70%
+                        );
+                        z-index: -1;
+                    "
+                ></div>
+                <h2 class="section-title">Professional Tools</h2>
+                <div class="grid-3">
+                    <div
+                        class="side-news-card"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1rem;
+                            padding: 2.5rem;
+                            background: rgba(30, 41, 59, 0.4);
+                            border-radius: 32px;
+                        "
+                    >
+                        <div style="font-size: 2.5rem">📏</div>
+                        <h3 style="margin: 0; font-size: 1.5rem">
+                            Fitting Advisor
+                        </h3>
+                        <p
+                            style="
+                                color: var(--text-secondary);
+                                line-height: 1.6;
+                            "
+                        >
+                            Optimise your riding position with our biomechanical
+                            wizard. Perfect comfort, maximum power output.
+                        </p>
+                        <a
+                            href="fitting.html"
+                            class="btn-sim"
+                            style="
+                                text-align: center;
+                                margin-top: auto;
+                                padding: 0.8rem;
+                            "
+                            >Start Fitting</a
+                        >
+                    </div>
+                    <div
+                        class="side-news-card"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1rem;
+                            padding: 2.5rem;
+                            background: rgba(30, 41, 59, 0.4);
+                            border-radius: 32px;
+                        "
+                    >
+                        <div style="font-size: 2.5rem">📊</div>
+                        <h3 style="margin: 0; font-size: 1.5rem">
+                            Gear Comparison
+                        </h3>
+                        <p
+                            style="
+                                color: var(--text-secondary);
+                                line-height: 1.6;
+                            "
+                        >
+                            Compare different bicycle setups and rider profiles.
+                            Find the optimal combinations for any terrain.
+                        </p>
+                        <a
+                            href="compare.html"
+                            class="btn-sim"
+                            style="
+                                text-align: center;
+                                margin-top: auto;
+                                padding: 0.8rem;
+                            "
+                            >Compare Tools</a
+                        >
+                    </div>
+                    <div
+                        class="side-news-card"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1rem;
+                            padding: 2.5rem;
+                            background: rgba(30, 41, 59, 0.4);
+                            border-radius: 32px;
+                        "
+                    >
+                        <div style="font-size: 2.5rem">🚴</div>
+                        <h3 style="margin: 0; font-size: 1.5rem">
+                            Physics Engine
+                        </h3>
+                        <p
+                            style="
+                                color: var(--text-secondary);
+                                line-height: 1.6;
+                            "
+                        >
+                            Simulate real-world conditions. Test aerodynamics,
+                            weight, rolling resistance, and nutrition
+                            strategies.
+                        </p>
+                        <a
+                            href="simulation.html"
+                            class="btn-sim"
+                            style="
+                                text-align: center;
+                                margin-top: auto;
+                                padding: 0.8rem;
+                            "
+                            >Launch Lab</a
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <!-- Events & Destinations -->
+            <div class="features-grid">
+                <section id="events">
+                    <h2 class="section-title" style="font-size: 1.8rem">
+                        Upcoming Events
+                    </h2>
+                    <div style="display: flex; flex-direction: column">
+                        <div class="event-item">
+                            <div>
+                                <div
+                                    style="
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                >
+                                    Bromo Tengger Sportive
+                                </div>
+                                <div
+                                    style="
+                                        font-size: 0.8rem;
+                                        color: var(--text-secondary);
+                                    "
+                                >
+                                    East Java, Indonesia
+                                </div>
+                            </div>
+                            <div
+                                class="mono"
+                                style="font-weight: 700; font-size: 0.9rem"
+                            >
+                                15 Apr 2026
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div>
+                                <div
+                                    style="
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                >
+                                    Bali Gran Fondo
+                                </div>
+                                <div
+                                    style="
+                                        font-size: 0.8rem;
+                                        color: var(--text-secondary);
+                                    "
+                                >
+                                    Bali, Indonesia
+                                </div>
+                            </div>
+                            <div
+                                class="mono"
+                                style="font-weight: 700; font-size: 0.9rem"
+                            >
+                                02 May 2026
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div>
+                                <div
+                                    style="
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                >
+                                    Dieng Plateau Climb
+                                </div>
+                                <div
+                                    style="
+                                        font-size: 0.8rem;
+                                        color: var(--text-secondary);
+                                    "
+                                >
+                                    Central Java, Indonesia
+                                </div>
+                            </div>
+                            <div
+                                class="mono"
+                                style="font-weight: 700; font-size: 0.9rem"
+                            >
+                                20 Jun 2026
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="destinations">
+                    <h2 class="section-title" style="font-size: 1.8rem">
+                        Explore Destinations
+                    </h2>
+                    <div class="destinations-2col">
+                        <div
+                            class="destination-card"
+                            style="
+                                background-image: linear-gradient(
+                                    135deg,
+                                    #1a3a20 0%,
+                                    #254d2b 100%
+                                );
+                            "
+                        >
+                            <div class="dest-info">
+                                <span
+                                    style="
+                                        font-size: 0.7rem;
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                    >EXPERT</span
+                                >
+                                <div style="font-weight: 800">
+                                    Mount Rinjani
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="destination-card"
+                            style="
+                                background-image: linear-gradient(
+                                    135deg,
+                                    #0f2447 0%,
+                                    #1a3a60 100%
+                                );
+                            "
+                        >
+                            <div class="dest-info">
+                                <span
+                                    style="
+                                        font-size: 0.7rem;
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                    >MODERATE</span
+                                >
+                                <div style="font-weight: 800">
+                                    Bali Highlands
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="destination-card"
+                            style="
+                                background-image: linear-gradient(
+                                    135deg,
+                                    #3a1a2a 0%,
+                                    #5a2a40 100%
+                                );
+                            "
+                        >
+                            <div class="dest-info">
+                                <span
+                                    style="
+                                        font-size: 0.7rem;
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                    >BEGINNER</span
+                                >
+                                <div style="font-weight: 800">
+                                    Yogyakarta Plains
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="destination-card"
+                            style="
+                                background-image: linear-gradient(
+                                    135deg,
+                                    #1a1a3a 0%,
+                                    #2a2a5a 100%
+                                );
+                            "
+                        >
+                            <div class="dest-info">
+                                <span
+                                    style="
+                                        font-size: 0.7rem;
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                    >HARD</span
+                                >
+                                <div style="font-weight: 800">
+                                    Dieng Plateau
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- ── FOOTER ── -->
+        <footer>
+            <span class="logo gradient-text footer-logo">MyBike Pro</span>
+            <p
+                style="
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    max-width: 400px;
+                    margin: 0 auto 2rem;
+                "
+            >
+                Your ultimate companion for cycling performance, planning, and
+                community.
+            </p>
+            <div
+                style="
+                    display: flex;
+                    justify-content: center;
+                    gap: 2rem;
+                    margin-bottom: 2rem;
+                "
+            >
+                <a href="#" class="nav-item">About Us</a>
+                <a href="#" class="nav-item">Contact</a>
+                <a href="#" class="nav-item">Privacy Policy</a>
+            </div>
+            <p style="font-size: 0.75rem; opacity: 0.3">
+                &copy; 2026 MyBike Simulation Pro. All rights reserved.
+            </p>
+        </footer>
+
+        <script src="js/main.js"></script>
+    </body>
+</html>

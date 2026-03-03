@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin – Riders – MyBike Pro Template</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            body {
+                background-image:
+                    radial-gradient(
+                        circle at 0% 0%,
+                        rgba(56, 189, 248, 0.05) 0%,
+                        transparent 40%
+                    ),
+                    radial-gradient(
+                        circle at 100% 100%,
+                        rgba(129, 140, 248, 0.05) 0%,
+                        transparent 40%
+                    );
+            }
+            .rider-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: var(--gradient);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+                font-size: 1rem;
+                color: var(--bg-color);
+                flex-shrink: 0;
+            }
+            .hr-zone-bar {
+                display: flex;
+                height: 6px;
+                border-radius: 9999px;
+                overflow: hidden;
+                gap: 1px;
+            }
+            .hz {
+                flex: 1;
+            }
+            .hz-1 {
+                background: #22c55e;
+            }
+            .hz-2 {
+                background: #84cc16;
+            }
+            .hz-3 {
+                background: #eab308;
+            }
+            .hz-4 {
+                background: #f97316;
+            }
+            .hz-5 {
+                background: #ef4444;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="admin-layout">
+            <aside class="sidebar">
+                <a
+                    href="admin-dashboard.html"
+                    class="sidebar-logo gradient-text"
+                >
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                    >
+                        <path
+                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                        />
+                    </svg>
+                    <span>MyBike Admin</span>
+                </a>
+                <div class="nav-group">
+                    <div class="nav-label">Catalog</div>
+                    <a href="admin-bikes.html" class="nav-link">
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M5.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+                            />
+                            <path d="M15 6H9.5L5.5 12h13z" />
+                        </svg>
+                        <span>Bicycles</span>
+                    </a>
+                    <a href="admin-riders.html" class="nav-link active">
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                            />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <span>Riders</span>
+                    </a>
+                </div>
+                <div style="margin-top: auto; padding: 0 1.5rem">
+                    <a
+                        href="login.html"
+                        class="btn btn-ghost"
+                        style="width: 100%; justify-content: flex-start"
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Riders</h1>
+                        <p>Manage rider profiles and performance data.</p>
+                    </div>
+                    <a
+                        href="#"
+                        class="btn btn-primary"
+                        onclick="
+                            openModal('addRiderModal');
+                            return false;
+                        "
+                    >
+                        <svg
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            viewBox="0 0 24 24"
+                        >
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Add Rider
+                    </a>
+                </div>
+
+                <!-- Rider Cards Grid -->
+                <div class="grid-3 gap-2">
+                    <!-- Rider Card -->
+                    <div
+                        class="card"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1.25rem;
+                        "
+                    >
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 1rem;
+                            "
+                        >
+                            <div class="rider-avatar">A</div>
+                            <div>
+                                <div style="font-weight: 800">
+                                    Ahmad Pratama
+                                </div>
+                                <div
+                                    style="
+                                        font-size: 0.75rem;
+                                        color: var(--text-secondary);
+                                    "
+                                >
+                                    75 kg · Age 28
+                                </div>
+                            </div>
+                            <a
+                                href="#"
+                                class="btn btn-ghost"
+                                style="
+                                    margin-left: auto;
+                                    padding: 0.3rem 0.7rem;
+                                    font-size: 0.75rem;
+                                "
+                                >Edit</a
+                            >
+                        </div>
+                        <div class="grid-2" style="gap: 0.75rem">
+                            <div>
+                                <div class="stat-label">FTP</div>
+                                <div
+                                    class="mono"
+                                    style="font-size: 1.5rem; font-weight: 800"
+                                >
+                                    250
+                                    <small
+                                        style="
+                                            font-size: 0.8rem;
+                                            font-weight: 400;
+                                        "
+                                        >W</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Max HR</div>
+                                <div
+                                    class="mono"
+                                    style="font-size: 1.5rem; font-weight: 800"
+                                >
+                                    185
+                                    <small
+                                        style="
+                                            font-size: 0.8rem;
+                                            font-weight: 400;
+                                        "
+                                        >bpm</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">AT</div>
+                                <div
+                                    class="mono"
+                                    style="font-size: 1.5rem; font-weight: 800"
+                                >
+                                    225
+                                    <small
+                                        style="
+                                            font-size: 0.8rem;
+                                            font-weight: 400;
+                                        "
+                                        >W</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">W/kg</div>
+                                <div
+                                    class="mono"
+                                    style="
+                                        font-size: 1.5rem;
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                >
+                                    3.3
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                style="
+                                    font-size: 0.7rem;
+                                    color: var(--text-secondary);
+                                    margin-bottom: 0.4rem;
+                                "
+                            >
+                                HR Zones
+                            </div>
+                            <div class="hr-zone-bar">
+                                <div class="hz hz-1" title="Z1"></div>
+                                <div class="hz hz-2" title="Z2"></div>
+                                <div class="hz hz-3" title="Z3"></div>
+                                <div class="hz hz-4" title="Z4"></div>
+                                <div class="hz hz-5" title="Z5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="card"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1.25rem;
+                        "
+                    >
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 1rem;
+                            "
+                        >
+                            <div
+                                class="rider-avatar"
+                                style="
+                                    background: linear-gradient(
+                                        135deg,
+                                        #818cf8 0%,
+                                        #a78bfa 100%
+                                    );
+                                "
+                            >
+                                B
+                            </div>
+                            <div>
+                                <div style="font-weight: 800">Budi Santoso</div>
+                                <div
+                                    style="
+                                        font-size: 0.75rem;
+                                        color: var(--text-secondary);
+                                    "
+                                >
+                                    68 kg · Age 32
+                                </div>
+                            </div>
+                            <a
+                                href="#"
+                                class="btn btn-ghost"
+                                style="
+                                    margin-left: auto;
+                                    padding: 0.3rem 0.7rem;
+                                    font-size: 0.75rem;
+                                "
+                                >Edit</a
+                            >
+                        </div>
+                        <div class="grid-2" style="gap: 0.75rem">
+                            <div>
+                                <div class="stat-label">FTP</div>
+                                <div
+                                    class="mono"
+                                    style="font-size: 1.5rem; font-weight: 800"
+                                >
+                                    310
+                                    <small
+                                        style="
+                                            font-size: 0.8rem;
+                                            font-weight: 400;
+                                        "
+                                        >W</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Max HR</div>
+                                <div
+                                    class="mono"
+                                    style="font-size: 1.5rem; font-weight: 800"
+                                >
+                                    192
+                                    <small
+                                        style="
+                                            font-size: 0.8rem;
+                                            font-weight: 400;
+                                        "
+                                        >bpm</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">AT</div>
+                                <div
+                                    class="mono"
+                                    style="font-size: 1.5rem; font-weight: 800"
+                                >
+                                    280
+                                    <small
+                                        style="
+                                            font-size: 0.8rem;
+                                            font-weight: 400;
+                                        "
+                                        >W</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">W/kg</div>
+                                <div
+                                    class="mono"
+                                    style="
+                                        font-size: 1.5rem;
+                                        font-weight: 800;
+                                        color: var(--accent);
+                                    "
+                                >
+                                    4.6
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                style="
+                                    font-size: 0.7rem;
+                                    color: var(--text-secondary);
+                                    margin-bottom: 0.4rem;
+                                "
+                            >
+                                HR Zones
+                            </div>
+                            <div class="hr-zone-bar">
+                                <div class="hz hz-1"></div>
+                                <div class="hz hz-2"></div>
+                                <div class="hz hz-3"></div>
+                                <div class="hz hz-4"></div>
+                                <div class="hz hz-5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="card"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1.25rem;
+                            border: 1px dashed rgba(255, 255, 255, 0.1);
+                            background: rgba(255, 255, 255, 0.02);
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 200px;
+                            cursor: pointer;
+                        "
+                        onclick="openModal('addRiderModal')"
+                    >
+                        <svg
+                            width="32"
+                            height="32"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            viewBox="0 0 24 24"
+                            style="opacity: 0.3"
+                        >
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        <span
+                            style="
+                                opacity: 0.3;
+                                font-weight: 700;
+                                font-size: 0.9rem;
+                            "
+                            >Add New Rider</span
+                        >
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Add Rider Modal -->
+        <div class="modal-overlay" id="addRiderModal" style="display: none">
+            <div class="modal" style="max-width: 600px; width: 95%">
+                <div class="flex-between mb-3">
+                    <h2 class="modal-title" style="margin: 0">
+                        Add Rider Profile
+                    </h2>
+                    <button
+                        onclick="closeModal('addRiderModal')"
+                        style="
+                            background: none;
+                            border: none;
+                            color: var(--text-secondary);
+                            cursor: pointer;
+                            font-size: 1.5rem;
+                            line-height: 1;
+                        "
+                    >
+                        ×
+                    </button>
+                </div>
+                <div class="grid-2 gap-2 mb-2">
+                    <div>
+                        <label>Full Name</label
+                        ><input type="text" placeholder="e.g. Ahmad Pratama" />
+                    </div>
+                    <div>
+                        <label>Age</label
+                        ><input type="number" placeholder="28" />
+                    </div>
+                    <div>
+                        <label>Weight (kg)</label
+                        ><input type="number" step="0.1" placeholder="75" />
+                    </div>
+                    <div>
+                        <label>FTP (Watts)</label
+                        ><input type="number" placeholder="250" />
+                    </div>
+                    <div>
+                        <label>Max HR (bpm)</label
+                        ><input type="number" placeholder="185" />
+                    </div>
+                    <div>
+                        <label>Anaerobic Threshold (W)</label
+                        ><input type="number" placeholder="225" />
+                    </div>
+                </div>
+                <div
+                    style="
+                        display: flex;
+                        justify-content: flex-end;
+                        gap: 1rem;
+                        margin-top: 1.5rem;
+                    "
+                >
+                    <button
+                        class="btn btn-ghost"
+                        onclick="closeModal('addRiderModal')"
+                    >
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary">Save Rider</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/main.js"></script>
+    </body>
+</html>

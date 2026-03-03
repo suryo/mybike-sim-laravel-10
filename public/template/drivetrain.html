@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Drivetrain Lab – MyBike Pro Template</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            .dt-header {
+                background: rgba(10, 18, 35, 0.98);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 1.25rem 2rem;
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+            }
+            .dt-layout {
+                display: grid;
+                grid-template-columns: 360px 1fr;
+                gap: 2rem;
+                padding: 2rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .gear-matrix {
+                display: grid;
+                gap: 4px;
+            }
+            .gear-cell {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 6px;
+                padding: 6px;
+                text-align: center;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .gear-cell:hover {
+                background: rgba(56, 189, 248, 0.1);
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .gear-cell.active {
+                background: rgba(56, 189, 248, 0.2);
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .gear-cell.hard {
+                background: rgba(239, 68, 68, 0.1);
+                border-color: rgba(239, 68, 68, 0.3);
+                color: #ef4444;
+            }
+            .gear-cell.easy {
+                background: rgba(34, 197, 94, 0.1);
+                border-color: rgba(34, 197, 94, 0.3);
+                color: #22c55e;
+            }
+            .result-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .result-row:last-child {
+                border-bottom: none;
+            }
+            .result-label {
+                font-size: 0.8rem;
+                color: var(--text-secondary);
+            }
+            .result-value {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <div class="dt-header">
+            <a
+                href="index.html"
+                class="gradient-text"
+                style="
+                    font-weight: 800;
+                    font-size: 1.2rem;
+                    text-decoration: none;
+                "
+                >MyBike Pro</a
+            >
+            <span style="opacity: 0.2">|</span>
+            <span style="font-weight: 800">⚙️ Drivetrain Lab</span>
+            <div style="flex: 1"></div>
+            <a href="admin-dashboard.html" class="btn btn-ghost">← Back</a>
+        </div>
+
+        <div class="dt-layout">
+            <!-- Controls Panel -->
+            <div>
+                <div class="card mb-3">
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1rem">
+                        Drivetrain Setup
+                    </h3>
+                    <div class="form-group">
+                        <label>Chainring (Front Gears)</label>
+                        <input
+                            type="text"
+                            value="52, 36"
+                            placeholder="e.g. 52, 36"
+                        />
+                        <div
+                            style="
+                                font-size: 0.7rem;
+                                color: var(--text-secondary);
+                                margin-top: 4px;
+                            "
+                        >
+                            Comma separated values
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cassette (Rear Gears)</label>
+                        <input
+                            type="text"
+                            value="11, 13, 15, 17, 19, 21, 24, 28"
+                            placeholder="e.g. 11-28"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>Wheel Circumference (mm)</label>
+                        <input type="number" value="2096" placeholder="2096" />
+                    </div>
+                    <div class="form-group">
+                        <label>Cadence Range (rpm)</label>
+                        <div
+                            style="
+                                display: flex;
+                                gap: 0.5rem;
+                                align-items: center;
+                            "
+                        >
+                            <input type="number" value="60" style="flex: 1" />
+                            <span style="color: var(--text-secondary)">to</span>
+                            <input type="number" value="110" style="flex: 1" />
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-primary"
+                        style="width: 100%; justify-content: center"
+                    >
+                        ⚙️ Calculate
+                    </button>
+                </div>
+
+                <!-- Result Summary -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem">
+                        Current Gear
+                    </h3>
+                    <div
+                        style="
+                            text-align: center;
+                            padding: 1rem 0;
+                            border-bottom: 1px solid var(--border);
+                            margin-bottom: 1rem;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 0.75rem;
+                                color: var(--text-secondary);
+                                margin-bottom: 0.5rem;
+                            "
+                        >
+                            Front × Rear
+                        </div>
+                        <div
+                            style="
+                                font-size: 2.5rem;
+                                font-weight: 800;
+                                font-family: &quot;JetBrains Mono&quot;;
+                                color: var(--accent);
+                            "
+                        >
+                            52 × 17
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.8rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Ratio: 3.06
+                        </div>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Speed at 90rpm</span
+                        ><span class="result-value" style="color: var(--accent)"
+                            >34.7 km/h</span
+                        >
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Speed Range</span
+                        ><span class="result-value">23.1 – 42.5 km/h</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Gear %</span
+                        ><span class="result-value">68% of range</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gear Matrix -->
+            <div>
+                <div class="card">
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 1.5rem;
+                        "
+                    >
+                        <h3 style="font-size: 1rem">Gear Matrix</h3>
+                        <div
+                            style="display: flex; gap: 1rem; font-size: 0.75rem"
+                        >
+                            <span style="color: #22c55e">● Easy</span>
+                            <span style="color: var(--accent)">● Selected</span>
+                            <span style="color: #ef4444">● Hard</span>
+                        </div>
+                    </div>
+
+                    <!-- Header row -->
+                    <div
+                        style="
+                            display: grid;
+                            grid-template-columns: 60px repeat(8, 1fr);
+                            gap: 4px;
+                            margin-bottom: 4px;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            F\R
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            11
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            13
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            15
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            17
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            19
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            21
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            24
+                        </div>
+                        <div
+                            style="
+                                font-size: 0.65rem;
+                                color: var(--text-secondary);
+                                text-align: center;
+                                padding: 4px;
+                            "
+                        >
+                            28
+                        </div>
+                    </div>
+
+                    <!-- Row 52T -->
+                    <div
+                        style="
+                            display: grid;
+                            grid-template-columns: 60px repeat(8, 1fr);
+                            gap: 4px;
+                            margin-bottom: 4px;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 0.75rem;
+                                font-weight: 800;
+                                color: var(--text-secondary);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            52T
+                        </div>
+                        <div class="gear-cell hard">56.7</div>
+                        <div class="gear-cell hard">47.9</div>
+                        <div class="gear-cell">41.5</div>
+                        <div class="gear-cell active">34.7</div>
+                        <div class="gear-cell">31.0</div>
+                        <div class="gear-cell">28.0</div>
+                        <div class="gear-cell easy">24.5</div>
+                        <div class="gear-cell easy">21.0</div>
+                    </div>
+
+                    <!-- Row 36T -->
+                    <div
+                        style="
+                            display: grid;
+                            grid-template-columns: 60px repeat(8, 1fr);
+                            gap: 4px;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 0.75rem;
+                                font-weight: 800;
+                                color: var(--text-secondary);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            36T
+                        </div>
+                        <div class="gear-cell">39.2</div>
+                        <div class="gear-cell">33.2</div>
+                        <div class="gear-cell">28.8</div>
+                        <div class="gear-cell">24.0</div>
+                        <div class="gear-cell easy">21.5</div>
+                        <div class="gear-cell easy">19.4</div>
+                        <div class="gear-cell easy">16.9</div>
+                        <div class="gear-cell easy">14.5</div>
+                    </div>
+
+                    <div
+                        style="
+                            margin-top: 1.5rem;
+                            padding: 1rem;
+                            background: rgba(56, 189, 248, 0.05);
+                            border-radius: 12px;
+                            border: 1px solid rgba(56, 189, 248, 0.1);
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 0.75rem;
+                                color: var(--text-secondary);
+                            "
+                        >
+                            Each cell shows speed in
+                            <b style="color: var(--text-primary)">km/h</b> at 90
+                            RPM cadence. Click any cell to select that gear
+                            combination.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="js/main.js"></script>
+    </body>
+</html>

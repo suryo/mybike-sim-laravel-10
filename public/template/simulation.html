@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simulation – MyBike Pro Template</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            body {
+                overflow: hidden;
+            }
+            .sim-container {
+                display: grid;
+                grid-template-columns: 1fr 340px;
+                height: 100vh;
+            }
+            .sim-main {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            /* Playback Header */
+            .playback-header {
+                background: rgba(10, 18, 35, 0.95);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 0.6rem 1.2rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+                backdrop-filter: blur(12px);
+            }
+            .speed-btn {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: var(--text-secondary);
+                padding: 3px 8px;
+                border-radius: 6px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                cursor: pointer;
+                font-family: "JetBrains Mono", monospace;
+                transition: all 0.2s;
+            }
+            .speed-btn.active {
+                background: var(--accent);
+                color: var(--bg-color);
+                border-color: var(--accent);
+            }
+            .speed-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: var(--text-primary);
+            }
+            .playback-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                border: none;
+                background: rgba(255, 255, 255, 0.05);
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .playback-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+            .btn-play {
+                background: var(--success) !important;
+            }
+            .timer-display {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                font-size: 1rem;
+                color: var(--accent);
+            }
+            /* Canvas Area */
+            .canvas-area {
+                flex: 1;
+                position: relative;
+                background: #050d1a;
+                overflow: hidden;
+            }
+            .canvas-placeholder {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 1rem;
+                opacity: 0.15;
+                font-size: 0.9rem;
+            }
+            /* Sidebar */
+            .sim-sidebar {
+                background: rgba(10, 18, 35, 0.95);
+                border-left: 1px solid rgba(255, 255, 255, 0.05);
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            .sidebar-section {
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .sidebar-section-title {
+                font-size: 0.65rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: var(--accent);
+                margin-bottom: 0.75rem;
+            }
+            /* Bike Card */
+            .bike-card {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 14px;
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+            .bike-name {
+                font-weight: 800;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+            }
+            .metric-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                margin-bottom: 0.4rem;
+            }
+            .metric-label {
+                font-size: 0.65rem;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            .metric-value {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+            /* Progress */
+            .progress-container {
+                margin-top: 0.75rem;
+            }
+            .speed-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="sim-container">
+            <!-- ── MAIN SIMULATION AREA ── -->
+            <div class="sim-main">
+                <!-- Playback Header -->
+                <div class="playback-header">
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.4rem;
+                            font-size: 0.65rem;
+                            color: var(--text-secondary);
+                        "
+                    >
+                        <label>Refuel</label>
+                        <input
+                            type="number"
+                            value="1.0"
+                            style="
+                                width: 45px;
+                                padding: 2px 4px;
+                                font-size: 0.7rem;
+                            "
+                        />
+                        <span>km</span>
+                        <label style="margin-left: 0.5rem">Meal</label>
+                        <input
+                            type="number"
+                            value="10"
+                            style="
+                                width: 40px;
+                                padding: 2px 4px;
+                                font-size: 0.7rem;
+                            "
+                        />
+                        <span>min</span>
+                    </div>
+                    <div class="timer-display">00:00:00</div>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 0.4rem;
+                            font-size: 0.7rem;
+                        "
+                    >
+                        <span
+                            >Track:
+                            <input
+                                type="number"
+                                value="10"
+                                style="
+                                    width: 50px;
+                                    padding: 2px;
+                                    font-size: 0.7rem;
+                                "
+                            />
+                            km</span
+                        >
+                        <button
+                            class="playback-btn"
+                            style="
+                                background: var(--accent);
+                                height: 22px;
+                                width: auto;
+                                padding: 0 8px;
+                                font-size: 0.65rem;
+                                font-weight: 800;
+                                border-radius: 4px;
+                            "
+                        >
+                            📍 MAP
+                        </button>
+                        <span
+                            >Ascent:
+                            <input
+                                type="number"
+                                value="200"
+                                style="
+                                    width: 50px;
+                                    padding: 2px;
+                                    font-size: 0.7rem;
+                                "
+                            />
+                            m</span
+                        >
+                    </div>
+                    <div style="flex-grow: 1"></div>
+                    <div class="speed-controls">
+                        <button class="speed-btn">0.5x</button>
+                        <button class="speed-btn active">1.0x</button>
+                        <button class="speed-btn">2.0x</button>
+                        <button class="speed-btn">10x</button>
+                        <button class="speed-btn">50x</button>
+                        <button class="speed-btn">100x</button>
+                        <button class="speed-btn">200x</button>
+                        <button class="speed-btn">400x</button>
+                        <button class="speed-btn">1000x</button>
+                    </div>
+                    <div style="display: flex; gap: 5px">
+                        <button
+                            class="playback-btn btn-play"
+                            title="Start"
+                            style="
+                                width: auto;
+                                padding: 0 10px;
+                                font-size: 0.7rem;
+                                font-weight: 800;
+                                gap: 4px;
+                            "
+                        >
+                            <svg
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                style="width: 12px"
+                            >
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            START
+                        </button>
+                        <button
+                            class="playback-btn"
+                            style="
+                                background: #ef4444;
+                                width: auto;
+                                padding: 0 10px;
+                                font-size: 0.7rem;
+                                font-weight: 800;
+                            "
+                        >
+                            ■ STOP
+                        </button>
+                        <button
+                            class="playback-btn"
+                            title="Pause"
+                            style="font-size: 0.9rem"
+                        >
+                            ⏸
+                        </button>
+                        <button
+                            class="playback-btn"
+                            title="Reset"
+                            style="font-size: 0.9rem"
+                        >
+                            ↺
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Placeholder -->
+                <div class="canvas-area">
+                    <div class="canvas-placeholder">
+                        <svg
+                            width="64"
+                            height="64"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                d="M5.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM18.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+                            />
+                            <path d="M15 6H9.5L5.5 12h13z" />
+                        </svg>
+                        <p>Simulation Canvas</p>
+                        <p style="font-size: 0.75rem">
+                            Bikes render here using HTML5 Canvas
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── SIDEBAR / RACEDECK ── -->
+            <div class="sim-sidebar">
+                <div class="sidebar-section">
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        "
+                    >
+                        <div class="sidebar-section-title" style="margin: 0">
+                            RACEDECK
+                        </div>
+                        <button
+                            class="btn btn-primary"
+                            style="
+                                font-size: 0.7rem;
+                                padding: 0.3rem 0.8rem;
+                                border-radius: 8px;
+                            "
+                        >
+                            + Add to Deck
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bike Card Sample -->
+                <div class="sidebar-section">
+                    <div
+                        class="bike-card"
+                        style="border-left: 3px solid #38bdf8"
+                    >
+                        <div class="bike-name">🚴 Polygon Strattos C Base</div>
+                        <div
+                            style="
+                                font-size: 0.7rem;
+                                color: var(--text-secondary);
+                                margin-bottom: 0.75rem;
+                            "
+                        >
+                            8.8kg · Rider: Ahmad · 98%
+                        </div>
+                        <!-- Progress -->
+                        <div class="progress-container">
+                            <div class="progress-track">
+                                <div
+                                    class="progress-fill"
+                                    style="width: 35%"
+                                ></div>
+                            </div>
+                            <div
+                                style="
+                                    font-size: 0.65rem;
+                                    color: var(--text-secondary);
+                                    margin-top: 4px;
+                                "
+                            >
+                                35% Complete
+                            </div>
+                        </div>
+                        <!-- Metrics -->
+                        <div
+                            style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr 1fr;
+                                gap: 0.5rem;
+                                margin-top: 0.75rem;
+                            "
+                        >
+                            <div>
+                                <div class="metric-label">Speed</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem"
+                                >
+                                    28.4
+                                    <small style="font-size: 0.6rem"
+                                        >km/h</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Cadence</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem"
+                                >
+                                    88
+                                    <small style="font-size: 0.6rem">rpm</small>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Power</div>
+                                <div
+                                    class="metric-value"
+                                    style="
+                                        font-size: 1.3rem;
+                                        color: var(--accent);
+                                    "
+                                >
+                                    215
+                                    <small style="font-size: 0.6rem">W</small>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">HR</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem; color: #ef4444"
+                                >
+                                    148
+                                    <small style="font-size: 0.6rem">bpm</small>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Fuel</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem; color: #22c55e"
+                                >
+                                    640
+                                    <small style="font-size: 0.6rem"
+                                        >kcal</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Dist</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem"
+                                >
+                                    3.5
+                                    <small style="font-size: 0.6rem">km</small>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Slider -->
+                        <div style="margin-top: 0.75rem">
+                            <div
+                                style="
+                                    font-size: 0.65rem;
+                                    color: var(--text-secondary);
+                                "
+                            >
+                                Max Rider Power (Cap)
+                            </div>
+                            <input
+                                type="range"
+                                min="50"
+                                max="500"
+                                value="250"
+                                style="width: 100%; accent-color: var(--accent)"
+                            />
+                            <div
+                                style="
+                                    text-align: center;
+                                    font-family: &quot;JetBrains Mono&quot;;
+                                    font-weight: 800;
+                                    font-size: 1.2rem;
+                                    color: var(--accent);
+                                "
+                            >
+                                250 Watts
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second bike (different color) -->
+                    <div
+                        class="bike-card"
+                        style="border-left: 3px solid #818cf8"
+                    >
+                        <div class="bike-name">🚴 Trek Domane SL 6</div>
+                        <div
+                            style="
+                                font-size: 0.7rem;
+                                color: var(--text-secondary);
+                                margin-bottom: 0.75rem;
+                            "
+                        >
+                            7.9kg · Rider: Budi · 100%
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-track">
+                                <div
+                                    class="progress-fill"
+                                    style="width: 42%; background: #818cf8"
+                                ></div>
+                            </div>
+                            <div
+                                style="
+                                    font-size: 0.65rem;
+                                    color: var(--text-secondary);
+                                    margin-top: 4px;
+                                "
+                            >
+                                42% Complete
+                            </div>
+                        </div>
+                        <div
+                            style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr 1fr;
+                                gap: 0.5rem;
+                                margin-top: 0.75rem;
+                            "
+                        >
+                            <div>
+                                <div class="metric-label">Speed</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem; color: #818cf8"
+                                >
+                                    31.2
+                                    <small style="font-size: 0.6rem"
+                                        >km/h</small
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Cadence</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem"
+                                >
+                                    92
+                                    <small style="font-size: 0.6rem">rpm</small>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Power</div>
+                                <div
+                                    class="metric-value"
+                                    style="font-size: 1.3rem; color: #818cf8"
+                                >
+                                    285
+                                    <small style="font-size: 0.6rem">W</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Controls -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Global Controls</div>
+                    <div
+                        style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 0.5rem;
+                            font-size: 0.75rem;
+                        "
+                    >
+                        <div>
+                            <label>Track (km)</label
+                            ><input type="number" value="10" />
+                        </div>
+                        <div>
+                            <label>Ascent (m)</label
+                            ><input type="number" value="200" />
+                        </div>
+                        <div>
+                            <label>Start Dist (km)</label
+                            ><input type="number" value="0" />
+                        </div>
+                        <div>
+                            <label>Start Elev (m)</label
+                            ><input type="number" value="0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="js/main.js"></script>
+    </body>
+</html>
